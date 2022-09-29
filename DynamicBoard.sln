@@ -1,0 +1,67 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32819.101
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamicBoard.ServerTester", "DynamicBoard.ServerTester\DynamicBoard.ServerTester.csproj", "{5371FBAC-2B5D-480E-A5AE-936859D31CC7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Testers", "Testers", "{1F7D5DE1-3024-4EB8-A2FE-527F2B5B453C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamicBoard.DAL", "DynamicBoard.DAL\DynamicBoard.DAL.csproj", "{612B4D96-DB9D-4D5A-BE78-348C19B8687E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamicBoard.Serving", "DynamicBoard.Serving\DynamicBoard.Serving.csproj", "{FCB52E9F-0800-4555-923A-31DA64429BC0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{38E43DD6-A8A4-476F-B040-A722B5B010EF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client", "Client", "{B0303825-C95C-4591-A669-43EF1F007E82}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamicBoard.ClientUI", "DynamicBoard.ClientUI\DynamicBoard.ClientUI.csproj", "{6B51F7B2-EDE9-4639-8C82-891333F0C171}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamicBoard.ClientTester.Client", "DynamicBoard.ClientTester\Client\DynamicBoard.ClientTester.Client.csproj", "{2943E8EC-E1FA-48B8-BB28-9BCB9EF5110A}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "DynamicBoard.Models", "DynamicBoard.Models\DynamicBoard.Models.shproj", "{C1AD5BA2-67F5-4ECA-802F-9B8FDF097FAB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5371FBAC-2B5D-480E-A5AE-936859D31CC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5371FBAC-2B5D-480E-A5AE-936859D31CC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5371FBAC-2B5D-480E-A5AE-936859D31CC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5371FBAC-2B5D-480E-A5AE-936859D31CC7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{612B4D96-DB9D-4D5A-BE78-348C19B8687E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{612B4D96-DB9D-4D5A-BE78-348C19B8687E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{612B4D96-DB9D-4D5A-BE78-348C19B8687E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{612B4D96-DB9D-4D5A-BE78-348C19B8687E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FCB52E9F-0800-4555-923A-31DA64429BC0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCB52E9F-0800-4555-923A-31DA64429BC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCB52E9F-0800-4555-923A-31DA64429BC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCB52E9F-0800-4555-923A-31DA64429BC0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B51F7B2-EDE9-4639-8C82-891333F0C171}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B51F7B2-EDE9-4639-8C82-891333F0C171}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B51F7B2-EDE9-4639-8C82-891333F0C171}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B51F7B2-EDE9-4639-8C82-891333F0C171}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2943E8EC-E1FA-48B8-BB28-9BCB9EF5110A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2943E8EC-E1FA-48B8-BB28-9BCB9EF5110A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2943E8EC-E1FA-48B8-BB28-9BCB9EF5110A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2943E8EC-E1FA-48B8-BB28-9BCB9EF5110A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5371FBAC-2B5D-480E-A5AE-936859D31CC7} = {1F7D5DE1-3024-4EB8-A2FE-527F2B5B453C}
+		{612B4D96-DB9D-4D5A-BE78-348C19B8687E} = {38E43DD6-A8A4-476F-B040-A722B5B010EF}
+		{FCB52E9F-0800-4555-923A-31DA64429BC0} = {38E43DD6-A8A4-476F-B040-A722B5B010EF}
+		{6B51F7B2-EDE9-4639-8C82-891333F0C171} = {B0303825-C95C-4591-A669-43EF1F007E82}
+		{2943E8EC-E1FA-48B8-BB28-9BCB9EF5110A} = {1F7D5DE1-3024-4EB8-A2FE-527F2B5B453C}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CD2260B0-2885-4FA0-9FB9-C93A400454AE}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		DynamicBoard.Models\DynamicBoard.Models.projitems*{c1ad5ba2-67f5-4eca-802f-9b8fdf097fab}*SharedItemsImports = 13
+	EndGlobalSection
+EndGlobal
