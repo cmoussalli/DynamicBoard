@@ -1,0 +1,68 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34408.163
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DynamicBoard.Application", "DynamicBoard.Application.csproj", "{39C843D7-5134-4594-882C-81E3B0325598}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BackEnd", "BackEnd", "{CF80ABDE-B395-4995-B098-F27E24F2F754}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DynamicBoard.DataServices", "..\DynamicBoard.DataServices\DynamicBoard.DataServices.csproj", "{75C654F9-CEEA-4CC3-84D1-6D87B15A8BF7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DynamicBoard.Infrastructure", "..\DynamicBoard.Infrastructure\DynamicBoard.Infrastructure.csproj", "{2AC8F336-C25F-4532-AE6A-4736648D62E8}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "DynamicBoard.Models", "..\DynamicBoard.Models\DynamicBoard.Models.shproj", "{1D92DCE1-5702-4052-91BD-EF6A95E806A6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DynamicBoard.UI", "..\DynamicBoard.UI\DynamicBoard.UI.csproj", "{0CD89EEE-588F-4BFB-B509-5DA1BD9CA008}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DynamicBoard.UnitTest", "..\DynamicBoard.UnitTest\DynamicBoard.UnitTest.csproj", "{21F4B000-475B-4DD5-BD89-1D41524D7FF6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SME.DynamicBoard.UI", "..\SME.DynamicBoard.UI\SME.DynamicBoard.UI.csproj", "{5F6F4D7F-D453-4946-B52E-C03CCDA7637E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{39C843D7-5134-4594-882C-81E3B0325598}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39C843D7-5134-4594-882C-81E3B0325598}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39C843D7-5134-4594-882C-81E3B0325598}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39C843D7-5134-4594-882C-81E3B0325598}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75C654F9-CEEA-4CC3-84D1-6D87B15A8BF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{75C654F9-CEEA-4CC3-84D1-6D87B15A8BF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{75C654F9-CEEA-4CC3-84D1-6D87B15A8BF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{75C654F9-CEEA-4CC3-84D1-6D87B15A8BF7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2AC8F336-C25F-4532-AE6A-4736648D62E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2AC8F336-C25F-4532-AE6A-4736648D62E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2AC8F336-C25F-4532-AE6A-4736648D62E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2AC8F336-C25F-4532-AE6A-4736648D62E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0CD89EEE-588F-4BFB-B509-5DA1BD9CA008}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0CD89EEE-588F-4BFB-B509-5DA1BD9CA008}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0CD89EEE-588F-4BFB-B509-5DA1BD9CA008}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0CD89EEE-588F-4BFB-B509-5DA1BD9CA008}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21F4B000-475B-4DD5-BD89-1D41524D7FF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21F4B000-475B-4DD5-BD89-1D41524D7FF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21F4B000-475B-4DD5-BD89-1D41524D7FF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21F4B000-475B-4DD5-BD89-1D41524D7FF6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F6F4D7F-D453-4946-B52E-C03CCDA7637E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F6F4D7F-D453-4946-B52E-C03CCDA7637E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F6F4D7F-D453-4946-B52E-C03CCDA7637E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F6F4D7F-D453-4946-B52E-C03CCDA7637E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{75C654F9-CEEA-4CC3-84D1-6D87B15A8BF7} = {CF80ABDE-B395-4995-B098-F27E24F2F754}
+		{2AC8F336-C25F-4532-AE6A-4736648D62E8} = {CF80ABDE-B395-4995-B098-F27E24F2F754}
+		{1D92DCE1-5702-4052-91BD-EF6A95E806A6} = {CF80ABDE-B395-4995-B098-F27E24F2F754}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A5A4E993-FBF6-4436-8FC7-85F793797CF1}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		..\DynamicBoard.Models\DynamicBoard.Models.projitems*{1d92dce1-5702-4052-91bd-ef6a95e806a6}*SharedItemsImports = 13
+		..\DynamicBoard.Models\DynamicBoard.Models.projitems*{39c843d7-5134-4594-882c-81e3b0325598}*SharedItemsImports = 5
+	EndGlobalSection
+EndGlobal

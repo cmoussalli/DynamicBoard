@@ -1,0 +1,74 @@
+﻿@page "/DashboardAdd"
+@page "/DashboardAdd/{Id:int}"
+@using DynamicBoard.Application.DomainServices
+@using DynamicBoard.DataServices
+@inject NavigationManager NavigationManager
+
+@rendermode InteractiveServer
+
+<FluentTextField Appearance="FluentInputAppearance.Filled"
+                 Label="Title English" @bind-Value="Dashboard!.TitleEn" Style="width:100%" />
+<FluentTextField Appearance="FluentInputAppearance.Filled"
+                 Label="Title Ar" @bind-Value="Dashboard!.TitleAr" Style="width:100%" />
+<FluentLabel Typo="Typography.Subject" Style="color:green">@message </FluentLabel>
+
+    <FluentButton Appearance="Appearance.Accent" OnClick="()=> AddNewDashboard()">
+        @actionTitle
+</FluentButton>
+
+
+
+
+@code {
+
+    [Parameter]
+    public long Id { get; set; }
+    [Parameter]
+    public string actionTitle { get; set; } = "Add";
+    [Parameter]
+    public Dashboards Dashboard { get; set; }
+
+    bool? canceled;
+    string labelColor = "green";
+    string message = "";
+    public List<Dashboards>? Dashboards { get; set; } = new();
+    // public Dashboards dashboard { get; set; } = new();
+    [Parameter]
+    public EventCallback<int> OnResponse { get; set; }
+
+    DynamicBoardDashboardServices dashboardServices = new();
+
+    public async Task AddNewDashboard()
+    {
+        try
+        {
+
+            await dashboardServices.DashboardAddEdit(0, Dashboard.TitleEn, Dashboard.TitleAr, "", true, false);
+            if (actionTitle == "Add")
+            {
+                message = "Success fully Added";
+            }
+            else { message = "Success fully Updated"; }
+
+            StateHasChanged();
+            await Task.Delay(1500);
+            actionTitle = "";
+            message = "";
+            StateHasChanged();
+            await OnResponse.InvokeAsync(1);
+
+        }
+
+        catch (Exception ex)
+        {
+            actionTitle = "";
+            message = "";
+            message = "something went wrong please try again.";
+            StateHasChanged();
+            await OnResponse.InvokeAsync(0);
+        }
+
+
+    }
+
+}

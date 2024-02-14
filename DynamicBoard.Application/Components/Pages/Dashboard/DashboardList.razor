@@ -1,0 +1,239 @@
+﻿@page "/DashboardList"
+
+@using DynamicBoard.Application.DomainServices
+@using DynamicBoard.DataServices
+
+
+@rendermode InteractiveServer
+
+@if (DashboardLists == null)
+{
+    <FluentProgressRing Style="width:30px;height:30px" />
+}
+else
+{
+    <FluentStack HorizontalAlignment="HorizontalAlignment.End">
+
+        @* <FluentAnchor Href="/DashboardAdd"
+    IconStart="@(new Icons.Regular.Size24.DocumentAdd().WithColor(Color.Success))">
+    + Dashbard
+    </FluentAnchor> *@
+        <FluentAnchor @onclick="OnOpen"
+                      IconStart="@(new Icons.Regular.Size24.DocumentAdd().WithColor(Color.Success))">
+            + Dashbard
+        </FluentAnchor>
+
+    </FluentStack>
+
+    <div class="grid">
+        <FluentDataGrid Id="Dashboadsgrid" Items=@DashboardLists TGridItem=Dashboards Pagination="@pagination">
+            <PropertyColumn Title="ID" Property="@(c => c!.ID)" Sortable="true" Align=Align.Start />
+            <PropertyColumn Title="Title in Eng" Property="@(c => c!.TitleEn)" Sortable="true" Align=Align.Start />
+            <PropertyColumn Title="Title in Arabic" Property="@(c => c!.TitleAr)" Sortable="true" Align=Align.Start />
+            <PropertyColumn Title="Status" Property="@(c => c!.IsActive)" Sortable="true" Align=Align.Start />
+            <PropertyColumn Title="Deleted" Property="@(c => c!.IsDeleted)" Sortable="true" Align=Align.Start />
+
+            <TemplateColumn Align="@Align.End">
+                <FluentButton Appearance="Appearance.Outline" OnClick="()=>ConformationForDelete( Convert.ToInt32(context.ID))"
+                              IconStart="@(new Icons.Regular.Size24.Delete().WithColor(Color.Error))">Delete</FluentButton>
+
+                 
+                    <FluentButton Appearance="Appearance.Outline" OnClick="()=>DashboardEdit( context.ID)"
+                                  IconStart="@(new Icons.Regular.Size24.Edit().WithColor(Color.Success))">Edit</FluentButton>
+                @*
+
+            <FluentAnchor IconStart="@(new Icons.Regular.Size24.Edit().WithColor(Color.Success))"
+            Appearance="Appearance.Outline"
+            Href="@($"/AddUser/{context.Id}")">Edit</FluentAnchor> *@
+
+            </TemplateColumn>
+
+        </FluentDataGrid>
+
+    </div>
+    <br />
+    <div class="page-buttons">
+
+        @if (pagination.TotalItemCount.HasValue)
+        {
+            for (var pageIndex = 0; pageIndex <= pagination.LastPageIndex; pageIndex++)
+            {
+                var capturedIndex = pageIndex;
+
+                <FluentButton @onclick="@(async () => await GoToPageAsync(capturedIndex))"
+                              Appearance="@PageButtonAppearance(capturedIndex)"
+                              aria-current="@AriaCurrentValue(capturedIndex)"
+                              aria-label="@AriaLabel(capturedIndex + 1)">
+                    @(capturedIndex + 1)
+                </FluentButton>
+
+            }
+        }
+    </div>
+}
+
+
+<FluentDialog @ref="_myFluentDialog" @bind-Hidden="@Hidden" aria-label="Simple dialog" Modal=@_modal TrapFocus=@_trapFocus PreventScroll=@_preventScroll @ondialogdismiss=OnDismiss>
+    <FluentDialogHeader Visible="false" />
+    @if (ActionForAdd == true)
+    {
+        <h2>@actionTitle Dashboard</h2>
+        <DashboardAdd Id="dashboardID" Dashboard=@dashboard actionTitle="@actionTitle" OnResponse="@GetResponseMessage"></DashboardAdd>
+    }
+    else if (ActionForDelete == true)
+    {
+        <h2>Are you sure to delete this dashboard</h2>
+        <FluentButton Appearance="Appearance.Neutral" Autofocus="true" @onclick="OnDeleteDashboard">Delete</FluentButton>
+    }
+    <FluentButton Appearance="Appearance.Lightweight" Autofocus="true" @onclick="OnClose">Close</FluentButton>
+    <br />
+    <FluentLabel  Style="color:green" >@message</FluentLabel>
+
+
+</FluentDialog>
+
+ 
+
+    @code {
+    DynamicBoardDashboardServices dashboardServices = new();
+    List<Dashboards> dashboards = new();
+    public IQueryable<Dashboards>? DashboardLists;
+    PaginationState pagination = new PaginationState { ItemsPerPage = 3 };
+    Dashboards dashboard = new();
+    private FluentDialog? _myFluentDialog; 
+    private bool _trapFocus = true;
+    private bool _modal = true;
+    private bool _preventScroll = true;
+    private string? _status;
+    private bool Hidden { get; set; } = true;
+    public long dashboardID = -1;
+
+    public bool ActionForAdd = false;
+
+    public bool ActionForDelete = false;
+    string message = "";
+    string actionTitle = "Add";
+
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+            _myFluentDialog!.Hide();
+        DashboardsAll();
+    }
+    protected override async Task OnInitializedAsync()
+    {
+
+        await Task.Delay(1000);
+        DashboardsAll();
+        pagination.TotalItemCountChanged += (sender, eventArgs) => StateHasChanged();
+        await base.OnInitializedAsync();
+
+    }
+    public IQueryable<Dashboards> DashboardsAll()
+    {
+        dashboards = dashboardServices.DashboardsAll();
+        DashboardLists = dashboards?.AsQueryable();
+        return DashboardLists;
+    }
+    private async Task GoToPageAsync(int pageIndex)
+    {
+        await pagination.SetCurrentPageIndexAsync(pageIndex);
+    }
+
+    private Appearance PageButtonAppearance(int pageIndex)
+        => pagination.CurrentPageIndex == pageIndex ? Appearance.Accent : Appearance.Neutral;
+    private async Task DashboardEdit(long id)
+    {
+        dashboards = new();
+        dashboard = new();
+        dashboardID = id;
+        actionTitle = "Update";
+        dashboards = await dashboardServices.DashboardsByIDAsync(id);
+        if (dashboards is not null)
+        {
+            if (dashboards.Count > 0)
+            {
+                dashboard = dashboards[0];
+                StateHasChanged();
+            }
+        }
+
+        ActionForAdd = true;
+        _status = "Dialog opened with button click";
+        _myFluentDialog!.Show();
+        StateHasChanged();
+    }
+    private async Task ConformationForDelete(int id)
+    {
+        ActionForAdd = false;
+        ActionForDelete = true;
+        dashboardID = id;
+        _status = "Dialog opened with button click";
+        _myFluentDialog!.Show();
+        StateHasChanged();
+    }
+    public async Task OnDeleteDashboard()
+    {
+        bool result = false;
+        result = await dashboardServices.DeleteDashboardAsync(dashboardID);
+        if (result)
+        {
+            message = "Dashboard are successfully Deleted";
+            StateHasChanged();
+            await Task.Delay(1000);
+            message = "";
+            StateHasChanged();
+            _myFluentDialog!.Hide();
+        }
+        else
+
+        {
+            message = "Dashboard are linked with Charts/Users you can not delete this dashboard";
+            StateHasChanged();
+            await Task.Delay(1000);
+            _myFluentDialog!.Hide();
+        }
+        DashboardsAll();
+
+    }
+    private string? AriaCurrentValue(int pageIndex)
+        => pagination.CurrentPageIndex == pageIndex ? "page" : null;
+
+    private string AriaLabel(int pageIndex) => $"Ir para pag. {pageIndex}";
+    private void OnOpen()
+    {
+        ActionForAdd = true;
+        _status = "Dialog opened with button click";
+        _myFluentDialog!.Show();
+        StateHasChanged();
+        // DemoLogger.WriteLine(_status);
+    }
+
+    private void OnClose()
+    {
+        _status = $"Dialog dismissed with reason: Close button clicked";
+        _myFluentDialog!.Hide();
+        //  DemoLogger.WriteLine(_status);
+    }
+
+    public void GetResponseMessage(int value)
+    {
+        DashboardsAll();
+        _status = $"Dialog dismissed with reason: Dismissed";
+        _myFluentDialog!.Hide();
+        StateHasChanged();
+    }
+
+    private void OnDismiss(DialogEventArgs args)
+    {
+        if (args is not null && args.Reason is not null && args.Reason == "dismiss")
+        {
+            _status = $"Dialog dismissed with reason: Dismissed";
+            _myFluentDialog!.Hide();
+            //  DemoLogger.WriteLine(_status);
+        }
+    }
+
+
+}

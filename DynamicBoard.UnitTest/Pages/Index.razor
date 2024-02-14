@@ -1,0 +1,56 @@
+﻿@page "/"
+@using SME.DynamicBoard.UI
+@using SME.DynamicBoard.UI.Components
+ 
+
+<PageTitle>Index</PageTitle>
+
+<h1>Hello, world!</h1>
+<button type="button" @onclick="@LoadIframeV3">Load Iframe</button>
+<input type="text"  @bind="@crNo" />
+@if (!string.IsNullOrEmpty(chartID))
+{
+    @* <SME.DynamicBoard.UI.Components.ChartRenderView  ChartId="@chartID" chartParams="@chartParams"  /> *@
+    <SME.DynamicBoard.UI.Components.ChartRenderView @ref="chartRenderView" AutoLoad="false" IsAllowRefresh="true" ChartId="@chartID" ChartData="@ChartData" />
+
+ @*    <SME.DynamicBoard.UI.Components.ChartRenderView IsAllowRefresh="false" ChartId="@chartIDV2" ChartData="@ChartData" /> *@
+}
+
+
+
+
+@code {
+    public ChartData ChartData { get; set; } = new();
+    static string chartID = "4";
+    static string chartIDV2 = "98";
+    ChartRenderView chartRenderView;
+    string crNo = "";
+    protected override async Task OnInitializedAsync()
+    {
+        //await LoadIframeV2();
+
+    }
+
+    public async Task LoadIframeV2()
+    {
+        ChartData.Add("CRNombers", new List<string> { "1006414" });
+        ChartData.Add("IsServiceEnded", new List<string> { "0" });
+        // ChartData.Add("ContryCodesNotIN","750" );
+
+    }
+    public async Task LoadIframeV3()
+    {
+       
+        ChartData = new();
+        //ChartData.ReplaceValue("CRNombers", "1006414", "7058926");
+        ChartData.Add("CRNombers", new List<string> { crNo });
+        ChartData.Add("IsServiceEnded", new List<string> { "0" }); 
+       // await chartRenderView.LoadIframe();
+       // StateHasChanged();
+
+        chartRenderView.Refersh();
+        StateHasChanged();
+    }
+
+
+}

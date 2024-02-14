@@ -1,0 +1,43 @@
+﻿@page "/UsersDropDownList"
+@using DynamicBoard.Application.DomainServices
+@using DynamicBoard.DataServices.Models;
+
+@rendermode InteractiveServer
+<FluentSelect Label="Link User with Chart" @onchange="OnChangeUserOption" TOption="string"
+              Style="width:80%;margin-top: 8px;">
+    <FluentOption Id="-1" Value="-1">Please select an User</FluentOption>
+
+    @foreach (var option in users)
+    {
+        <FluentOption Id="@option.Id.ToString()" Value="@option.Id.ToString()">@option.Email</FluentOption>
+    }
+</FluentSelect>
+
+@code {
+
+    [Parameter]
+    public EventCallback<string> OnResponse { get; set; }
+    string selectedUserOption = "";
+    string selectedUserName = "";
+    DynamicBoardUserServices dynamicBoardUserServices = new();
+    List<Users> users = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = new();
+        StateHasChanged();
+        await GetData();
+        await base.OnInitializedAsync();
+    }
+    public async Task GetData()
+    {
+        users = await dynamicBoardUserServices.GetAllUsers();
+        StateHasChanged();
+    }
+    private async Task OnChangeUserOption(ChangeEventArgs e)
+    {
+        selectedUserOption = e.Value.ToString();
+
+        await OnResponse.InvokeAsync(selectedUserOption);
+    }
+}

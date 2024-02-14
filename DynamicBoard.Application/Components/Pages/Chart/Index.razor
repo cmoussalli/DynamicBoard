@@ -1,0 +1,257 @@
+﻿@page "/Charts"
+@using DynamicBoard.Application.Components.Pages.User
+@using DynamicBoard.Application.DomainServices
+@using DynamicBoard.DataServices
+@using Microsoft.AspNetCore.Components.Web
+@inject IDialogService DialogService
+@inject IJSRuntime JSRuntime
+
+
+@rendermode InteractiveServer
+
+<FluentThemeProvider>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-5 " style="width:20%">
+                <div class="card" style="height: 90vh; overflow: auto;">
+
+                    <FluentStack HorizontalAlignment="HorizontalAlignment.Center">
+                        <FluentAnchor OnClick="@OnOpen" IconStart="@(new Icons.Regular.Size24.DocumentAdd().WithColor(Color.Success))">
+                            @newChart
+                        </FluentAnchor>
+                      
+
+                    </FluentStack>
+                   
+                    <br />
+
+                    <ChartListView @ref="chartListView" OnResponse="GetResponseMessage"></ChartListView>
+
+
+                </div>
+            </div>
+            <div class="col-7" style="width:80%">
+                <div class="card" style="height: 90vh; overflow:auto">
+                    <FluentTabs @bind-ActiveTabId="@SelectedTabId">
+                        <FluentTab Id="tab-2">
+                            <Header>
+                                <FluentIcon Value="@(new Icons.Regular.Size16.TextFontInfo())" Color="@Color.Success" />
+                                Charts Info
+                            </Header>
+                            <Content>
+
+                                @if (ChartId != 0)
+                                {
+                                    <ChartAdd OnResponse="GetResponse" @ref="chartAdd" Id=@ChartId actionTitle="@actionTitle" Chart="@chart" />
+
+
+                                }
+                            </Content>
+                        </FluentTab>
+                        <FluentTab Id="tab-3" >
+                            <Header>
+                                <FluentIcon Value="@(new Icons.Regular.Size16.PersonAdd())" Color="@Color.Error" />
+                                <span style="color:forestgreen;">Users</span>
+                            </Header>
+                            <Content>
+                                @if (ChartId != 0)
+                                {
+                                    <DynamicBoard.Application.Components.Pages.User.UsersIntegrateWithChart @ref="@usersIntegrateWithChart" ChartId="@ChartId" />
+                                }
+
+                            </Content>
+                        </FluentTab>
+                        <FluentTab Id="tab-4" style="width: 100%;height: 501%;"  >
+                            <Header>
+                                <FluentIcon Value="@(new Icons.Regular.Size16.ContentViewGallery())" Color="@Color.Error" />
+                                <span style="color:forestgreen;">View</span>
+                            </Header>
+                            <Content>
+                                @if (ChartId != 0)
+                                {
+                                    <ChartRenderParameters @ref="@chartRenderParameters" ChartID="@ChartId" OnResponse="@GetUrlFromPreview"></ChartRenderParameters>
+
+                                    <iframe id="ChartFrame" style="width: 100%;height: 100%;"></iframe>
+
+                                }
+                                else
+                                {
+                                    <FluentProgressRing Style="width:30px;height:30px" />
+                                }
+
+
+                            </Content>
+                        </FluentTab>
+                    </FluentTabs>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</FluentThemeProvider>
+
+
+
+<FluentDialog @ref="_myFluentDialog" @bind-Hidden="@Hidden" aria-label="Simple dialog" Modal=@_modal TrapFocus=@_trapFocus
+              PreventScroll=@_preventScroll @ondialogdismiss=OnDismiss>
+    <FluentDialogHeader Visible="false" />
+    @if (ActionForAdd == true)
+    {
+        <h2>@actionTitle Chart</h2>
+
+        <ChartAdd @ref="chartAdd" Id="@ChartId" actionTitle="@actionTitle" Chart="chartForAdd" OnResponse="GetResponseMessage"></ChartAdd>
+        
+    }@* 
+    <FluentButton Appearance="Appearance.Lightweight" Autofocus="true" @onclick="OnClose">Close</FluentButton> *@
+    @* <br />
+    <FluentLabel Style="color:green">@message</FluentLabel>
+ *@
+
+    </FluentDialog>
+
+
+
+@code {
+    public long ChartId = 0;
+    ExtendChart chart = new();
+    ExtendChart chartForAdd = new();
+    public string newChart = "< New Chart>";
+    private FluentDialog? _myFluentDialog;
+    private string? _status;
+    private bool Hidden { get; set; } = true;
+    private bool _trapFocus = true;
+    private bool _modal = true;
+    private bool _preventScroll = true;
+    public bool ActionForAdd = false;
+    string message = "";
+    DynamicBoardChartServices chartsServices = new();
+    string actionTitle = "Add";
+    List<ExtendChart> charts = new();
+    private int activeTabId = 1;
+    string SelectedTabId = "tab-1";
+    ChartAdd chartAdd;
+    ChartListView chartListView;
+    ChartRenderParameters chartRenderParameters;
+    UsersIntegrateWithChart usersIntegrateWithChart;
+    string url = "";
+    public string Url { get; set; }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+            _myFluentDialog!.Hide();
+
+    }
+    public async Task GetResponseMessage(long chartId)
+    {
+        try
+        {
+            SelectedTabId = "tab-1";
+            StateHasChanged();
+            await Task.Delay(1000);
+            _myFluentDialog!.Hide();
+            ChartId = chartId;
+            charts = await chartsServices.ChartsGetByIdAsync(chartId);
+            if (charts is not null)
+            {
+                if (charts.Count > 0)
+                {
+                    chart = charts[0];
+                    actionTitle = "Update";
+                    if (chartListView is not null)
+                    {
+                        await chartListView.GetCharts();
+                    }
+                    if (chartAdd is not null)
+                    {
+                        await chartAdd.AddValuesToForm(chart);
+
+                        // await GetUrlFromPreview("EmptyChart");
+                    }
+                    if (usersIntegrateWithChart is not null)
+                    {
+                        await usersIntegrateWithChart.LnkChartUsersGet(ChartId);
+                    }
+                    if (chartRenderParameters is not null)
+                    {
+                        await chartRenderParameters.GetData();
+                    }
+                    // StateHasChanged();
+                    //await usersIntegrateWithChart.LnkChartUsersGet(ChartId);
+                    //url = "/Chart/GetRequestChartPV?chartID=" + ChartId + "&parameters=[[CR:1000|2000][personID:222|333][LocationID:852|5555|66]";
+                    //
+                    //url = "/Chart/GetRequestChartPV?chartID=" + ChartId + "&parameters=[[CRNombers:1006414:000][IsDeleted:0]";
+                    //url = "/Chart/GetRequestChartPV?chartID=" + ChartId + "&parameters=[[InvestorsPersonID:48430][ContryCodesNotIN:616|750][ContryCodesIN:665|666|601|518][IsDeleted:0]";
+                    SelectedTabId = "tab-1";
+                   // StateHasChanged();
+                    await Task.Delay(1000);
+                    SelectedTabId = "tab-2";
+                    StateHasChanged();
+                }
+            }
+           
+
+        }
+        catch (Exception ex)
+        {
+            
+             
+        }
+      
+    }
+
+    public async Task GetUrlFromPreview(string _url)
+    {
+        await JSRuntime.InvokeVoidAsync("newSrc",_url);
+    }
+
+
+    private void OnOpen()
+    {
+        actionTitle = "Add";
+        ChartId = 0;
+        charts = new();
+        chart = new();
+        ActionForAdd = true;
+        StateHasChanged();
+        _status = "Dialog opened with button click";
+        // _myFluentDialog!.Show();
+
+        if (_myFluentDialog != null)
+        {
+            _myFluentDialog.Show();
+        }
+        else
+        {
+            _myFluentDialog = new FluentDialog();
+            _myFluentDialog.Show();
+        }
+
+        // StateHasChanged();
+        // DemoLogger.WriteLine(_status);
+    }
+    private void OnClose()
+    {
+        _status = $"Dialog dismissed with reason: Close button clicked";
+        _myFluentDialog!.Hide();
+        //  DemoLogger.WriteLine(_status);
+    }
+    private void OnDismiss(DialogEventArgs args)
+    {
+        if (args is not null && args.Reason is not null && args.Reason == "dismiss")
+        {
+            _status = $"Dialog dismissed with reason: Dismissed";
+            _myFluentDialog!.Hide();
+            //  DemoLogger.WriteLine(_status);
+        }
+    }
+    private async Task GetResponse()
+    {
+        await chartListView.GetCharts();
+        StateHasChanged();
+
+    }
+
+
+    }

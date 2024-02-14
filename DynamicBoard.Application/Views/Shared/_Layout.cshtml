@@ -1,0 +1,149 @@
+﻿
+<!doctype html>
+<html >
+<head>
+
+    <!-- TITLE -->
+    <title>@ViewData["Title"] - Dashboard Application</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+ <style>
+
+        .loader { 
+     
+            position: center;
+             
+            z-index: 999999999999999999999999999999999999999;
+            opacity: .7;
+    }
+</style>
+</head>
+<body>
+    @RenderBody()
+
+</body>
+<script src="~/js/dist/chart.umd.min.js"></script>
+
+<script src="~/js/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" charset="utf-8">
+
+    var isloading =true
+    var loader = document.getElementById("loader_@Model.ChartID");
+    var canvasDiv = document.getElementById("div_@Model.ChartID");
+    document.addEventListener("DOMContentLoaded", function () {
+       
+          loader = document.getElementById("loader_@Model.ChartID");
+
+        // Show loader initially
+        loader.style.display = "block";
+
+        
+
+     
+    $(document).ready(function () {
+        // Show loader initially
+        
+        debugger;
+        var RefershTime = '@Model.RefershTime';
+        var canvasXaxis_labels = @Html.Raw(Model.JsonXaxis_labels)  ;
+
+        var canvasChartType = '@Model.ChartType';
+        var configuration = @Html.Raw(Model.json_graphConfigurations);
+        var canvasjsonchartTitle = '@Html.Raw(@Model.jsonchartTitle)';
+
+        var Yaxis_Data = @Html.Raw(Model.json_graphConfigurations);;
+        var Yaxis_Data_Dataset = Yaxis_Data;//Yaxis_Data[0].datasets;
+        //debugger
+        var Isstacked = false;
+        var _height = 0;
+
+        if (canvasChartType == "Bar") {
+            canvasChartType = "bar";
+        }
+        if (canvasChartType == "Stacked Bar") {
+            canvasChartType = "bar";
+            Isstacked = true;
+        }
+        if (canvasChartType == "Pie") {
+
+            canvasChartType = "doughnut";
+        }
+        if (canvasChartType == "Line") {
+            canvasChartType = "line";
+        }
+
+        var canvas = 'canvas_' + @Model.ChartID;
+         
+        //
+        //loadCanvas(@Model.ChartID);
+        var ctx = document.getElementById(canvas).getContext('2d');
+        //debugger
+
+
+        var myChart = new Chart(ctx, {
+            type: canvasChartType,
+            data: {
+                labels: canvasXaxis_labels,//x axis labels
+                datasets: Yaxis_Data_Dataset,
+            },
+            options: {
+                legend: { display: false },
+
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: canvasjsonchartTitle
+                    },
+                },
+                responsive: true,
+                interaction: {
+                    intersect: false,
+                },
+                scales: {
+                    x: {
+                        stacked: Isstacked,
+                    },
+                    y: {
+                        stacked: Isstacked
+                    }
+                },
+                title: {
+                    display: true,
+                    text: canvasjsonchartTitle
+                },
+            }
+        });
+
+            // Simulate a delay of 2 seconds before showing the canvas
+            setTimeout(function () {
+                // Show the canvas
+
+                canvasDiv.style.display = "block";
+                // Hide the loader
+                loader.style.display = "none";
+            }, 2000);
+        });
+    });
+    function refreshPage() {
+    
+        location.reload();
+    }
+    function loadChart(chartId) {
+
+        var canvas = 'canvas_' + @Model.ChartID;
+
+        var canvasTag = document.getElementById(canvas);
+        var context = canvasTag.getContext("2d");
+
+        // Clear the canvas
+        context.clearRect(0, 0, canvasTag.width, canvasTag.height);
+
+
+    }
+</script>
+
+</html>
+

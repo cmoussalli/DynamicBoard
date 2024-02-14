@@ -1,0 +1,56 @@
+﻿@page "/ChartParameterList"
+@page "/ChartParameterList/{Id:int}"
+@using DynamicBoard.Application.DomainServices
+@using DynamicBoard.DataServices
+@using DynamicBoard.DataServices.Models
+@inject NavigationManager NavigationManager
+@implements IDialogContentComponent
+@rendermode InteractiveServer
+
+@if (ChartParameters is not null)
+{
+    @if (ChartParameters.Count > 0)
+    {
+        <FluentListbox Items="@ChartParameters" Width="20rem" Title="List of Chart Parameters"
+                       OptionValue="@(p => p.Id.ToString())"
+                       OptionText="@(p => p.Id + ", " + p.Tag + ", " + p.SQLPlaceHolder+ ", " +p.IsRequired+ ", " +p.DefaultValue)"
+                       ValueChanged="@OnValueChanged">
+            <OptionTemplate>
+                <FluentIcon Icon="Icons.Regular.Size16.Crop" Slot="end"
+                            OnClick="@(() => RemoveFromList(context))" />
+                @context.Tag , @context.SQLPlaceHolder, @context.IsRequired, @context.DefaultValue
+            </OptionTemplate>
+        </FluentListbox>
+    }
+}
+
+@code {
+
+    [Parameter]
+    public List<ChartParameter> ChartParameters { get; set; }
+    [Parameter]
+    public EventCallback<List<ChartParameter>> OnResponse { get; set; }
+    [Parameter]
+    public EventCallback<ChartParameter> OnResponseForShowData { get; set; }
+
+    string? SelectedValue;
+    private void RemoveFromList(ChartParameter chartParameter)
+    {
+        if (ChartParameters is not null)
+        {
+            if (ChartParameters.Count > 0)
+            {
+               // ChartParameters.Remove(ChartParameters.FirstOrDefault(item => item.Tag == chartParameter.Tag && item.SQLPlaceHolder == chartParameter.SQLPlaceHolder && item.IsRequired == chartParameter.IsRequired && item.DefaultValue == chartParameter.DefaultValue));
+                ChartParameters.Remove(ChartParameters.FirstOrDefault(item => item.Id == chartParameter.Id));
+                OnResponse.InvokeAsync(ChartParameters);
+                StateHasChanged();
+
+            }
+        }
+    }
+    private async Task OnValueChanged(string selectedValue)
+    {
+        var selectedParameter = ChartParameters.FirstOrDefault(p => p.Id == Convert.ToInt64(selectedValue));
+        await OnResponseForShowData.InvokeAsync(selectedParameter);
+    }
+}

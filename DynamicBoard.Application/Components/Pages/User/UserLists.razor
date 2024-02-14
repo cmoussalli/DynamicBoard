@@ -1,0 +1,160 @@
+﻿@* @page "/UsersList" *@
+@using DynamicBoard.Application.DomainServices
+@using DynamicBoard.DataServices.Models
+
+@if (isLoading)
+{
+    <FluentProgressRing Style="width:30px;height:30px" />
+}
+else
+{
+    @if (ExtendLnk_Charts_Users is not null)
+    {
+        <div class="grid">
+            <FluentDataGrid Id="Chartsgrid" Items=@ExtendLnk_Charts_Users TGridItem=ExtendLnk_Charts_Users>
+                <PropertyColumn Title="ID" Property="@(c => c!.ID)" Sortable="true" Align=Align.Start />
+                <PropertyColumn Title="Chart" Property="@(c => c != null && c.Charts != null && !string.IsNullOrEmpty(c.Charts.TitleEn) ? c.Charts.TitleEn : "N/A")" Sortable="true" Align=Align.Start />
+                <PropertyColumn Title="Chart Type" Property="@(c => c != null && c.ChartTypes != null && !string.IsNullOrEmpty(c.ChartTypes.TitleEn) ? c.ChartTypes.TitleEn : "N/A")" Sortable="true" Align=Align.Start />
+                <PropertyColumn Title="User Name" Property="@(c => c != null && c.User != null && !string.IsNullOrEmpty(c.User.FullName) ? c.User.FullName : "N/A")" Sortable="true" Align=Align.Start />
+                <PropertyColumn Title="Email" Property="@(c => c != null && c.User != null && !string.IsNullOrEmpty(c.User.Email) ? c.User.Email : "N/A")" Sortable="true" Align=Align.Start />
+
+                <TemplateColumn Align="@Align.End">
+                    <FluentButton Appearance="Appearance.Outline" OnClick="()=>ConformationForDelete( Convert.ToInt32(context.ID),context.UserId)"
+                                  IconStart="@(new Icons.Regular.Size24.Delete().WithColor(Color.Error))">Delete</FluentButton>
+
+                </TemplateColumn>
+
+            </FluentDataGrid>
+
+        </div>
+
+    }
+}
+
+<FluentDialog @ref="_myFluentDialog" @bind-Hidden="@Hidden" aria-label="Simple dialog" Modal=@_modal TrapFocus=@_trapFocus PreventScroll=@_preventScroll
+              @ondialogdismiss=OnDismiss>
+    <FluentDialogHeader Visible="false" />
+
+    <h2>Are you sure to delete this user</h2>
+    <br />
+
+    <FluentButton Appearance="Appearance.Accent" 
+    Autofocus="true" @onclick="OnDeleteLnkChartUser"
+                  >Delete</FluentButton>
+
+    <FluentButton Appearance="Appearance.Accent" Autofocus="true" @onclick="OnClose"
+              >Close</FluentButton>
+    <br />
+
+    <FluentLabel Color="@((isError) ? Color.Success: Color.Error)">@message</FluentLabel>
+
+
+    </FluentDialog>
+
+    @code {
+    [Parameter] public long ChartID { get; set; }
+    public IQueryable<ExtendLnk_Charts_Users> ExtendLnk_Charts_Users { get; set; }
+    public bool isError;
+    public string UserID = "";
+    List<ExtendLnk_Charts_Users> extendLnk_Charts_UsersList = new();
+    ExtendLnk_Charts_Users extendLnk_Charts_User = new();
+    private FluentDialog? _myFluentDialog;
+    public bool isLoading = false;
+
+    private bool _preventScroll = true;
+    private string? _status;
+    string message = "";
+    private bool Hidden { get; set; } = true;
+    public bool ActionForAdd = false;
+    private bool _trapFocus = true;
+    private bool _modal = true;
+
+    public bool ActionForDelete = false;
+    DynamicBoardChartServices chartsServices = new();
+    DynamicBoardUserServices dynamicBoardUserServices = new();
+    protected override async Task OnInitializedAsync()
+    {
+        if (ChartID != 0)
+        {
+            await GetLinkChartsUsersByChartId(ChartID);
+        }
+
+
+    }
+
+    // public async Task GetData()
+    // {
+    //     isLoading = true;
+    //     extendLnk_Charts_UsersList = await chartsServices.GetLinkChartsUsersByChartIDAsync(ChartID);
+    //     ExtendLnk_Charts_Users = extendLnk_Charts_UsersList.AsQueryable();
+    //     isLoading = false;
+    //     StateHasChanged();
+    // }
+
+    public async Task GetLinkChartsUsersByChartId(long chartId)
+    {
+        extendLnk_Charts_UsersList = await chartsServices.GetLinkChartsUsersByChartIDAsync(chartId);
+        ExtendLnk_Charts_Users = extendLnk_Charts_UsersList.AsQueryable();
+        StateHasChanged();
+    }
+    private async Task ConformationForDelete(int chartID, string userId)
+    {
+        ActionForDelete = true;
+        // chartID = id;
+        UserID = userId;
+        _status = "Dialog opened with button click";
+        _myFluentDialog!.Show();
+        StateHasChanged();
+    }
+    private void OnClose()
+    {
+        _status = $"Dialog dismissed with reason: Close button clicked";
+        _myFluentDialog!.Hide();
+        //  DemoLogger.WriteLine(_status);
+    }
+    private void OnDismiss(DialogEventArgs args)
+    {
+        if (args is not null && args.Reason is not null && args.Reason == "dismiss")
+        {
+            _status = $"Dialog dismissed with reason: Dismissed";
+            _myFluentDialog!.Hide();
+            //  DemoLogger.WriteLine(_status);
+        }
+    }
+    public async Task OnDeleteLnkChartUser()
+    {
+        bool result = false;
+        result = await dynamicBoardUserServices.DeleteLnkChartUserAsync(ChartID, UserID);
+        if (result)
+        {
+            isError = true;
+            message = "User are successfully Deleted";
+            StateHasChanged();
+            if (ChartID != 0)
+            {
+                await GetLinkChartsUsersByChartId(ChartID);
+            }
+            await Task.Delay(2000);
+            message = "";
+            StateHasChanged();
+            _myFluentDialog!.Hide();
+
+        }
+        else
+        {
+            isError = false;
+            message = "Their is some isssue please try again.";
+            StateHasChanged();
+            if (ChartID != 0)
+            {
+                await GetLinkChartsUsersByChartId(ChartID);
+            }
+            await Task.Delay(2000);
+            message = "";
+            StateHasChanged();
+            _myFluentDialog!.Hide();
+        }
+        StateHasChanged();
+    }
+
+}

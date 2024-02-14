@@ -1,0 +1,16 @@
+﻿@using DynamicBoard.Application.Model
+@using DynamicBoard.Models
+@using Microsoft.JSInterop
+
+ @model RenderChart
+
+@inject IJSRuntime JSRuntime
+
+    <div class="row">
+        <div class="col-12">
+        <canvas id="canvas_@Model.ChartID" > Chart Canvas </canvas>
+        </div>
+    </div>
+
+
+     

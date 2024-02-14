@@ -1,0 +1,58 @@
+﻿@page "/ChartParametersAdd"
+@using DynamicBoard.Application.DomainServices
+@using DynamicBoard.DataServices
+@using DynamicBoard.DataServices.Models
+@inject NavigationManager NavigationManager
+@implements IDialogContentComponent
+@rendermode InteractiveServer
+
+
+
+<p>Chart Parameters</p>
+<FluentTextField Appearance="FluentInputAppearance.Filled" Label="Tag" @bind-Value="chartParameter!.Tag" Style="margin-top: 10px; width:100%" />
+<br /> 
+<FluentTextField Appearance="FluentInputAppearance.Filled" Label="SQL Place Holder" @bind-Value="chartParameter!.SQLPlaceHolder" Style="margin-top: 10px; width:100%" />
+<br />
+<FluentSwitch @bind-Value=chartParameter.IsRequired Required="false">Is Required</FluentSwitch>
+<br />
+<br />
+<FluentTextField Appearance="FluentInputAppearance.Filled" Label="Default Values" @bind-Value="chartParameter!.DefaultValue" Style="margin-top: 10px; width:100%" />
+<br />
+<br />
+<br />
+<FluentButton Appearance="Appearance.Accent" OnClick=" ()=>  AddChartparameters()">
+    +
+</FluentButton>
+ 
+
+
+@code {
+    [Parameter]
+    public ChartParameter chartParameter { get; set; } = new();
+    [Parameter]
+    public List<ChartParameter> chartParameters { get; set; } 
+    [Parameter]
+    public long ChartId { get; set; }
+    [Parameter]
+    public long ListCount { get; set; } = 0;
+    [Parameter]
+    public EventCallback<ChartParameter> OnResponse { get; set; }
+
+    DynamicBoardChartServices chartsServices = new();
+
+    DynamicBoardCommonServices dynamicBoardCommonServices = new();
+
+    bool isRequired = false;
+
+    private void AddChartparameters()
+    {
+
+        if (chartParameter.Id == 0)
+        {
+            ListCount = ListCount + 1;
+            chartParameter.Id = ListCount;
+        }
+        chartParameter.ChartId = ChartId;
+        OnResponse.InvokeAsync(chartParameter);
+    }
+}

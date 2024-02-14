@@ -1,0 +1,672 @@
+﻿@page "/ChartAdd"
+@page "/ChartAdd/{Id:int}"
+@using DynamicBoard.Application.DomainServices
+@using DynamicBoard.DataServices
+@using DynamicBoard.DataServices.Models
+@inject NavigationManager NavigationManager
+@implements IDialogContentComponent
+@rendermode InteractiveServer
+
+
+
+
+@if (showNorecordSection)
+{
+    <p> No Record found</p>
+}
+else
+{
+
+    @if (isLoading)
+    {
+        <FluentProgressRing Style="width:30px;height:30px" />
+    }
+    else
+    {
+
+        @if (Id > 0)
+        {
+            <FluentStack HorizontalAlignment="HorizontalAlignment.Right">
+                <FluentButton Appearance="Appearance.Outline" OnClick="()=>ConformationForDelete( Convert.ToInt32(Id))"
+                              IconStart="@(new Icons.Regular.Size24.Delete().WithColor(Color.Error))">Delete</FluentButton>
+
+            </FluentStack>
+
+        }
+        <div class="row">
+            <div class="col-6">
+
+                <FluentTextField Appearance="FluentInputAppearance.Filled" Label="Title English" @bind-Value="Chart!.TitleEn" Style="margin-top: 10px; width:100%" />
+                
+            </div>
+
+            <div class="col-6">
+                <FluentTextField Appearance="FluentInputAppearance.Filled" Label="Title Ar" @bind-Value="Chart!.TitleAr" Style="margin-top: 10px ; width:100%">
+
+                </FluentTextField>
+            </div>
+        </div>
+
+        @if (Id > 0)
+        {
+            <div class="row">
+                <div class="col-6">
+                    <FluentSelect Label="Chart Type" @onchange="OnChangeChartTypeOption" Value="@selectedChart" TOption="string" Style="width:80%;  margin-top: 8px;">
+                        <FluentOption Id="0" Value="Please select an chart type">Please select an chart type</FluentOption>
+
+                        @foreach (var option in chartTypes)
+                        {
+                            <FluentOption Id="@option.ID.ToString()" Value="@option.ID.ToString()">@option.TitleEn</FluentOption>
+
+                        }
+
+                    </FluentSelect>
+                    <br />
+                    <br />
+                    <FluentSelect Label="Database Connection" @onchange="OnChangeDBOption" Value="@selectedDb" TOption="string" Style="width:80%;  margin-top: 8px;">
+                        <FluentOption Id="0" Value="Please select an Database Connection">Please select an Database Connection</FluentOption>
+                        @foreach (var option in extendDBConnections)
+                        {
+                            <FluentOption Id="@option.ID.ToString()" Value="@option.ID.ToString()">@option.Title</FluentOption>
+
+                        }
+
+                    </FluentSelect>
+                    <br />
+                    <br />
+                        <FluentRadioGroup @bind-Value=IsActive Label="Is Active">
+                            <FluentRadio Label="Yes" Value="true"></FluentRadio>
+                            <FluentRadio Label="No" Value="false"></FluentRadio>
+                        </FluentRadioGroup>
+
+
+
+                        @*  <br />
+        <br />
+        <FluentTextField Type="number" Pattern="[0-9]*" Appearance="FluentInputAppearance.Filled" Label="Refresh Time"
+        @bind-Value="refershTime" Style="width:80%;  margin-top: 8px;" />
+        *@
+                    
+                </div>
+                <div class="col-6">
+                    <br />
+                    <br />
+                    <FluentTextArea Label="Script" @bind-Value=@script Cols="80" Rows="8" aria-label="Script"
+                                    Style="width: 100%; margin-top: 8px;">
+                    </FluentTextArea>
+
+                </div>
+            </div>
+            <div class="row">
+                <p>Chart Parameters</p>
+                @if (chartParameters is not null)
+                {
+                    @if (chartParameters.Count > 0)
+                    {
+                        <div class="col-6">
+                            <ChartParameterList ChartParameters="@chartParameters" OnResponse="@GetChartParameterListInResponse" 
+                                OnResponseForShowData="@GetParameterInResponse"></ChartParameterList>
+                        </div>
+                    }
+                }
+                <div class="col-4">
+                    
+                    <FluentButton Appearance="Appearance.Accent" OnClick="()=>OnOpen()">
+                        Add Chart Parameters +
+                    </FluentButton><p style="color:red"> In case of adding Parameters must include 'and  1=1' in you script."</p>
+
+
+                </div>
+
+
+            </div>
+
+        }
+
+
+
+        <br />
+
+
+
+        <FluentStack Style="display:flex" HorizontalAlignment="HorizontalAlignment.Right">
+            <FluentButton @onclick="OnClose" IconStart="@(new Icons.Regular.Size16.ArrowClockwise())"
+                          Appearance="Appearance.Neutral">Close</FluentButton>
+            <FluentButton Appearance="Appearance.Lightweight" Autofocus="true" IconStart="@(new Icons.Regular.Size24.Add().WithColor(Color.Success))"
+                          OnClick="()=>AddNewChart()">
+                @actionTitle
+            </FluentButton>
+
+            <FluentLabel Color="@((isError) ? Color.Success: Color.Error)">@message</FluentLabel>
+
+            </FluentStack>
+
+    }
+}
+
+
+
+<FluentDialog @ref="_myFluentDialog" @bind-Hidden="@Hidden" aria-label="Simple dialog" Modal=@_modal TrapFocus=@_trapFocus PreventScroll=@_preventScroll @ondialogdismiss=OnDismiss>
+    <FluentDialogHeader Visible="false" />
+
+    @if (ActionForDelete == true)
+    {
+        <h2>Are you sure to delete this Chart</h2>
+        <br />
+
+        <FluentButton Appearance="Appearance.Neutral" Autofocus="true" @onclick="OnDeleteChart">Delete</FluentButton>
+    }
+    @if (ActionAddChartParameters)
+    {
+        <ChartParametersAdd ListCount="@chartParameterListCount" ChartId=@Id chartParameter="@chartParameter" OnResponse="GetChartParameterInResponse"></ChartParametersAdd>
+    }
+    <FluentButton Appearance="Appearance.Lightweight" Autofocus="true" @onclick="OnClose">Close</FluentButton>
+    <br />
+    <FluentLabel Style="color:green">@message</FluentLabel>
+
+
+    </FluentDialog>
+
+
+    @code {
+
+    [Parameter]
+    public long Id { get; set; }
+    [Parameter]
+    public string actionTitle { get; set; } = "Add";
+    [Parameter]
+    public ExtendChart Chart { get; set; }
+    [Parameter]
+    public EventCallback<long> OnResponse { get; set; }
+
+    string? listboxValue;
+    public bool ActionForDelete = false;
+    public bool ActionAddChartParameters = false;
+
+    public event Action OnUserListUpdated;
+    public bool isError;
+    string? SelectedValue;
+    string? SelectedItem;
+    bool? canceled;
+    string labelColor = "green";
+    string message = "";
+    string selectedChartTypeOption = "0";
+    string script = "";
+    string selectedDBOption = "";
+    string selectedDb = "0";
+    string selectedChart = "";
+    string selectedDbName = "Please select an Database Connection";
+    string selectedChartTypeName = "Please select an chart type";
+    string refershTime = "5";
+    bool isLoading = true;
+    private bool _trapFocus = true;
+    private bool _modal = true;
+    private bool _preventScroll = true;
+    private string? _status;
+    private long chartParameterListCount = 0;
+    private bool Hidden { get; set; } = true;
+    public long chartID = -1;
+    public List<ExtendChart>? Charts { get; set; } = new();
+    List<ChartTypes> chartTypes = new();
+    ChartTypes chartType = new();
+    List<ExtendDBConnections> extendDBConnections = new();
+    ChartTypes selectedChartType = new();
+    DynamicBoardChartServices chartServices = new();
+    DynamicBoardCommonServices commonServices = new();
+    private FluentDialog? _myFluentDialog;
+    ChartParameter chartParameter = new();
+    public List<ChartParameter> chartParameters = new();
+    DynamicBoardChartServices chartsServices = new();
+
+    DynamicBoardChartServices dynamicBoardChartServices = new();
+    private bool isActive;
+    private bool isRequired;
+    private void NotifyUserListUpdated()
+    {
+        OnUserListUpdated?.Invoke();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        ValueChanged += HandleRadioValueChanged;
+        await GetData();
+        if (Id > 0)
+        {
+            AddValuesToForm(Chart);
+        }
+        isLoading = false;
+        chartParameters = new();
+        StateHasChanged();
+        await base.OnInitializedAsync();
+
+    }
+    public async Task AddValuesToForm(ExtendChart chart)
+    {
+        try
+        {
+            isLoading = true;
+            StateHasChanged();
+            //await Task.Delay(1000);
+            await GetData();
+
+            Chart = chart;
+            //Id = chart.ID;
+            IsActive = chart.IsActive;
+            refershTime = chart.RefershTime.ToString();
+            selectedDBOption = chart.DBConnectionID.ToString();
+            selectedChartTypeOption = chart.ChartTypeID.ToString();
+            selectedDb = extendDBConnections.Where(option => option.ID == Convert.ToInt64(selectedDBOption)).Select(option => option.ID.ToString()).FirstOrDefault();
+            selectedDb = selectedDBOption;
+            selectedDbName = extendDBConnections.Where(option => option.ID == Convert.ToInt64(selectedDBOption)).Select(option => option.Database.ToString()).FirstOrDefault();
+
+            selectedChart = chartTypes.Where(option => option.ID == Convert.ToInt64(selectedChartTypeOption)).Select(option => option.ID.ToString()).FirstOrDefault();
+            selectedChart = selectedChartTypeOption;
+            selectedChartTypeName = chartTypes.Where(option => option.ID == Convert.ToInt64(selectedChartTypeOption)).Select(option => option.TitleEn.ToString()).FirstOrDefault();
+            script = chart.DataScript;
+
+            chartParameters = await commonServices.GetChartParametersByChartID(chart.ID);
+
+            isLoading = false;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+
+        }
+
+    }
+    public string SelectedChartTypeOption
+    {
+        get { return selectedChartTypeOption; }
+        set { selectedChartTypeOption = value; }
+    }
+    public string SelectedDBOption
+    {
+        get { return selectedDBOption; }
+        set { selectedDBOption = value; }
+    }
+
+    private void OnChangeChartTypeOption(ChangeEventArgs e)
+    {
+        selectedChartTypeOption = e.Value.ToString();
+    }
+    private void OnChangeDBOption(ChangeEventArgs e)
+    {
+        selectedDBOption = e.Value.ToString();
+    }
+    public bool IsActive
+    {
+        get { return isActive; }
+        set
+        {
+            if (isActive != value)
+            {
+                isActive = value;
+                RaiseValueChanged();
+            }
+        }
+    }
+    public bool IsRequired
+    {
+        get { return isRequired; }
+        set
+        {
+            if (isRequired != value)
+            {
+                isRequired = value;
+                RaiseValueChanged();
+            }
+        }
+    }
+    private void RaiseValueChanged()
+    {
+        ValueChanged?.Invoke(isActive);
+    }
+    public event Action<bool> ValueChanged;
+
+    public void HandleRadioValueChanged(bool isActive)
+    {
+        IsActive = isActive;
+    }
+    public async Task GetData()
+    {
+        chartTypes = new();
+        extendDBConnections = new();
+        chartTypes = await chartServices.GetChartTypes();
+        extendDBConnections = await commonServices.GetDBConnections();
+
+        StateHasChanged();
+
+    }
+    public async Task AddNewChart()
+    {
+        try
+        {
+
+            if (Id > 0)
+            {
+                Chart.IsActive = IsActive;
+                // if (!string.IsNullOrEmpty(refershTime))
+                // {
+                //     Chart.RefershTime = Convert.ToInt32(refershTime);
+                // }
+                // else
+                // {
+                Chart.RefershTime = 0;
+                // }
+                if (!string.IsNullOrEmpty(selectedDBOption))
+                {
+                    Chart.DBConnectionID = Convert.ToInt64(selectedDBOption);
+                }
+                else
+                {
+                    Chart.DBConnectionID = 0;
+                }
+                if (!string.IsNullOrEmpty(selectedChartTypeOption))
+                {
+                    Chart.ChartTypeID = Convert.ToInt64(selectedChartTypeOption);
+                }
+                else
+                {
+                    Chart.ChartTypeID = 0;
+                }
+
+                Chart.DataScript = script;
+
+            }
+            else
+            {
+                Chart.DataScript = " ";
+
+            }
+            // validation
+            message = "";
+            if (string.IsNullOrEmpty(validation()))
+            {
+                var result = await chartServices.ChartAddEdit(Chart.ID, Chart.ChartTypeID, Chart.DBConnectionID, Chart.DataScript, Chart.TitleEn, Chart.TitleAr, Chart.RefershTime, Chart.IsActive, Chart.IsDeleted, Chart.CreatedBy);
+
+
+
+                if (result > 0)
+                {
+                    if (chartParameters is not null)
+                    {
+                        if (chartParameters.Count > 0)
+                        {
+                            foreach (var item in chartParameters)
+                            {
+                                var res = await chartServices.ChartParametersAddUpdateAsync(Chart.ID, item.Tag, item.SQLPlaceHolder, item.IsRequired, item.DefaultValue);
+                            }
+                        }
+                    }
+
+
+                    if (actionTitle == "Add")
+                    {
+                        isError = true;
+                        message = "Success fully Added";
+                    }
+
+                    else
+                    {
+                        isError = true;
+                        message = "Success fully Updated";
+                    }
+                }
+                else
+                {
+                    isError = true;
+                    message = "There is some issue please try again...";
+                }
+                Chart = new();
+                script = "";
+                IsActive = false;
+                selectedChartTypeOption = "0";
+                selectedDb = "0";
+                StateHasChanged();
+                await Task.Delay(1500);
+                message = "";
+                await OnResponse.InvokeAsync(result);
+
+            }
+
+            StateHasChanged();
+
+        }
+
+        catch (Exception ex)
+        {
+            actionTitle = "";
+            message = "";
+            message = "something went wrong please try again.";
+
+            StateHasChanged();
+            await OnResponse.InvokeAsync(0);
+        }
+
+
+    }
+    public string validation()
+    {
+        if (Id == 0)
+        {
+            // Ist Time add
+            if (string.IsNullOrEmpty(Chart.TitleEn))
+            {
+                isError = false;
+                message = "please add chart title in English";
+            }
+            else if (string.IsNullOrEmpty(Chart.TitleAr))
+            {
+                isError = false;
+                message = "please add chart title in Arabic";
+            }
+
+        }
+        else
+        {
+            if (string.IsNullOrEmpty(Chart.TitleEn))
+            {
+                isError = false;
+                message = "please add chart title in English";
+            }
+            if (string.IsNullOrEmpty(Chart.TitleAr))
+            {
+                isError = false;
+                message = "please add chart title in Arabic";
+            }
+
+            if (string.IsNullOrEmpty(Chart.TitleAr))
+            {
+                isError = false;
+                message = "please add chart title in Arabic";
+            }
+            if (string.IsNullOrEmpty(Chart.TitleEn))
+            {
+                isError = false;
+                message = "please add chart title in English";
+            }
+            if (Chart.IsActive != true && Chart.IsActive != false)
+            {
+                isError = false;
+                message = "Please check chart are active";
+            }
+            // if (Chart.RefershTime == 0)
+            // {
+            //     isError = false;
+            //     message = "Please add a refersh time";
+
+            // }
+            if (Chart.DBConnectionID == 0)
+            {
+                isError = false;
+                message = "please select a database ";
+            }
+            if (Chart.ChartTypeID == 0)
+            {
+                isError = false;
+                message = "please select a chart type ";
+
+            }
+            if (string.IsNullOrEmpty(Chart.DataScript) || Chart.DataScript == " ")
+            {
+                isError = false;
+                message = "please add a database script ";
+            }
+        }
+
+        return message;
+
+
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+            _myFluentDialog!.Hide();
+    }
+    private async Task ConformationForDelete(int id)
+    {
+        ActionForDelete = true;
+        ActionAddChartParameters = false;
+        StateHasChanged();
+        chartID = id;
+        _status = "Dialog opened with button click";
+        _myFluentDialog!.Show();
+        StateHasChanged();
+    }
+    private void OnClose()
+    {
+        _status = $"Dialog dismissed with reason: Close button clicked";
+        _myFluentDialog!.Hide();
+        //  DemoLogger.WriteLine(_status);
+    }
+    private void OnCloseChartDialog()
+    {
+        _status = $"Dialog dismissed with reason: Close button clicked";
+        _myFluentDialog!.Hide();
+        //  DemoLogger.WriteLine(_status);
+    }
+    public bool showNorecordSection = false;
+    public async Task OnDeleteChart()
+    {
+        bool result = false;
+        result = await chartsServices.DeleteChartAsync(chartID);
+        if (result)
+        {
+            message = "Chart are successfully Deleted";
+            StateHasChanged();
+            await Task.Delay(2000);
+            message = "";
+            StateHasChanged();
+            _myFluentDialog!.Hide();
+            Id = -1;
+            showNorecordSection = true;
+            await OnResponse.InvokeAsync(100);
+            // GoToPage();
+        }
+        else
+
+        {
+            message = "Chart are linked with Charts/Users you can not delete this chart";
+            StateHasChanged();
+            await Task.Delay(2000);
+            message = "";
+            StateHasChanged();
+            _myFluentDialog!.Hide();
+
+            await OnResponse.InvokeAsync(0);
+        }
+        StateHasChanged();
+    }
+
+    private void OnDismiss(DialogEventArgs args)
+    {
+        if (args is not null && args.Reason is not null && args.Reason == "dismiss")
+        {
+            _status = $"Dialog dismissed with reason: Dismissed";
+            _myFluentDialog!.Hide();
+        }
+    }
+    private void AddChartparameters()
+    {
+        //chartParameter.SQLPlaceHolder
+        chartParameter.IsRequired = IsRequired;
+        chartParameter.ChartId = Id;
+        chartParameters.Add(chartParameter);
+        chartParameter = new();
+        StateHasChanged();
+    }
+    private void GoToPage()
+    {
+        // navigation.NavigateTo($"/Charts");
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+
+    }
+    private void RemoveFromList(ChartParameter chartParameter)
+    {
+        if (chartParameters is not null)
+        {
+            if (chartParameters.Count > 0)
+            {
+                chartParameters.Remove(chartParameters.FirstOrDefault(item => item.Tag == chartParameter.Tag && item.SQLPlaceHolder == chartParameter.SQLPlaceHolder && item.IsRequired == chartParameter.IsRequired && item.DefaultValue == chartParameter.DefaultValue));
+
+                StateHasChanged();
+
+            }
+        }
+    }
+
+    private async void OnOpen()
+    {
+        ActionForDelete = false;
+        chartParameterListCount = 0;
+        
+        _status = "Dialog opened with button click";
+        ActionAddChartParameters = true;
+        if (chartParameters is not null)
+        {
+            if (chartParameters.Count > 0)
+            {
+                chartParameterListCount = chartParameters.Count();
+            }
+        }
+
+        _myFluentDialog!.Show();
+
+        StateHasChanged();
+        // DemoLogger.WriteLine(_status);
+    }
+    public async Task GetChartParameterInResponse(ChartParameter model)
+    {
+        var parameterToUpdate = chartParameters.FirstOrDefault(p => p.Id == model.Id); // Find the parameter with the specified Id
+        if (parameterToUpdate is not null)
+        {
+            parameterToUpdate.DefaultValue = model.DefaultValue;
+            parameterToUpdate.Tag = model.Tag;
+            parameterToUpdate.IsRequired = model.IsRequired;
+        }
+        else
+        {
+            chartParameters.Add(model);
+
+        }
+        chartParameter = new();
+        _myFluentDialog!.Hide();
+        StateHasChanged();
+    }
+    public async Task GetChartParameterListInResponse(List<ChartParameter> chartParameterList)
+    {
+        chartParameters = new();
+        chartParameters = chartParameterList;
+
+    }
+    public void GetParameterInResponse(ChartParameter model)
+    {
+        chartParameter = model;
+        StateHasChanged();
+        OnOpen();
+
+    }
+
+}

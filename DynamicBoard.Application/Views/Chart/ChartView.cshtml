@@ -1,0 +1,32 @@
+﻿
+@{
+    ViewData["Title"] = "ChartView";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@using DynamicBoard.Application.Model
+@using DynamicBoard.Models
+@using Microsoft.JSInterop
+@model RenderChart
+@inject IJSRuntime JSRuntime
+
+
+
+<div>
+    @if (Model.IsAllowRefresh)
+    {
+        <img src="~/images/refresh.png"  onclick="refreshPage()" alt="Refresh" style=" float: right; width: 16px;">
+    }
+
+
+    <img id="loader_@Model.ChartID" class="loader" src="~/images/Spinne.gif" />
+
+    <div id="div_@Model.ChartID" style="display:none">
+        <canvas id="canvas_@Model.ChartID"> Chart Canvas </canvas>
+
+    </div>
+    
+
+</div>
+
+
+  

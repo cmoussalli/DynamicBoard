@@ -1,0 +1,27 @@
+﻿@using DynamicBoard.Application.Model
+@{
+    ViewData["Title"] = "Index";
+}
+ @model string
+<div class="card" >
+    <div class="card-body">
+
+        <div class="row">
+
+            <div class="chart-container" style="position: relative; height:50vh; width:80vw">
+                <p style="font-display:inherit ; color:red">" @Model   </p>
+ </p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .draggable {
+        width: 150px;
+        height: 150px;
+        padding: 0.5em;
+    }
+</style>
+ 

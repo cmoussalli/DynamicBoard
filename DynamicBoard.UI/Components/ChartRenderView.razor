@@ -1,0 +1,131 @@
+﻿@using SME.DynamicBoard.UI
+@if (isError)
+{
+    <p style="color:red">errorMessage</p>
+}
+else
+{
+    @if (!string.IsNullOrEmpty(ChartHTML))
+    {
+        <div style="width: 70%;height: 500px;">
+
+            <iframe srcdoc="@ChartHTML" style="width: 100%;height: 100%;"></iframe>
+        </div>
+
+    }
+
+}
+
+
+@code {
+    // [Parameter] public List<ChartParam> ChartData.ChartParams { get; set; } = new();
+    [Parameter] public ChartData ChartData { get; set; } = new();
+    [Parameter] public string ChartId { get; set; } = string.Empty;
+
+
+    // public string EncryptedKey { get; set; } = string.Empty;
+    // public string DynamicBoardRootAddress { get; set; } = string.Empty;
+
+    ////url = "/Chart/GetRequestChartPV?chartID=" + ChartId + "&parameters=[[CRNombers:1006414:000][IsDeleted:0]";
+
+    string url = "";
+    bool isError = false;
+    string errorMessage;
+    string queryStringParameters = "";
+    string parameters = "";
+    string values = "";
+    private string ChartHTML { get; set; } = string.Empty;
+    private bool isLoading = false;
+    HttpClient httpClient = new HttpClient();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        LoadIframe();
+
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        LoadIframe();
+
+    }
+
+    public async Task Refersh()
+    { 
+        await LoadIframe();
+
+    }
+ 
+    public async Task LoadIframe()
+    {
+        parameters = "";
+        try
+        {
+            if (string.IsNullOrEmpty(ChartId))
+            {
+                errorMessage = "chart id required";
+
+            }
+            else if (ChartData.ChartParams is null)
+            {
+
+                errorMessage = "parameters for chart required";
+            }
+            else if (ChartData.ChartParams.Count == 0)
+            {
+                errorMessage = "parameters for chart required";
+            }
+            else if (string.IsNullOrEmpty(Storage.EncryptionKey))
+            {
+                errorMessage = "EncryptedKey required";
+            }
+            else if (string.IsNullOrEmpty(Storage.RootAddress))
+            {
+                errorMessage = "root address of dynamic board required";
+            }
+            else
+            {
+                if (ChartData.ChartParams is not null)
+                {
+                    if (ChartData.ChartParams.Count > 0)
+                    {
+                        foreach (var item in ChartData.ChartParams)
+                        {
+                            foreach (var val in item.Values)
+                            {
+                                values += val + "|";
+                            }
+                            parameters += "[" + item.Name + ":" + values + "]";
+                            values = "";
+                        }
+
+
+
+                        queryStringParameters = "";
+                        queryStringParameters = "chartID=" + ChartId + "&parameters=[" + parameters + "]&token=" + "UserToken"; ;
+                        EncryptionHelper.encryptionKey = Storage.EncryptionKey;
+                        var encryptedData = EncryptionHelper.Encrypt(queryStringParameters);
+                        url = Storage.RootAddress + "/Chart/GetChartEncrypted?Data=" + encryptedData;
+
+                        ChartHTML = await httpClient.GetStringAsync(url);
+                        isError = false;
+                        StateHasChanged();
+                    }
+
+                }
+            }
+
+
+        }
+        catch (Exception ex)
+        {
+            isError = true;
+            errorMessage = ex.ToString();
+            StateHasChanged();
+        }
+
+
+    }
+
+}
+
