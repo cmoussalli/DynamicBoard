@@ -1,5 +1,7 @@
 using DynamicBoard.Application;
 using DynamicBoard.Application.Components;
+using DynamicBoard.Application.DomainServices;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.FluentUI.AspNetCore.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +19,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddFluentUIComponents();
 
 builder.Services.AddRazorPages();
+// temporarly commented builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 
 
 ConfigurationManager configuration = builder.Configuration;

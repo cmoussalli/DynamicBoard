@@ -52,7 +52,7 @@ namespace DynamicBoard.Application.DomainServices
                     var connesctionString = "Server=" + extendDashboard.DBConnections.Server + ";Database=" + extendDashboard.DBConnections.Database + ";Trusted_Connection=True;MultipleActiveResultSets=true;User Id=" + extendDashboard.DBConnections.User + ";Password=" + extendDashboard.DBConnections.Password + ";Integrated Security=False;";
 
                     datasetResult = db.DatasetExecute(dataScript, connesctionString);
-                   // renderChart.RefershTime = extendChart.RefershTime;
+                    // renderChart.RefershTime = extendChart.RefershTime;
                 }
 
 
@@ -60,6 +60,18 @@ namespace DynamicBoard.Application.DomainServices
                 {
                     foreach (var item in datasetResult)
                     {
+
+                        if (chartType == "Label")
+                        {
+                            renderChart.ChartType = chartType;
+                            renderChart.ChartID = chartID;
+                            renderChart.json_graphConfigurations = "";
+                            renderChart.JsonXaxis_labels = "";
+                            renderChart.ChartCSS = chartCSS;
+                            renderChart.jsonchartTitle =Newtonsoft.Json.JsonConvert.SerializeObject(chartTitle.Replace("\r\n", ""));
+                            renderChart.LabelValue = item.Data;
+                            return renderChart;
+                        }
                         data = new List<int>();
                         dataset = new Model.Dataset();
                         //dataset.x_axis_labels = item.x_axis_labels;
@@ -132,9 +144,9 @@ namespace DynamicBoard.Application.DomainServices
             catch (Exception ex)
             {
 
-                 
+
             }
-           
+
             return renderChart;
         }
 

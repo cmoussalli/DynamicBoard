@@ -9,6 +9,7 @@
         public string json_graphConfigurations { get; set; }
         public string ChartCSS { get; set; }
         public int? RefershTime { get; set; }
-        public bool IsAllowRefresh { get; set; }  
+        public bool IsAllowRefresh { get; set; }
+        public long LabelValue { get; set; }
     }
 }

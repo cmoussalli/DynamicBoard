@@ -21,8 +21,17 @@
     <img id="loader_@Model.ChartID" class="loader" src="~/images/Spinne.gif" />
 
     <div id="div_@Model.ChartID" style="display:none">
-        <canvas id="canvas_@Model.ChartID"> Chart Canvas </canvas>
+        @if (Model.ChartType != "Label")
+        {
+            <canvas id="canvas_@Model.ChartID"> Chart Canvas </canvas>
+        }
+        else
+        {   <p>@Model.jsonchartTitle</p>
+            <h1 id="Label_@Model.ChartID"></h1>
+        }
 
+
+        
     </div>
     
 

@@ -1,4 +1,7 @@
-﻿@inject IJSRuntime JSRuntime
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@inject IJSRuntime JSRuntime
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
 
 
 <!DOCTYPE html>
@@ -17,6 +20,31 @@
 
 <body>
     <Routes />
+
+
+    
+@*
+    temporeraly comented
+    <Router AppAssembly="@typeof(Program).Assembly">
+    <Found Context="routeData">
+            <RouteView RouteData="@routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+        @if (IsUserAuthenticated())
+            temporeraly comented 
+        {
+            <RouteView RouteData="@routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+        }
+        else
+        {
+                <RouteView RouteData="@routeData" DefaultLayout="typeof(Layout.EmptyLayout)" />
+        }
+    </Found>
+    <NotFound>
+        <!-- Handle
+                the 404 page -->
+        </NotFound>
+    </Router> *@
+
+
     <script src="_framework/blazor.web.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
@@ -26,6 +54,11 @@
 
 </html>
 @code {
+    // private bool IsUserAuthenticated()
+    // {// temporeraly comented
+    //     var authState = AuthenticationStateProvider.GetAuthenticationStateAsync().GetAwaiter().GetResult();
+    //     return authState.User.Identity.IsAuthenticated;
+    // }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)

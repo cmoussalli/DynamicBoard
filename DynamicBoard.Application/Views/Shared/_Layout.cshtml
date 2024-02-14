@@ -9,16 +9,16 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
- <style>
+    <style>
 
-        .loader { 
-     
+        .loader {
+
             position: center;
-             
+
             z-index: 999999999999999999999999999999999999999;
             opacity: .7;
-    }
-</style>
+        }
+    </style>
 </head>
 <body>
     @RenderBody()
@@ -33,28 +33,49 @@
     var loader = document.getElementById("loader_@Model.ChartID");
     var canvasDiv = document.getElementById("div_@Model.ChartID");
     document.addEventListener("DOMContentLoaded", function () {
-       
-          loader = document.getElementById("loader_@Model.ChartID");
+
+        loader = document.getElementById("loader_@Model.ChartID");
 
         // Show loader initially
         loader.style.display = "block";
 
-        
 
-     
-    $(document).ready(function () {
-        // Show loader initially
-        
+
+
+        $(document).ready(function () {
+            // Show loader initially
+
+            var canvasChartType = '@Model.ChartType';
+            debugger;
+            if (canvasChartType == "Label") {
+                LoadLabel();
+            }
+            else { 
+                LoadChart();
+            }
+
+            
+        });
+    });
+
+    function LoadLabel() {
         debugger;
+        document.getElementById("Label_@Model.ChartID").innerHTML = @Model.LabelValue;
+        var div = document.getElementById("div_@Model.ChartID");
+        div.style.display = 'block';
+        loader.style.display = "none";
+    
+    }
+    function LoadChart() {
         var RefershTime = '@Model.RefershTime';
-        var canvasXaxis_labels = @Html.Raw(Model.JsonXaxis_labels)  ;
-
         var canvasChartType = '@Model.ChartType';
-        var configuration = @Html.Raw(Model.json_graphConfigurations);
-        var canvasjsonchartTitle = '@Html.Raw(@Model.jsonchartTitle)';
-
-        var Yaxis_Data = @Html.Raw(Model.json_graphConfigurations);;
+        var canvasXaxis_labels = @Html.Raw(string.IsNullOrEmpty(Model?.JsonXaxis_labels) ? "null" : Model?.JsonXaxis_labels);
+        var configuration = @Html.Raw(string.IsNullOrEmpty(Model?.json_graphConfigurations) ? "null" : Model?.json_graphConfigurations);
+        var canvasjsonchartTitle = '@Html.Raw(string.IsNullOrEmpty(@Model?.jsonchartTitle) ? "null" : @Model?.jsonchartTitle)';
+        var Yaxis_Data = @Html.Raw(string.IsNullOrEmpty(Model?.json_graphConfigurations) ? "null" : Model?.json_graphConfigurations);
         var Yaxis_Data_Dataset = Yaxis_Data;//Yaxis_Data[0].datasets;
+
+
         //debugger
         var Isstacked = false;
         var _height = 0;
@@ -75,7 +96,7 @@
         }
 
         var canvas = 'canvas_' + @Model.ChartID;
-         
+
         //
         //loadCanvas(@Model.ChartID);
         var ctx = document.getElementById(canvas).getContext('2d');
@@ -117,18 +138,18 @@
             }
         });
 
-            // Simulate a delay of 2 seconds before showing the canvas
-            setTimeout(function () {
-                // Show the canvas
+        // Simulate a delay of 2 seconds before showing the canvas
+        setTimeout(function () {
+            // Show the canvas
 
-                canvasDiv.style.display = "block";
-                // Hide the loader
-                loader.style.display = "none";
-            }, 2000);
-        });
-    });
-    function refreshPage() {
+            canvasDiv.style.display = "block";
+            // Hide the loader
+            loader.style.display = "none";
+        }, 2000);
     
+    }
+    function refreshPage() {
+
         location.reload();
     }
     function loadChart(chartId) {

@@ -1,7 +1,68 @@
-﻿@page "/"
+﻿@page "/Login"
+@* @using System.Security.Claims
+@using DynamicBoard.Application.DomainServices
+@using Microsoft.AspNetCore.Components.Authorization *@
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+@* @inject CustomAuthenticationStateProvider AuthenticationProvider
+ *@
 
 <PageTitle>Login</PageTitle>
+<div class="app-container ">
+    <div class="col-md-6 offset-md-3 mt-5">
+        <div class="card">
+            <h4 class="card-header">Login</h4>
+            <div class="card-body">
+                <form>
+                    <div class="form-group">
+                        <FluentTextField Appearance="FluentInputAppearance.Filled"
+                                         Label="Username" @bind-Value="username" Style="margin-top: 10px; width:55%" />
 
-<h1>Login</h1>
+                    </div>
+                    <div class="form-group">
+                        <FluentTextField Appearance="FluentInputAppearance.Filled"
+                                         Label="Password" @bind-Value="password" Style="margin-top: 10px; width:55%" />
 
-Login Page.
+                    </div>
+                    <FluentStack HorizontalAlignment="HorizontalAlignment.Center">
+                        <FluentButton @onclick="@(EventCallback.Factory.Create(this, UserLogin))" IconStart="@(new Icons.Regular.Size16.ArrowClockwise())"
+                                      Appearance="Appearance.Neutral">Login</FluentButton>
+                    </FluentStack>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    public string username { get; set; }
+
+    public string password { get; set; }
+
+    private async Task UserLogin()
+    {
+        NavigationManager.NavigateTo("/Home");
+       
+        // string authenticated = "true";
+        // if (authenticated == "true")
+        // {
+        //     var claims = new[]
+        //     {
+        //     new Claim(ClaimTypes.Name, username),
+        //     // Add any additional claims
+        // };
+
+        //     var identity = new ClaimsIdentity(claims, "CustomAuthenticationType");
+        //     var user = new ClaimsPrincipal(identity);
+
+        //     //await AuthenticationProvider.SetAuthenticationStateAsync(new AuthenticationState(user));
+
+        //     NavigationManager.NavigateTo("/Home");
+        // }
+
+        // NavigationManager.NavigateTo("/");
+
+    }
+}
