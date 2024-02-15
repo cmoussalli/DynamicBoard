@@ -8,47 +8,123 @@
 <h1>Hello, world!</h1>
 <button type="button" @onclick="@LoadIframeV3">Load Iframe</button>
 <input type="text"  @bind="@crNo" />
-@if (!string.IsNullOrEmpty(chartID))
+@* @if (!string.IsNullOrEmpty(chartID))
 {
-    @* <SME.DynamicBoard.UI.Components.ChartRenderView  ChartId="@chartID" chartParams="@chartParams"  /> *@
     <SME.DynamicBoard.UI.Components.ChartRenderView @ref="chartRenderView" AutoLoad="false" IsAllowRefresh="true" ChartId="@chartID" ChartData="@ChartData" />
-
- @*    <SME.DynamicBoard.UI.Components.ChartRenderView IsAllowRefresh="false" ChartId="@chartIDV2" ChartData="@ChartData" /> *@
+    <br />
+    <p>Lable</p>
+   
 }
+<SME.DynamicBoard.UI.Components.ChartRenderView @ref="chartRenderView1" AutoLoad="true" IsAllowRefresh="true" ChartId="99" ChartData="@ChartData2" />
+ *@
+<div class="card">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-3">
+                @if (ChartDataForNewRequest is not null)
+                {
+                    @if (ChartDataForNewRequest.ChartParams.Count > 0)
+                    {
+                        <SME.DynamicBoard.UI.Components.ChartRenderView AutoLoad="true" ChartId="@chartIdForNewRequest" ChartData="@ChartDataForNewRequest" />
+                    }
+
+                }
+            </div>
+            <div class="col-3">
+                @if (ChartDataForPendingRequest is not null)
+                {
+                    @if (ChartDataForPendingRequest.ChartParams.Count > 0)
+                    {
+                        <SME.DynamicBoard.UI.Components.ChartRenderView AutoLoad="true" ChartId="@chartIdForPendingRequest" ChartData="@ChartDataForPendingRequest" />
+
+                    }
+                }
+
+            </div>
+            <div class="col-3">
+                @if (ChartDataForIssuedRequest is not null)
+                {
+
+                    @if (ChartDataForIssuedRequest.ChartParams.Count > 0)
+                    {
+                        <SME.DynamicBoard.UI.Components.ChartRenderView AutoLoad="true" ChartId="@chartIdForIssuedRequest" 
+                        ChartData="@ChartDataForIssuedRequest" />
+
+                    }
+                }
+
+            </div>
+            <div class="col-3">
+
+                @if (ChartDataForRejectedRequest is not null)
+                {
+                    @if (ChartDataForRejectedRequest.ChartParams.Count > 0)
+                    {
+                        <SME.DynamicBoard.UI.Components.ChartRenderView AutoLoad="true" ChartId="@chartIdForRejectedRequest"
+                        ChartData="@ChartDataForRejectedRequest" />
+                    }
+                }
+            </div>
 
 
+        </div>
 
+    </div>
+</div>
 
 @code {
-    public ChartData ChartData { get; set; } = new();
+  //  public ChartData ChartDataForNewRequest { get; set; } = new();
+    //public ChartData ChartData2 { get; set; } = new();
     static string chartID = "4";
-    static string chartIDV2 = "98";
-    ChartRenderView chartRenderView;
+    static string chartIDLable = "99";
+ 
+
+    public SME.DynamicBoard.UI.ChartData ChartDataForNewRequest { get; set; } = new();
+    public SME.DynamicBoard.UI.ChartData ChartDataForPendingRequest { get; set; } = new();
+    public SME.DynamicBoard.UI.ChartData ChartDataForIssuedRequest { get; set; } = new();
+    public SME.DynamicBoard.UI.ChartData ChartDataForRejectedRequest { get; set; } = new();
+
+    string chartIdForNewRequest = "103";
+    string chartIdForPendingRequest = "104";
+    string chartIdForIssuedRequest = "106";
+    string chartIdForRejectedRequest = "107";
+    SME.DynamicBoard.UI.ChartData chartRenderView { get; set; } = new();
+    SME.DynamicBoard.UI.Components.ChartRenderView chartRenderView1;
     string crNo = "";
     protected override async Task OnInitializedAsync()
     {
-        //await LoadIframeV2();
 
     }
 
-    public async Task LoadIframeV2()
-    {
-        ChartData.Add("CRNombers", new List<string> { "1006414" });
-        ChartData.Add("IsServiceEnded", new List<string> { "0" });
-        // ChartData.Add("ContryCodesNotIN","750" );
 
-    }
     public async Task LoadIframeV3()
     {
-       
-        ChartData = new();
-        //ChartData.ReplaceValue("CRNombers", "1006414", "7058926");
-        ChartData.Add("CRNombers", new List<string> { crNo });
-        ChartData.Add("IsServiceEnded", new List<string> { "0" }); 
-       // await chartRenderView.LoadIframe();
-       // StateHasChanged();
+        ChartDataForNewRequest = new();
 
-        chartRenderView.Refersh();
+
+        //ChartData.ReplaceValue("CRNombers", "1006414", "7058926");
+        // ChartData.Add("CRNombers", new List<string> { crNo });
+        // ChartData.Add("IsServiceEnded", new List<string> { "0" });
+
+        // ChartData2.Add("YearOfEstablishment", new List<string> { "2023" });
+
+
+       // ChartDataForNewRequest.Add("StartupsNewRequestStatus", new List<string> { "2" });
+
+        // if (chartRenderView1 is not null)
+        // {
+        //     await chartRenderView1.Refersh();
+        // }
+        ChartDataForNewRequest = new();
+        ChartDataForPendingRequest = new();
+        ChartDataForIssuedRequest = new();
+        ChartDataForRejectedRequest = new();
+
+        ChartDataForNewRequest.Add("StartupsNewRequestStatus", new List<string> { "2" });
+        ChartDataForPendingRequest.Add("StartupsPendingRequestIds", new List<string> { "4", "5", "6", "7", "8", "9" });
+        ChartDataForIssuedRequest.Add("StartupsIssuedRequestID", new List<string> { "10" });
+        ChartDataForRejectedRequest.Add("StartupsRejectedRequest", new List<string> { "3" });
+        
         StateHasChanged();
     }
 

@@ -74,14 +74,14 @@ namespace DynamicBoard.Application.Controllers
             {
                 return PartialView("Error", "Parmeter Data not passed.");
             }
-            
+
             else
             {
                 var DecryptedQueryString = EncryptionHelper.Decrypt(data);
-               
+
                 // Decrypted Data parsing
                 string[] splitString = DecryptedQueryString.Split('&');
-               
+
                 // chartId 
                 string[] partsForChartID = splitString[0].Split('=');
                 chartId = Convert.ToInt64(partsForChartID[1]);
@@ -92,8 +92,8 @@ namespace DynamicBoard.Application.Controllers
                 string[] partsForToken = splitString[2].Split('=');
                 token = partsForToken[1];
                 // IsAllowRefersh
-                string[] partsForIsAllowRefersh= splitString[3].Split('=');
-                IsAllowRefersh = Convert.ToBoolean( partsForIsAllowRefersh[1]);
+                string[] partsForIsAllowRefersh = splitString[3].Split('=');
+                IsAllowRefersh = Convert.ToBoolean(partsForIsAllowRefersh[1]);
 
                 if (chartId <= 0)
                 {
@@ -109,7 +109,7 @@ namespace DynamicBoard.Application.Controllers
                 }
                 else
                 {
-                    IActionResult result = await ChartView(chartId, parameters,IsAllowRefersh);
+                    IActionResult result = await ChartView(chartId, parameters, IsAllowRefersh);
                     return result;
                 }
 
@@ -302,7 +302,7 @@ namespace DynamicBoard.Application.Controllers
             string paramDatasetValues = "";
             List<ExtendChart> extendCharts = new List<ExtendChart>();
             RenderChart renderChart = new RenderChart();
-          
+
             extendCharts = await dynamicBoardChartServices.ChartsGetByIdAsync(chartID);
             chartParameters = await dynamicBoardCommonServices.GetChartParametersByChartID(chartID);
 
@@ -381,9 +381,17 @@ namespace DynamicBoard.Application.Controllers
                                         {
                                             // List to string
                                             var lsitconvertToString = string.Join(" ", whereClauseList);
-                                            mergeWhereClause = whereClause + lsitconvertToString;
-                                            modifiedQueryScript = extendCharts[0].DataScript;
-                                            modifiedQueryScript = modifiedQueryScript.Replace(whereClause, mergeWhereClause);
+                                            if (whereClause == "1=1")
+                                            {
+                                                whereClause = "";
+                                                mergeWhereClause = whereClause + lsitconvertToString;
+                                                modifiedQueryScript = extendCharts[0].DataScript;
+                                                if (modifiedQueryScript.Contains("1=1"))
+                                                {
+                                                    var finalquery = ReplaceWhereClause(modifiedQueryScript, mergeWhereClause);
+                                                    modifiedQueryScript = finalquery;
+                                                }
+                                            }
 
                                         }
                                         else
@@ -399,17 +407,19 @@ namespace DynamicBoard.Application.Controllers
                                             var lsitconvertToString = string.Join(" ", whereClauseList);
                                             //string rempveStartingAnd = lsitconvertToString.Replace("and ", string.Empty);
                                             //var rempveStartingAnd = "where " + lsitconvertToString + "and";
-                                             modifiedQueryScript = extendCharts[0].DataScript;
+                                            modifiedQueryScript = extendCharts[0].DataScript;
                                             //modifiedQueryScript = modifiedQueryScript.Replace("where and ", rempveStartingAnd);
 
                                             if (modifiedQueryScript.Contains("and 1=1"))
                                             {
                                                 string rempveStartingAnd = lsitconvertToString.Replace("and 1=1 ", string.Empty);
+
                                                 modifiedQueryScript = modifiedQueryScript.Replace("and 1=1", rempveStartingAnd);
 
                                             }
-                                            else {
-                                                return PartialView("Error","Please add and 1=1 in your DB script");
+                                            else
+                                            {
+                                                return PartialView("Error", "Please add and 1=1 in your DB script");
                                             }
 
 
@@ -474,6 +484,13 @@ namespace DynamicBoard.Application.Controllers
             }
 
         }
+        static string ReplaceWhereClause(string query, string newWhereClause)
+        {
+            // Regular expression pattern to match the where clause
+            string pattern = @"where\s+(.+?)(\s+group\s+by|$)";
+
+            return Regex.Replace(query, pattern, "where " + newWhereClause.Trim() + "$2", RegexOptions.IgnoreCase);
+        }
         static string ExtractWhereClause(string query)
         {
             // Regular expression pattern to match the where clause
@@ -521,7 +538,7 @@ namespace DynamicBoard.Application.Controllers
                             {
                                 clauseValues.Add(item);
                             }
-                            
+
 
                         }
                         param.Values = clauseValues;
