@@ -70,6 +70,7 @@ namespace DynamicBoard.Application.Controllers
             string parameters = "";
             string token = "";
             bool IsAllowRefersh = false;
+            int language = 0;
             if (string.IsNullOrEmpty(data))
             {
                 return PartialView("Error", "Parmeter Data not passed.");
@@ -95,6 +96,11 @@ namespace DynamicBoard.Application.Controllers
                 string[] partsForIsAllowRefersh = splitString[3].Split('=');
                 IsAllowRefersh = Convert.ToBoolean(partsForIsAllowRefersh[1]);
 
+                // Language 0 for english and 1 for arabic
+                string[] partsForLanguage = splitString[4].Split('=');
+                language = Convert.ToInt32(partsForLanguage[1]);
+
+
                 if (chartId <= 0)
                 {
                     return PartialView("Error", "Parmeter chart Id not passed.");
@@ -107,9 +113,10 @@ namespace DynamicBoard.Application.Controllers
                 {
                     return PartialView("Error", "Parmeter token not passed.");
                 }
+
                 else
                 {
-                    IActionResult result = await ChartView(chartId, parameters, IsAllowRefersh);
+                    IActionResult result = await ChartView(chartId, parameters, IsAllowRefersh, language);
                     return result;
                 }
 
@@ -291,7 +298,7 @@ namespace DynamicBoard.Application.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> ChartView(long chartID, string parameters, bool IsAllowRefresh = false)
+        public async Task<IActionResult> ChartView(long chartID, string parameters, bool IsAllowRefresh = false, int Language = 0)
         {
             string modifiedQueryScript = "";
             List<ParamData> paramDataset = new List<ParamData>();
@@ -332,7 +339,7 @@ namespace DynamicBoard.Application.Controllers
                                             // get tshe ChartParameters dataset SQLPlaceHolder;
                                             string placeholder = chartparms.SQLPlaceHolder;
                                             string replacePlaceholderParam = ReplacePlaceholder(placeholder, valueCheck.Key.Trim(), paramDatasetValues);
-                                            query = query.Replace(chartparms.Tag, replacePlaceholderParam);
+                                            query = query.Replace("[[" + chartparms.Tag + "]]", replacePlaceholderParam);
                                             modifiedQueryScript = query;
                                         }
 
@@ -344,7 +351,7 @@ namespace DynamicBoard.Application.Controllers
 
 
                 }
-                
+
             }
 
 
@@ -355,7 +362,16 @@ namespace DynamicBoard.Application.Controllers
                     //{
                     ExtendDashboard extendDashboard = new();
                     extendDashboard.DBConnections = extendCharts[0].DBConnections;
-                    renderChart = ChartCommon.ChartManipulation(extendDashboard, extendCharts[0].ChartTypes.TitleEn, extendCharts[0].TitleEn, extendCharts[0].ID, "", extendCharts[0], modifiedQueryScript);
+                    var title = "";
+                    if (Language == 0)
+                    {
+                        title = extendCharts[0].TitleEn;
+                    }
+                    else
+                    {
+                        title = extendCharts[0].TitleAr;
+                    }
+                    renderChart = ChartCommon.ChartManipulation(extendDashboard, extendCharts[0].ChartTypes.TitleEn, title, extendCharts[0].ID, "", extendCharts[0], modifiedQueryScript);
                     renderChart.IsAllowRefresh = IsAllowRefresh;
                     return View("ChartView", renderChart);
                 }

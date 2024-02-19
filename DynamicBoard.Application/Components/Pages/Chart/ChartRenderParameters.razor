@@ -147,7 +147,7 @@
         }
         //  url = "/Chart/GetRequestChartPV?chartID=" + ChartID + "&parameters=[" + parameters + "]";
         // send encrypted parameters
-        string queryStringParameters = "chartID=" + ChartID + "&parameters=[" + parameters + "]&token=" + "UserToken" + "&IsAllowRefresh="+true;
+        string queryStringParameters = "chartID=" + ChartID + "&parameters=[" + parameters + "]&token=" + "UserToken" + "&IsAllowRefresh=" + true + "&Language=" + 1;
 
        var encryptedData = EncryptionHelper.Encrypt(queryStringParameters);
 
