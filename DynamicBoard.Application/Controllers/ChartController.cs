@@ -306,159 +306,45 @@ namespace DynamicBoard.Application.Controllers
             extendCharts = await dynamicBoardChartServices.ChartsGetByIdAsync(chartID);
             chartParameters = await dynamicBoardCommonServices.GetChartParametersByChartID(chartID);
 
-
+            string query = extendCharts[0].DataScript;
             if (chartParameters != null)
             {
                 if (chartParameters.Count > 0)
                 {
-                    // find the query string key 
                     foreach (var chartparms in chartParameters)
-
                     {
-                        // chartParameters list from Database  ChartParameters
-                        foreach (var item in paramDataset)
+
+                        if (!string.IsNullOrEmpty(query))
                         {
-                            // check item (query string param exists in ChartParameters dataset )
-                            var valueCheck = paramDataset.Where(a => a.Key == chartparms.Tag).FirstOrDefault();
-
-                            if (valueCheck != null)
+                            if (query.Contains(chartparms.Tag))
                             {
-                                if (item.Key == chartparms.Tag)
+                                modifiedQueryScript = query;
+                                // chartParameters list from Database  ChartParameters
+                                var valueCheck = paramDataset.Where(a => a.Key == chartparms.Tag).FirstOrDefault();
+                                if (valueCheck != null)
                                 {
-                                    // If yes get the values of querystring 
-                                    paramDatasetValues = string.Join(", ", paramDataset.Where(a => a.Key == item.Key).SelectMany(p => p.Values.Select(v => $"'{v}'")).ToList());
-                                    if (!string.IsNullOrEmpty(paramDatasetValues))
+                                    if (valueCheck.Key == chartparms.Tag)
                                     {
-                                        // get the ChartParameters dataset SQLPlaceHolder;
-                                        string placeholder = chartparms.SQLPlaceHolder;
-                                        // and replace with query string values
-                                        string replacePlaceholderParam = placeholder.Replace("[[" + item.Key + "]]", paramDatasetValues);
-                                        whereClauseList.Add(replacePlaceholderParam);
-                                    }
-                                    paramDatasetValues = "";
-                                    break;
-                                }
-                            }
-                            else
-                            {
-                                if (chartparms.IsRequired)
-                                {
-                                    return PartialView("Error", chartparms.Tag + "are required in query string");
-                                }
-                                else
-                                {
-
-                                    // get the ChartParameters dataset SQLPlaceHolder;
-                                    string placeholder = chartparms.SQLPlaceHolder;
-                                    // and replace with default values
-                                    string replacePlaceholderParam = placeholder.Replace("[[" + chartparms.Tag + "]]", chartparms.DefaultValue);
-                                    paramDatasetValues = "";
-                                    whereClauseList.Add(replacePlaceholderParam);
-                                    break;
-                                }
-
-                            }
-                        }
-                    }
-
-                    // when Querystring values added successfully
-                    if (whereClauseList is not null)
-                    {
-                        if (whereClauseList.Count > 0)
-                        {
-                            if (extendCharts is not null)
-                            {
-                                if (extendCharts.Count > 0)
-                                {
-                                    // get the chart query script
-                                    if (!string.IsNullOrEmpty(extendCharts[0].DataScript))
-                                    {
-
-                                        string mergeWhereClause = "";
-                                        // extract the where clause from query script
-                                        string whereClause = ExtractWhereClause(extendCharts[0].DataScript);
-                                        if (!string.IsNullOrEmpty(whereClause))
+                                        // If yes get the values of querystring 
+                                        paramDatasetValues = string.Join(", ", paramDataset.Where(a => a.Key == valueCheck.Key).SelectMany(p => p.Values.Select(v => $"'{v}'")).ToList());
+                                        if (!string.IsNullOrEmpty(paramDatasetValues))
                                         {
-                                            // List to string
-                                            var lsitconvertToString = string.Join(" ", whereClauseList);
-                                            if (whereClause == "1=1")
-                                            {
-                                                whereClause = "";
-                                                mergeWhereClause = whereClause + lsitconvertToString;
-                                                modifiedQueryScript = extendCharts[0].DataScript;
-                                                if (modifiedQueryScript.Contains("1=1"))
-                                                {
-                                                    var finalquery = ReplaceWhereClause(modifiedQueryScript, mergeWhereClause);
-                                                    modifiedQueryScript = finalquery;
-                                                }
-                                            }
-
-                                        }
-                                        else
-                                        {
-                                            // List to string
-                                            //var lsitconvertToString = string.Join(" ", whereClauseList);
-                                            //string rempveStartingAnd = lsitconvertToString.Replace("and ", string.Empty);
-                                            //rempveStartingAnd = "where " + rempveStartingAnd+ "and";
-                                            //modifiedQueryScript = extendCharts[0].DataScript;
-                                            //modifiedQueryScript = modifiedQueryScript.Replace("where", rempveStartingAnd);
-
-
-                                            var lsitconvertToString = string.Join(" ", whereClauseList);
-                                            //string rempveStartingAnd = lsitconvertToString.Replace("and ", string.Empty);
-                                            //var rempveStartingAnd = "where " + lsitconvertToString + "and";
-                                            modifiedQueryScript = extendCharts[0].DataScript;
-                                            //modifiedQueryScript = modifiedQueryScript.Replace("where and ", rempveStartingAnd);
-
-                                            if (modifiedQueryScript.Contains("and 1=1"))
-                                            {
-                                                string rempveStartingAnd = lsitconvertToString.Replace("and 1=1 ", string.Empty);
-
-                                                modifiedQueryScript = modifiedQueryScript.Replace("and 1=1", rempveStartingAnd);
-
-                                            }
-                                            else
-                                            {
-                                                return PartialView("Error", "Please add and 1=1 in your DB script");
-                                            }
-
-
+                                            // get tshe ChartParameters dataset SQLPlaceHolder;
+                                            string placeholder = chartparms.SQLPlaceHolder;
+                                            string replacePlaceholderParam = ReplacePlaceholder(placeholder, valueCheck.Key.Trim(), paramDatasetValues);
+                                            query = query.Replace(chartparms.Tag, replacePlaceholderParam);
+                                            modifiedQueryScript = query;
                                         }
 
                                     }
-
                                 }
                             }
-
-
                         }
                     }
 
-                }
-                else
-                {
-                    if (extendCharts is not null)
-                    {
-                        if (extendCharts.Count > 0)
-                        {
-                            if (!string.IsNullOrEmpty(extendCharts[0].DataScript))
-                            {
-                                modifiedQueryScript = extendCharts[0].DataScript;
-
-                            }
-                            else
-                            {
-                                return PartialView("EmptyChart");
-                            }
-
-                        }
-                        else
-                        {
-                            return PartialView("EmptyChart");
-                        }
-                    }
 
                 }
+                
             }
 
 
@@ -483,6 +369,11 @@ namespace DynamicBoard.Application.Controllers
                 return PartialView("Error", "Verify your query script there is some issue on rendring chart. <b> Query Script are bellow <b>" + modifiedQueryScript);
             }
 
+        }
+        static string ReplacePlaceholder(string input, string placeholder, string replacement)
+        {
+            string pattern = "\\[\\[" + Regex.Escape(placeholder) + "\\]\\]";
+            return Regex.Replace(input, pattern, replacement);
         }
         static string ReplaceWhereClause(string query, string newWhereClause)
         {
