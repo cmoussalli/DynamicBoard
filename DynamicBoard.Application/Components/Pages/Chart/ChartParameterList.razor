@@ -14,10 +14,15 @@
         <FluentListbox Items="@ChartParameters" Width="20rem" Title="List of Chart Parameters"
                        OptionValue="@(p => p.Id.ToString())"
                        OptionText="@(p => p.Id + ", " + p.Tag + ", " + p.SQLPlaceHolder+ ", " +p.IsRequired+ ", " +p.DefaultValue)"
-                       ValueChanged="@OnValueChanged">
+                        
+                  >
             <OptionTemplate>
-                <FluentIcon Icon="Icons.Regular.Size16.Crop" Slot="end"
+                
+                <FluentIcon Icon="Icons.Regular.Size16.Edit" Slot="end"
+                            OnClick="@(() => OnValueChanged(context.Id.ToString()))" />
+                <FluentIcon Icon="Icons.Regular.Size16.Delete" Slot="end"
                             OnClick="@(() => RemoveFromList(context))" />
+
                 @context.Tag , @context.SQLPlaceHolder, @context.IsRequired, @context.DefaultValue
             </OptionTemplate>
         </FluentListbox>
