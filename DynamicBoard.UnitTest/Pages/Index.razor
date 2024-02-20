@@ -14,10 +14,15 @@
     <br />
     <p>Lable</p>
    
-}
-<SME.DynamicBoard.UI.Components.ChartRenderView @ref="chartRenderView1" AutoLoad="true" IsAllowRefresh="true" ChartId="99" ChartData="@ChartData2" />
- *@
-<div class="card">
+} *@
+<br />
+<br />
+<br />
+
+<p>Chart View </p>
+<SME.DynamicBoard.UI.Components.ChartRenderView @ref="chartRenderView1"  AutoLoad="true" IsAllowRefresh="true" ChartId="4" ChartData="@ChartData" />
+
+@* <div class="card">
     <div class="card-body">
         <div class="row">
             <div class="col-3">
@@ -70,11 +75,11 @@
         </div>
 
     </div>
-</div>
+</div> *@
 
 @code {
   //  public ChartData ChartDataForNewRequest { get; set; } = new();
-    //public ChartData ChartData2 { get; set; } = new();
+     public ChartData ChartData { get; set; } = new();
     static string chartID = "4";
     static string chartIDLable = "99";
  
@@ -90,7 +95,7 @@
     string chartIdForRejectedRequest = "107";
     SME.DynamicBoard.UI.ChartData chartRenderView { get; set; } = new();
     SME.DynamicBoard.UI.Components.ChartRenderView chartRenderView1;
-    string crNo = "";
+    string crNo = "1006414";
     protected override async Task OnInitializedAsync()
     {
 
@@ -103,8 +108,8 @@
 
 
         //ChartData.ReplaceValue("CRNombers", "1006414", "7058926");
-        // ChartData.Add("CRNombers", new List<string> { crNo });
-        // ChartData.Add("IsServiceEnded", new List<string> { "0" });
+        ChartData.Add("CRNombers", new List<string> { crNo });
+        ChartData.Add("IsServiceEnded", new List<string> { "0" });
 
         // ChartData2.Add("YearOfEstablishment", new List<string> { "2023" });
 

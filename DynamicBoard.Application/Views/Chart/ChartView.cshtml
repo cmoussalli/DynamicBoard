@@ -19,10 +19,10 @@
 
     <img id="loader_@Model.ChartID" class="loader" src="~/images/Spinne.gif" />
 
-    <div id="div_@Model.ChartID" style="display:none;">
+    <div id="div_@Model.ChartID" style="justify-content:center;display:none;">
         @if (Model.ChartType != "Label")
         {
-            <canvas id="canvas_@Model.ChartID"> Chart Canvas </canvas>
+            <canvas id="canvas_@Model.ChartID" width="405px" height="285px"> Chart Canvas </canvas>
         }
         else
         {
