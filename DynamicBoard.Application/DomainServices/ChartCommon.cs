@@ -131,7 +131,7 @@ namespace DynamicBoard.Application.DomainServices
                     //graphConfigurationList.Add(graphConfiguration);
                     var jsongraphConfigurations = Newtonsoft.Json.JsonConvert.SerializeObject(datasets);
                     var json_x_axis_labels = Newtonsoft.Json.JsonConvert.SerializeObject(datasets.Select(a => a.x_axis_labels).Distinct().ToList());
-                    var jsonchartTitle = Newtonsoft.Json.JsonConvert.SerializeObject(chartTitle);
+                    var jsonchartTitle = chartTitle.Replace("\r\n", "");// Newtonsoft.Json.JsonConvert.SerializeObject(chartTitle.Replace("\r\n", ""));
                     renderChart.ChartType = chartType;
                     renderChart.ChartID = chartID;
                     renderChart.json_graphConfigurations = jsongraphConfigurations;

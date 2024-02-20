@@ -67,11 +67,12 @@
     
     }
     function LoadChart() {
+        debugger;
         var RefershTime = '@Model.RefershTime';
         var canvasChartType = '@Model.ChartType';
         var canvasXaxis_labels = @Html.Raw(string.IsNullOrEmpty(Model?.JsonXaxis_labels) ? "null" : Model?.JsonXaxis_labels);
         var configuration = @Html.Raw(string.IsNullOrEmpty(Model?.json_graphConfigurations) ? "null" : Model?.json_graphConfigurations);
-        var canvasjsonchartTitle = '@Html.Raw(string.IsNullOrEmpty(@Model?.jsonchartTitle) ? "null" : @Model?.jsonchartTitle)';
+        var canvasjsonchartTitle = '@Html.Raw(string.IsNullOrEmpty(Model?.jsonchartTitle) ? "null" : Model?.jsonchartTitle)';
         var Yaxis_Data = @Html.Raw(string.IsNullOrEmpty(Model?.json_graphConfigurations) ? "null" : Model?.json_graphConfigurations);
         var Yaxis_Data_Dataset = Yaxis_Data;//Yaxis_Data[0].datasets;
 
