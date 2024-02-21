@@ -13,7 +13,11 @@
 <div>
     @if (Model.IsAllowRefresh)
     {
-        <img src="~/images/refresh.png" onclick="refreshPage()" alt="Refresh" style=" float: right; width: 16px;">
+        <img src="~/images/refresh.png" onclick="refreshPage()" alt="Refresh" style=" float: right; width: 20px;">
+        <img src="~/images/printer.png" onclick="printElement('div_@Model.ChartID') " alt="printer" style=" float: right; width: 25px;">
+
+        
+
     }
 
 
@@ -22,7 +26,7 @@
     <div id="div_@Model.ChartID" style="justify-content:center;display:none;">
         @if (Model.ChartType != "Label")
         {
-            <canvas id="canvas_@Model.ChartID" width="405px" height="285px"> Chart Canvas </canvas>
+            <canvas id="canvas_@Model.ChartID" width="405px" height="285px"> </canvas>
         }
         else
         {

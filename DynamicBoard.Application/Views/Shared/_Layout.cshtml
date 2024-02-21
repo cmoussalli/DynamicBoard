@@ -257,6 +257,34 @@
 
 
     }
+    function printElement(elementId) {
+        debugger;
+        var element = document.getElementById(elementId);
+        var canvas = element.querySelector('canvas');
+        var printContents = element.innerHTML;
+        var originalContents = document.body.innerHTML;
+
+        // Create an image from the canvas content
+        var img = new Image();
+        img.onload = function () {
+            // Replace the canvas with the image in the printed content
+            printContents = printContents.replace('<canvas', '<img src="' + img.src + '"');
+
+            document.body.innerHTML = printContents;
+
+            // Print the page
+            window.print();
+
+            // Restore the original contents
+            document.body.innerHTML = originalContents;
+
+            // Reload the chart after printing
+            setTimeout(function () {
+                location.reload();
+            }, 1000); // Reload after 1 second
+        };
+        img.src = canvas.toDataURL();
+    }
 </script>
 
 </html>
