@@ -30,7 +30,7 @@
                 {
                     @if (ChartDataForNewRequest.ChartParams.Count > 0)
                     {
-                        <SME.DynamicBoard.UI.Components.ChartRenderView AutoLoad="true" ChartId="@chartIdForNewRequest" ChartData="@ChartDataForNewRequest" />
+                        <SME.DynamicBoard.UI.Components.ChartRenderView AutoLoad="true" IsAllowPrint="true" IsAllowRefresh="true" ChartId="@chartIdForNewRequest" ChartData="@ChartDataForNewRequest" />
                     }
 
                 }

@@ -14,11 +14,15 @@
     @if (Model.IsAllowRefresh)
     {
         <img src="~/images/refresh.png" onclick="refreshPage()" alt="Refresh" style=" float: right; width: 20px;">
-        <img src="~/images/printer.png" onclick="printElement('div_@Model.ChartID') " alt="printer" style=" float: right; width: 25px;">
-
         
 
     }
+    @if (Model.IsAllowPrint)
+    {
+        <img src="~/images/printer.png" onclick="printElement('div_@Model.ChartID') " alt="printer" style=" float: right; width: 25px;">
+    }
+    
+
 
 
     <img id="loader_@Model.ChartID" class="loader" src="~/images/Spinne.gif" />

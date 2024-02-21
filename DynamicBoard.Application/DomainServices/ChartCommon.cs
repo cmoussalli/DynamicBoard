@@ -75,6 +75,7 @@ namespace DynamicBoard.Application.DomainServices
                     var DatasetLabels = datasetResult.Select(a => a.Dataset_Label.Replace("\r\n", "")).ToArray();
                     var TitleLabel = datasetResult.Select(a => a.x_axis_labels).FirstOrDefault();
                     dataset.tension = 0.1;
+                    dataset.hoverOffset = 10;
                     dataset.label = chartTitle;
                     dataset.data = DataArary.ToList();
                     datasets.Add(dataset);

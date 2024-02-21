@@ -19,6 +19,7 @@ else
     [Parameter] public ChartData ChartData { get; set; } = new();
     [Parameter] public string ChartId { get; set; } = string.Empty;
     [Parameter] public bool IsAllowRefresh { get; set; }
+    [Parameter] public bool IsAllowPrint { get; set; }
     [Parameter] public bool AutoLoad { get; set; } = true;
     [Parameter] public int Language { get; set; } = 0;
     string url = "";
@@ -104,7 +105,7 @@ else
 
 
                         queryStringParameters = "";
-                        queryStringParameters = "chartID=" + ChartId + "&parameters=[" + parameters + "]&token=" + "UserToken" + "&IsAllowRefresh=" + IsAllowRefresh + "&Language=" + Language;
+                        queryStringParameters = "chartID=" + ChartId + "&parameters=[" + parameters + "]&token=" + "UserToken" + "&IsAllowRefresh=" + IsAllowRefresh + "&IsAllowPrint=" + IsAllowPrint + "&Language=" + Language;
                         EncryptionHelper.encryptionKey = Storage.EncryptionKey;
                         var encryptedData = EncryptionHelper.Encrypt(queryStringParameters);
                         url = Storage.RootAddress + "/Chart/GetChartEncrypted?Data=" + encryptedData;

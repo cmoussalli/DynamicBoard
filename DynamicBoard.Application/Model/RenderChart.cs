@@ -10,6 +10,7 @@
         public string ChartCSS { get; set; }
         public int? RefershTime { get; set; }
         public bool IsAllowRefresh { get; set; }
+        public bool IsAllowPrint { get; set; }
         public long LabelValue { get; set; }
     }
 }

@@ -119,6 +119,8 @@
             data: {
                 labels: canvasXaxis_labels,//x axis labels
                 datasets: Yaxis_Data_Dataset,
+                hoverOffset: 10,
+                borderWidth:0
             },
             options: {
                 legend: { display: false },
@@ -131,9 +133,7 @@
                     },
                 },
                 responsive: true,
-                interaction: {
-                    intersect: false,
-                },
+                 
                 scales: {
                     x: {
                         stacked: Isstacked,

@@ -70,6 +70,7 @@ namespace DynamicBoard.Application.Controllers
             string parameters = "";
             string token = "";
             bool IsAllowRefersh = false;
+            bool IsAllowPrint = false;
             int language = 0;
             if (string.IsNullOrEmpty(data))
             {
@@ -95,9 +96,12 @@ namespace DynamicBoard.Application.Controllers
                 // IsAllowRefersh
                 string[] partsForIsAllowRefersh = splitString[3].Split('=');
                 IsAllowRefersh = Convert.ToBoolean(partsForIsAllowRefersh[1]);
+                //IsAllowPrint
+                string[] partsForIsAllowPrint = splitString[4].Split('=');
+                IsAllowPrint = Convert.ToBoolean(partsForIsAllowPrint[1]);
 
-                // Language 0 for english and 1 for arabic
-                string[] partsForLanguage = splitString[4].Split('=');
+                // Language 2 for english and 1 for arabic
+                string[] partsForLanguage = splitString[5].Split('=');
                 language = Convert.ToInt32(partsForLanguage[1]);
 
 
@@ -116,7 +120,7 @@ namespace DynamicBoard.Application.Controllers
 
                 else
                 {
-                    IActionResult result = await ChartView(chartId, parameters, IsAllowRefersh, language);
+                    IActionResult result = await ChartView(chartId, parameters, IsAllowRefersh, IsAllowPrint, language);
                     return result;
                 }
 
@@ -298,7 +302,7 @@ namespace DynamicBoard.Application.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> ChartView(long chartID, string parameters, bool IsAllowRefresh = false, int Language = 0)
+        public async Task<IActionResult> ChartView(long chartID, string parameters, bool IsAllowRefresh = false, bool IsAllowPrint = false, int Language = 0)
         {
             string modifiedQueryScript = "";
             List<ParamData> paramDataset = new List<ParamData>();
@@ -363,7 +367,7 @@ namespace DynamicBoard.Application.Controllers
                     ExtendDashboard extendDashboard = new();
                     extendDashboard.DBConnections = extendCharts[0].DBConnections;
                     var title = "";
-                    if (Language == 0)
+                    if (Language == 2)
                     {
                         title = extendCharts[0].TitleEn;
                     }
@@ -373,6 +377,7 @@ namespace DynamicBoard.Application.Controllers
                     }
                     renderChart = ChartCommon.ChartManipulation(extendDashboard, extendCharts[0].ChartTypes.TitleEn, title, extendCharts[0].ID, "", extendCharts[0], modifiedQueryScript);
                     renderChart.IsAllowRefresh = IsAllowRefresh;
+                    renderChart.IsAllowPrint= IsAllowPrint;
                     return View("ChartView", renderChart);
                 }
                 else
