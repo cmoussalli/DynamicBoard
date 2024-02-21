@@ -434,16 +434,16 @@ namespace DynamicBoard.Application.Controllers
                     string key = keyValue[0];
                     if (!string.IsNullOrEmpty(key))
                     {
-                        param.Key = key;
+                        param.Key = key.Trim();
                     }
                     string[] splitedValues = keyValue[1].Split('|');
                     if (splitedValues.Length > 0)
                     {
                         foreach (var item in splitedValues)
                         {
-                            if (!string.IsNullOrEmpty(item))
+                            if (!string.IsNullOrEmpty(item.Trim()))
                             {
-                                clauseValues.Add(item);
+                                clauseValues.Add(item.Trim());
                             }
 
 
