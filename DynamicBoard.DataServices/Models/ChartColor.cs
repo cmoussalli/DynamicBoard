@@ -17,7 +17,7 @@ namespace DynamicBoard.DataServices.Models
         public string FillBorderRGB { get; set; }
 
         public bool IsDeleted { get; set; }
-
+        public int OrderID { get; set; }
     }
 
 }

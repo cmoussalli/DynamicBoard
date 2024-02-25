@@ -103,7 +103,7 @@ namespace DynamicBoard.DataServices.Services
 
 
         #region Chart
-        public async Task<long> ChartAddEditAsync(long id, long chartTypeID, long dBConnectionID, string dataScript, string titleEn, string titleAr, long refershTime, bool isActive, bool isDeleted, string createdBy = " ")
+        public async Task<long> ChartAddEditAsync(long id, long chartTypeID, long dBConnectionID, string dataScript, string titleEn, string titleAr, long refershTime, bool isActive, bool isDeleted, long chartTheme=1,string createdBy = " ")
         {
             SqlConnection conn = new SqlConnection(connStr);
             try
@@ -113,6 +113,7 @@ namespace DynamicBoard.DataServices.Services
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.AddWithValue("@Id", id);
                     command.Parameters.AddWithValue("@ChartTypeID", chartTypeID);
+                    command.Parameters.AddWithValue("@ChartTheme", chartTheme);
                     command.Parameters.AddWithValue("@DBConnectionID", dBConnectionID);
                     command.Parameters.AddWithValue("@DataScript", dataScript);
                     command.Parameters.AddWithValue("@TitleEn", titleEn);
@@ -288,7 +289,16 @@ namespace DynamicBoard.DataServices.Services
             }
             return chartTypes;
         }
-
+        public async Task<List<ChartColorTheme>> GetChartColorTheme()
+        {
+            List<ChartColorTheme> chartTypes = new List<ChartColorTheme>();
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                await conn.OpenAsync();
+                chartTypes = (List<ChartColorTheme>)await conn.QueryAsync<ChartColorTheme>("GetChartTheems");
+            }
+            return chartTypes;
+        }
         public async Task<long> LinkChartWithUsers(Lnk_Charts_Users model)
         {
 

@@ -37,7 +37,7 @@ else
             <div class="col-6">
 
                 <FluentTextField Appearance="FluentInputAppearance.Filled" Label="Title English" @bind-Value="Chart!.TitleEn" Style="margin-top: 10px; width:100%" />
-                
+
             </div>
 
             <div class="col-6">
@@ -63,6 +63,21 @@ else
                     </FluentSelect>
                     <br />
                     <br />
+
+                    <FluentSelect Label="Chart Theme" @onchange=" OnChangeChartThemeOption" Value="@selectedTheme" TOption="string" Style="width:80%;  margin-top: 8px;">
+                        <FluentOption Id="0" Value="Please select an chart type">Please select an Theme</FluentOption>
+
+                        @foreach (var option in chartColorThemes)
+                        {
+                            <FluentOption Id="@option.ID.ToString()" Value="@option.ID.ToString()">@option.Title</FluentOption>
+
+                        }
+
+                    </FluentSelect>
+                    <br />
+                    <br />
+
+
                     <FluentSelect Label="Database Connection" @onchange="OnChangeDBOption" Value="@selectedDb" TOption="string" Style="width:80%;  margin-top: 8px;">
                         <FluentOption Id="0" Value="Please select an Database Connection">Please select an Database Connection</FluentOption>
                         @foreach (var option in extendDBConnections)
@@ -74,19 +89,19 @@ else
                     </FluentSelect>
                     <br />
                     <br />
-                        <FluentRadioGroup @bind-Value=IsActive Label="Is Active">
-                            <FluentRadio Label="Yes" Value="true"></FluentRadio>
-                            <FluentRadio Label="No" Value="false"></FluentRadio>
-                        </FluentRadioGroup>
+                    <FluentRadioGroup @bind-Value=IsActive Label="Is Active">
+                        <FluentRadio Label="Yes" Value="true"></FluentRadio>
+                        <FluentRadio Label="No" Value="false"></FluentRadio>
+                    </FluentRadioGroup>
 
 
 
-                        @*  <br />
+                    @*  <br />
         <br />
         <FluentTextField Type="number" Pattern="[0-9]*" Appearance="FluentInputAppearance.Filled" Label="Refresh Time"
         @bind-Value="refershTime" Style="width:80%;  margin-top: 8px;" />
         *@
-                    
+
                 </div>
                 <div class="col-6">
                     <br />
@@ -104,18 +119,18 @@ else
                     @if (chartParameters.Count > 0)
                     {
                         <div class="col-6">
-                            <ChartParameterList ChartParameters="@chartParameters" OnResponse="@GetChartParameterListInResponse" 
-                                OnResponseForShowData="@GetParameterInResponse"></ChartParameterList>
+                            <ChartParameterList ChartParameters="@chartParameters" OnResponse="@GetChartParameterListInResponse"
+                                                OnResponseForShowData="@GetParameterInResponse"></ChartParameterList>
                         </div>
                     }
                 }
                 <div class="col-4">
-                    
+
                     <FluentButton Appearance="Appearance.Accent" OnClick="()=>OnOpen()">
                         Add Chart Parameters +
                     </FluentButton>
                     @* <p style="color:red"> In case of adding Parameters must include 'and  1=1' in you script."</p>
- *@
+        *@
 
                 </div>
 
@@ -192,12 +207,15 @@ else
     string labelColor = "green";
     string message = "";
     string selectedChartTypeOption = "0";
+    string selectedChartThemeOption = "0";
     string script = "";
     string selectedDBOption = "";
     string selectedDb = "0";
     string selectedChart = "";
+    string selectedTheme = "";
     string selectedDbName = "Please select an Database Connection";
     string selectedChartTypeName = "Please select an chart type";
+    string selectedChartThemeName = "Please select an chart theme";
     string refershTime = "5";
     bool isLoading = true;
     private bool _trapFocus = true;
@@ -209,6 +227,7 @@ else
     public long chartID = -1;
     public List<ExtendChart>? Charts { get; set; } = new();
     List<ChartTypes> chartTypes = new();
+    List<ChartColorTheme> chartColorThemes = new();
     ChartTypes chartType = new();
     List<ExtendDBConnections> extendDBConnections = new();
     ChartTypes selectedChartType = new();
@@ -264,6 +283,8 @@ else
             selectedChart = selectedChartTypeOption;
             selectedChartTypeName = chartTypes.Where(option => option.ID == Convert.ToInt64(selectedChartTypeOption)).Select(option => option.TitleEn.ToString()).FirstOrDefault();
             script = chart.DataScript;
+            selectedTheme = chart.ChartTheme.ToString();
+            selectedChartThemeName = chartColorThemes.Where(option => option.ID == Convert.ToInt64(selectedChartThemeOption)).Select(option => option.Title.ToString()).FirstOrDefault();
 
             chartParameters = await commonServices.GetChartParametersByChartID(chart.ID);
 
@@ -290,6 +311,12 @@ else
     private void OnChangeChartTypeOption(ChangeEventArgs e)
     {
         selectedChartTypeOption = e.Value.ToString();
+    }
+
+    private void OnChangeChartThemeOption(ChangeEventArgs e)
+    {
+        selectedChartThemeOption = e.Value.ToString();
+
     }
     private void OnChangeDBOption(ChangeEventArgs e)
     {
@@ -335,10 +362,13 @@ else
         extendDBConnections = new();
         chartTypes = await chartServices.GetChartTypes();
         extendDBConnections = await commonServices.GetDBConnections();
-
+        //Task<List<ChartColorTheme>> GetChartColorTheme()
+        chartColorThemes = await chartServices.GetChartColorTheme();
         StateHasChanged();
 
     }
+
+
     public async Task AddNewChart()
     {
         try
@@ -373,7 +403,7 @@ else
                 }
 
                 Chart.DataScript = script;
-
+                Chart.ChartTheme = Convert.ToInt64(selectedChartThemeOption);
             }
             else
             {
@@ -384,7 +414,7 @@ else
             message = "";
             if (string.IsNullOrEmpty(validation()))
             {
-                var result = await chartServices.ChartAddEdit(Chart.ID, Chart.ChartTypeID, Chart.DBConnectionID, Chart.DataScript, Chart.TitleEn, Chart.TitleAr, Chart.RefershTime, Chart.IsActive, Chart.IsDeleted, Chart.CreatedBy);
+                var result = await chartServices.ChartAddEdit(Chart.ID, Chart.ChartTypeID, Chart.DBConnectionID, Chart.DataScript, Chart.TitleEn, Chart.TitleAr, Chart.RefershTime, Chart.IsActive, Chart.IsDeleted, Chart.CreatedBy, Chart.ChartTheme);
 
 
 
@@ -622,7 +652,7 @@ else
     {
         ActionForDelete = false;
         chartParameterListCount = 0;
-        
+
         _status = "Dialog opened with button click";
         ActionAddChartParameters = true;
         if (chartParameters is not null)

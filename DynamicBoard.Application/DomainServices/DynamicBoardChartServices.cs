@@ -8,9 +8,9 @@ namespace DynamicBoard.Application.DomainServices
     {
         DynamicBoardDataServices db = new DynamicBoardDataServices(Storage.DBConnectionString);
         #region Chart
-        public async Task<long> ChartAddEdit(long id, long chartTypeID, long dBConnectionID, string dataScript, string titleEn, string titleAr, int refershTime, bool isActive, bool isDeleted, string createdBy)
+        public async Task<long> ChartAddEdit(long id, long chartTypeID, long dBConnectionID, string dataScript, string titleEn, string titleAr, int refershTime, bool isActive, bool isDeleted, string createdBy, long chartTheme)
         {
-            return await db.ChartAddEditAsync(id, chartTypeID, dBConnectionID, dataScript, titleEn, titleAr, refershTime, isActive, isDeleted, createdBy);
+            return await db.ChartAddEditAsync(id, chartTypeID, dBConnectionID, dataScript, titleEn, titleAr, refershTime, isActive, isDeleted, chartTheme, createdBy);
         }
         public async Task<long> ChartParametersAddUpdateAsync(long chartid, string tag, string sqlplaceholder, bool isRequired, string defaultValue)
         {
@@ -34,7 +34,10 @@ namespace DynamicBoard.Application.DomainServices
         {
             return await db.GetChartTypes();
         }
-
+        public async Task<List<ChartColorTheme>> GetChartColorTheme()
+        { 
+        return await db.GetChartColorTheme();
+        }
         public async Task<List<ExtendLnk_Charts_Users>> GetLinkChartsUsersByChartIDAsync(long chartId = 0)
         {
             return await db.GetLinkChartsUsersByChartIDAsync(chartId);
