@@ -20,6 +20,7 @@ namespace DynamicBoard.Application.DomainServices
         {
             return await db.GetChartParametersByChartID(chartId);
         }
+       
 
     }
 }

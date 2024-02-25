@@ -152,7 +152,7 @@ namespace DynamicBoard.DataServices.Services
 
         }
 
-        public async Task<long> ChartParametersAddUpdateAsync(long chartid,string tag,string sqlplaceholder,bool isRequired,string defaultValue)
+        public async Task<long> ChartParametersAddUpdateAsync(long chartid, string tag, string sqlplaceholder, bool isRequired, string defaultValue)
         {
             SqlConnection conn = new SqlConnection(connStr);
             try
@@ -162,7 +162,7 @@ namespace DynamicBoard.DataServices.Services
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.AddWithValue("@ChartId", chartid);
                     command.Parameters.AddWithValue("@Tag", tag);
-                    command.Parameters.AddWithValue("@SQLPlaceHolder",sqlplaceholder);
+                    command.Parameters.AddWithValue("@SQLPlaceHolder", sqlplaceholder);
                     command.Parameters.AddWithValue("@IsRequired", isRequired);
                     command.Parameters.AddWithValue("@DefaultValue", defaultValue);
                     var returnIdParameter = new SqlParameter
@@ -323,7 +323,7 @@ namespace DynamicBoard.DataServices.Services
             }
         }
 
-        public async Task<List<ExtendLnk_Charts_Users>> GetLinkChartsUsersByChartIDAsync(long chartId=0)
+        public async Task<List<ExtendLnk_Charts_Users>> GetLinkChartsUsersByChartIDAsync(long chartId = 0)
         {
             List<ExtendLnk_Charts_Users> Lnk_Charts_Users = new List<ExtendLnk_Charts_Users>();
 
@@ -333,16 +333,16 @@ namespace DynamicBoard.DataServices.Services
                 {
                     var p = new
                     {
-                        ChartID =chartId
+                        ChartID = chartId
                     };
 
-                    Lnk_Charts_Users = (await conn.QueryAsync<ExtendLnk_Charts_Users,Charts,Users,ChartTypes , ExtendLnk_Charts_Users>(
+                    Lnk_Charts_Users = (await conn.QueryAsync<ExtendLnk_Charts_Users, Charts, Users, ChartTypes, ExtendLnk_Charts_Users>(
                         "GetLnk_Charts_UsersByChartID @ChartID",
-                        (ext, chart,user,charttypes) =>
+                        (ext, chart, user, charttypes) =>
                         {
                             ext.Charts = chart;
                             ext.User = user;
-                            ext.ChartTypes= charttypes;
+                            ext.ChartTypes = charttypes;
                             return ext;
                         },
                         p
@@ -432,12 +432,42 @@ namespace DynamicBoard.DataServices.Services
             var result = (await conn.QueryAsync<ChartParameter>("ChartParametersGetAll")).ToList();
             return result;
         }
-        public async Task<List<ChartParameter>> GetChartParametersByChartID( long chartid)
+        public async Task<List<ChartParameter>> GetChartParametersByChartID(long chartid)
         {
             SqlConnection conn = new SqlConnection(connStr);
             var result = (await conn.QueryAsync<ChartParameter>("ChartParametersGetByChartID @ChartID",
                 new { ChartID = chartid })).ToList();
             return result;
+        }
+
+        public async Task<List<ChartThemeExtends>> GetChartTheme(long chartid)
+        {
+            List<ChartThemeExtends> chartThemeExtends = new List<ChartThemeExtends>();
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connStr))
+                {
+                    var p = new
+                    {
+                        ChartID = chartid,
+                    };
+                    chartThemeExtends = (await conn.QueryAsync<ChartThemeExtends, ChartColorTheme, ChartColor, ChartThemeExtends>
+                    ("GetChartTheemByChartID @ChartID", (ext, ct, cc) =>
+                    {
+                        ext.ChartColorTheme = ct;
+                        ext.ChartColor = cc;
+                        return ext;
+                    }, p)).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+
+            return chartThemeExtends;
         }
 
         #endregion

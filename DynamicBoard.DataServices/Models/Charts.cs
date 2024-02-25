@@ -11,6 +11,7 @@ namespace DynamicBoard.DataServices
         public long ID { get; set; }
 
         public long ChartTypeID { get; set; }
+        public long ChartTheme { get; set; }
 
         public long DBConnectionID { get; set; }
 

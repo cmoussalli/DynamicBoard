@@ -39,6 +39,10 @@ namespace DynamicBoard.Application.DomainServices
         {
             return await db.GetLinkChartsUsersByChartIDAsync(chartId);
         }
+        public async Task<List<ChartThemeExtends>> GetChartTheme(long chartId)
+        {
+            return await db.GetChartTheme(chartId);
+        }
         #endregion
     }
 }

@@ -12,5 +12,7 @@
         public bool IsAllowRefresh { get; set; }
         public bool IsAllowPrint { get; set; }
         public long LabelValue { get; set; }
+        
+
     }
 }

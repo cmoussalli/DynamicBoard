@@ -1,5 +1,6 @@
 ﻿using DynamicBoard.Application.Model;
 using DynamicBoard.DataServices;
+using DynamicBoard.DataServices.Models;
 using DynamicBoard.DataServices.Services;
 using DynamicBoard.Models;
 using System.Data;
@@ -9,7 +10,7 @@ namespace DynamicBoard.Application.DomainServices
     public class ChartCommon
     {
 
-        public static RenderChart ChartManipulation(ExtendDashboard extendDashboard, string chartType, string chartTitle, long chartID, string chartCSS, ExtendChart extendChart = null, string modifiedQuery = "")
+        public static RenderChart ChartManipulation(ExtendDashboard extendDashboard, string chartType, string chartTitle, long chartID, string chartCSS, List<ChartThemeExtends> chartThemes, ExtendChart extendChart = null, string modifiedQuery = "")
         {
             string dataScript = "";
             DynamicBoardDataServices db = new DynamicBoardDataServices(Storage.DBConnectionString);
@@ -17,6 +18,8 @@ namespace DynamicBoard.Application.DomainServices
 
             RenderChart renderChart = new RenderChart();
 
+            List<string> backgroundColor = new();
+            List<string> borderColor = new();
             List<GraphConfiguration> graphConfigurationList = new List<GraphConfiguration>();
             GraphConfiguration graphConfiguration = new GraphConfiguration();
             DynamicBoard.Application.Model.Dataset dataset = new();
@@ -54,10 +57,8 @@ namespace DynamicBoard.Application.DomainServices
                     // renderChart.RefershTime = extendChart.RefershTime;
                 }
 
-
                 if (datasetResult != null)
                 {
-
 
                     if (chartType == "Label")
                     {
@@ -76,19 +77,53 @@ namespace DynamicBoard.Application.DomainServices
                     var TitleLabel = datasetResult.Select(a => a.x_axis_labels).FirstOrDefault();
                     dataset.tension = 0.1;
                     dataset.hoverOffset = 10;
+
+                    if (chartThemes is not null)
+                    {
+                        var countTheem = datasetResult.ToList().Count;
+                        int loopRun = 0;
+                        if (chartThemes.Count > 0)
+                        {
+                            //dataset.backgroundColor =
+                            foreach (var item in chartThemes)
+                            {
+                                if (countTheem != loopRun)
+                                {
+                                    // FillBackgroundRGBA 
+                                    backgroundColor.Add("rgba(" + item.ChartColor.FillBackgroundRGBA + ")");
+                                    //FillBorderRGB
+                                    borderColor.Add("rgb(" + item.ChartColor.FillBorderRGB + ")");
+
+                                    loopRun++;
+                                }
+                                else
+                                {
+                                    break;
+                                }
+
+                            }
+                        }
+
+                    }
                     dataset.label = chartTitle;
                     dataset.data = DataArary.ToList();
+                    dataset.backgroundColor = backgroundColor;
+                    dataset.borderColor = borderColor;
                     datasets.Add(dataset);
-                    var datasetArray=datasets.ToArray();
-                      var jsongraphConfigurations = Newtonsoft.Json.JsonConvert.SerializeObject(datasets);
+
+
+                    var datasetArray = datasets.ToArray();
+                    var jsongraphConfigurations = Newtonsoft.Json.JsonConvert.SerializeObject(datasets);
                     var json_x_axis_labels = Newtonsoft.Json.JsonConvert.SerializeObject(DatasetLabels);
                     var jsonchartTitle = chartTitle.Replace("\r\n", "");// Newtonsoft.Json.JsonConvert.SerializeObject(chartTitle.Replace("\r\n", ""));
+
                     renderChart.ChartType = chartType;
                     renderChart.ChartID = chartID;
                     renderChart.json_graphConfigurations = jsongraphConfigurations;
                     renderChart.JsonXaxis_labels = json_x_axis_labels.ToString();
                     renderChart.jsonchartTitle = chartTitle;
                     renderChart.ChartCSS = chartCSS;
+
 
                 }
             }
