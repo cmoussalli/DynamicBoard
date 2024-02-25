@@ -1,6 +1,6 @@
 ﻿
 <!doctype html>
-<html >
+<html>
 <head>
 
     <!-- TITLE -->
@@ -12,9 +12,7 @@
     <style>
 
         .loader {
-
             position: center;
-
             z-index: 999999999999999999999999999999999999999;
             opacity: .7;
         }
@@ -29,7 +27,7 @@
 <script src="~/js/jquery-3.6.0.min.js"></script>
 <script type="text/javascript" charset="utf-8">
 
-    var isloading =true
+    var isloading = true
     var loader = document.getElementById("loader_@Model.ChartID");
     var canvasDiv = document.getElementById("div_@Model.ChartID");
     document.addEventListener("DOMContentLoaded", function () {
@@ -50,11 +48,11 @@
             if (canvasChartType == "Label") {
                 LoadLabel();
             }
-            else { 
+            else {
                 LoadChart();
             }
 
-            
+
         });
     });
 
@@ -64,7 +62,7 @@
         var div = document.getElementById("div_@Model.ChartID");
         div.style.display = 'block';
         loader.style.display = "none";
-    
+
     }
     function LoadChart() {
         debugger;
@@ -76,11 +74,10 @@
         var Yaxis_Data = @Html.Raw(string.IsNullOrEmpty(Model?.json_graphConfigurations) ? "null" : Model?.json_graphConfigurations);
         var Yaxis_Data_Dataset = Yaxis_Data;//Yaxis_Data[0].datasets;
 
-
         //debugger
         var Isstacked = false;
         var _height = 0;
-
+        var gridDisplay = true;
         if (canvasChartType == "Bar") {
             canvasChartType = "bar";
         }
@@ -91,22 +88,24 @@
         if (canvasChartType == "doughnut") {
 
             canvasChartType = "doughnut";
+            gridDisplay = false;
         }
         if (canvasChartType == "Pie") {
 
             canvasChartType = "pie";
+            gridDisplay = false;
         }
         if (canvasChartType == "Line") {
             canvasChartType = "line";
         }
-        if (canvasChartType == "polarArea") { 
+        if (canvasChartType == "polarArea") {
             canvasChartType = "polarArea";
 
-        } 
+        }
         if (canvasChartType == "RadarChart") {
             canvasChartType = "radar";
         }
-        
+
         var canvas = 'canvas_' + @Model.ChartID;
 
         //loadCanvas(@Model.ChartID);
@@ -120,11 +119,11 @@
                 labels: canvasXaxis_labels,//x axis labels
                 datasets: Yaxis_Data_Dataset,
                 hoverOffset: 10,
-                borderWidth:0
+                borderWidth: 0,
+
             },
             options: {
                 legend: { display: false },
-
                 responsive: true,
                 plugins: {
                     title: {
@@ -133,13 +132,19 @@
                     },
                 },
                 responsive: true,
-                 
+
                 scales: {
                     x: {
-                        stacked: Isstacked,
+                        // stacked: Isstacked,
+                        grid: {
+                            display: gridDisplay
+                        }
                     },
                     y: {
-                        stacked: Isstacked
+                        // stacked: Isstacked,
+                        grid: {
+                            display: gridDisplay 
+                        }
                     }
                 },
                 title: {
@@ -189,7 +194,7 @@
             canvasChartType = "line";
         }
 
-        var canvas = 'canvas_' + @Model.ChartID;  
+        var canvas = 'canvas_' + @Model.ChartID;
 
         //loadCanvas(@Model.ChartID);
         var ctx = document.getElementById(canvas).getContext('2d');
@@ -239,7 +244,7 @@
             // Hide the loader
             loader.style.display = "none";
         }, 2000);
-    
+
     }
     function refreshPage() {
 

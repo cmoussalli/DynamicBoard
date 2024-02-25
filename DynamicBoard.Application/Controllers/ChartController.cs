@@ -32,7 +32,7 @@ namespace DynamicBoard.Application.Controllers
             //{
             ExtendDashboard extendDashboard = new();
             extendDashboard.DBConnections = extendCharts[0].DBConnections;
-            renderChart = ChartCommon.ChartManipulation(extendDashboard, extendCharts[0].ChartTypes.TitleEn, extendCharts[0].TitleEn, extendCharts[0].ID, "", extendCharts[0]);
+            renderChart = ChartCommon.ChartManipulation(extendDashboard, extendCharts[0].ChartTypes.TitleEn, extendCharts[0].TitleEn, extendCharts[0].ID, "",null, extendCharts[0]);
             //}
             // var json = Newtonsoft.Json.JsonConvert.SerializeObject(renderChart);
             return PartialView("ChartPv", renderChart);
@@ -137,16 +137,15 @@ namespace DynamicBoard.Application.Controllers
             List<ParamData> paramDataset = new List<ParamData>();
             List<ChartParameter> chartParameters = new();
             List<string> whereClauseList = new List<string>();
+            List<ChartThemeExtends> chartThemes = new List<ChartThemeExtends>();
             //url = "/Chart/GetRequestChartPV?chartID=" + ChartId + "&parameters=[[CR:1000|2000][personID:222|333]";
             paramDataset = QueryStringParser(parameters);
             string paramDatasetValues = "";
             List<ExtendChart> extendCharts = new List<ExtendChart>();
             RenderChart renderChart = new RenderChart();
-
             extendCharts = await dynamicBoardChartServices.ChartsGetByIdAsync(chartID);
             chartParameters = await dynamicBoardCommonServices.GetChartParametersByChartID(chartID);
-
-
+            chartThemes = await dynamicBoardChartServices.GetChartTheme(chartID);
             if (chartParameters != null)
             {
                 if (chartParameters.Count > 0)
@@ -281,7 +280,7 @@ namespace DynamicBoard.Application.Controllers
                     //{
                     ExtendDashboard extendDashboard = new();
                     extendDashboard.DBConnections = extendCharts[0].DBConnections;
-                    renderChart = ChartCommon.ChartManipulation(extendDashboard, extendCharts[0].ChartTypes.TitleEn, extendCharts[0].TitleEn, extendCharts[0].ID, "", extendCharts[0], modifiedQueryScript);
+                    renderChart = ChartCommon.ChartManipulation(extendDashboard, extendCharts[0].ChartTypes.TitleEn, extendCharts[0].TitleEn, extendCharts[0].ID, "", chartThemes, extendCharts[0], modifiedQueryScript);
 
                     return PartialView("ChartPv", renderChart);
                 }
@@ -313,10 +312,10 @@ namespace DynamicBoard.Application.Controllers
             string paramDatasetValues = "";
             List<ExtendChart> extendCharts = new List<ExtendChart>();
             RenderChart renderChart = new RenderChart();
-
+            List<ChartThemeExtends> chartThemes = new List<ChartThemeExtends>();
             extendCharts = await dynamicBoardChartServices.ChartsGetByIdAsync(chartID);
             chartParameters = await dynamicBoardCommonServices.GetChartParametersByChartID(chartID);
-
+            chartThemes = await dynamicBoardChartServices.GetChartTheme(chartID);
             string query = extendCharts[0].DataScript;
             if (chartParameters != null)
             {
@@ -375,7 +374,7 @@ namespace DynamicBoard.Application.Controllers
                     {
                         title = extendCharts[0].TitleAr;
                     }
-                    renderChart = ChartCommon.ChartManipulation(extendDashboard, extendCharts[0].ChartTypes.TitleEn, title, extendCharts[0].ID, "", extendCharts[0], modifiedQueryScript);
+                    renderChart = ChartCommon.ChartManipulation(extendDashboard, extendCharts[0].ChartTypes.TitleEn, title, extendCharts[0].ID, "", chartThemes, extendCharts[0], modifiedQueryScript);
                     renderChart.IsAllowRefresh = IsAllowRefresh;
                     renderChart.IsAllowPrint= IsAllowPrint;
                     return View("ChartView", renderChart);

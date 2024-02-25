@@ -11,84 +11,82 @@
 
 <FluentThemeProvider>
 
-@*     <div class="container">
- *@
- <div class="row">
-            <div class="col-5 " style="width:20%">
-                <div class="card" style="height: 90vh; overflow: auto;">
+    @*     <div class="container">
+    *@
+    <div class="row">
+        <div class="col-5 " style="width:20%">
+            <div class="card" style="height: 90vh; overflow: auto;">
 
-                    <FluentStack HorizontalAlignment="HorizontalAlignment.Center">
-                        <FluentAnchor OnClick="@OnOpen" IconStart="@(new Icons.Regular.Size24.DocumentAdd().WithColor(Color.Success))">
-                            @newChart
-                        </FluentAnchor>
-                      
+                <FluentStack HorizontalAlignment="HorizontalAlignment.Center">
+                    <FluentButton  OnClick=" ()=>  OnOpen()" IconStart="@(new Icons.Regular.Size16.AddCircle())"  >
+                        <b>@newChart</b>
+                    </FluentButton>
+                </FluentStack>
 
-                    </FluentStack>
-                   
-                    <br />
+                <br />
 
-                    <ChartListView @ref="chartListView" OnResponse="GetResponseMessage"></ChartListView>
+                <ChartListView @ref="chartListView" OnResponse="GetResponseMessage"></ChartListView>
 
 
-                </div>
-            </div>
-            <div class="col-7" style="width:80%">
-                <div class="card" style="height: 90vh; overflow:auto">
-                    <FluentTabs @bind-ActiveTabId="@SelectedTabId">
-                        <FluentTab Id="tab-2">
-                            <Header>
-                                <FluentIcon Value="@(new Icons.Regular.Size16.TextFontInfo())" Color="@Color.Success" />
-                                Charts Info
-                            </Header>
-                            <Content>
-
-                                @if (ChartId != 0)
-                                {
-                                    <ChartAdd OnResponse="GetResponse" @ref="chartAdd" Id=@ChartId actionTitle="@actionTitle" Chart="@chart" />
-
-
-                                }
-                            </Content>
-                        </FluentTab>
-                        <FluentTab Id="tab-3" >
-                            <Header>
-                                <FluentIcon Value="@(new Icons.Regular.Size16.PersonAdd())" Color="@Color.Error" />
-                                <span style="color:forestgreen;">Users</span>
-                            </Header>
-                            <Content>
-                                @if (ChartId != 0)
-                                {
-                                    <DynamicBoard.Application.Components.Pages.User.UsersIntegrateWithChart @ref="@usersIntegrateWithChart" ChartId="@ChartId" />
-                                }
-
-                            </Content>
-                        </FluentTab>
-                        <FluentTab Id="tab-4" style="width: 100%;height: 501%;"  >
-                            <Header>
-                                <FluentIcon Value="@(new Icons.Regular.Size16.ContentViewGallery())" Color="@Color.Error" />
-                                <span style="color:forestgreen;">View</span>
-                            </Header>
-                            <Content>
-                                @if (ChartId != 0)
-                                {
-                                    <ChartRenderParameters @ref="@chartRenderParameters" ChartID="@ChartId" OnResponse="@GetUrlFromPreview"></ChartRenderParameters>
-
-                                    <iframe id="ChartFrame" style="width: 100%;height: 100%;"></iframe>
-
-                                }
-                                else
-                                {
-                                    <FluentProgressRing Style="width:30px;height:30px" />
-                                }
-
-
-                            </Content>
-                        </FluentTab>
-                    </FluentTabs>
-                </div>
             </div>
         </div>
- @*    </div> *@
+        <div class="col-7" style="width:80%">
+            <div class="card" style="height: 90vh; overflow:auto">
+                <FluentTabs @bind-ActiveTabId="@SelectedTabId">
+                    <FluentTab Id="tab-2">
+                        <Header>
+                            <FluentIcon Value="@(new Icons.Regular.Size16.TextFontInfo())" Color="@Color.Success" />
+                            Charts Info
+                        </Header>
+                        <Content>
+
+                            @if (ChartId != 0)
+                            {
+                                <ChartAdd OnResponse="GetResponse" @ref="chartAdd" Id=@ChartId actionTitle="@actionTitle" Chart="@chart" />
+
+
+                            }
+                        </Content>
+                    </FluentTab>
+                    <FluentTab Id="tab-3">
+                        <Header>
+                            <FluentIcon Value="@(new Icons.Regular.Size16.PersonAdd())" Color="@Color.Error" />
+                            <span style="color:forestgreen;">Users</span>
+                        </Header>
+                        <Content>
+                            @if (ChartId != 0)
+                            {
+                                <DynamicBoard.Application.Components.Pages.User.UsersIntegrateWithChart @ref="@usersIntegrateWithChart" ChartId="@ChartId" />
+                            }
+
+                        </Content>
+                    </FluentTab>
+                    <FluentTab Id="tab-4" style="width: 100%;height: 501%;">
+                        <Header>
+                            <FluentIcon Value="@(new Icons.Regular.Size16.ContentViewGallery())" Color="@Color.Error" />
+                            <span style="color:forestgreen;">View</span>
+                        </Header>
+                        <Content>
+                            @if (ChartId != 0)
+                            {
+                                <ChartRenderParameters @ref="@chartRenderParameters" ChartID="@ChartId" OnResponse="@GetUrlFromPreview"></ChartRenderParameters>
+
+                                <iframe id="ChartFrame" style="width: 100%;height: 100%;"></iframe>
+
+                            }
+                            else
+                            {
+                                <FluentProgressRing Style="width:30px;height:30px" />
+                            }
+
+
+                        </Content>
+                    </FluentTab>
+                </FluentTabs>
+            </div>
+        </div>
+    </div>
+    @*    </div> *@
 
 </FluentThemeProvider>
 
@@ -102,14 +100,14 @@
         <h2>@actionTitle Chart</h2>
 
         <ChartAdd @ref="chartAdd" Id="@ChartId" actionTitle="@actionTitle" Chart="chartForAdd" OnResponse="GetResponseMessage"></ChartAdd>
-        
-    }@* 
+
+    }@*
     <FluentButton Appearance="Appearance.Lightweight" Autofocus="true" @onclick="OnClose">Close</FluentButton> *@
     @* <br />
     <FluentLabel Style="color:green">@message</FluentLabel>
- *@
+    *@
 
-    </FluentDialog>
+</FluentDialog>
 
 
 
@@ -185,26 +183,26 @@
                     //url = "/Chart/GetRequestChartPV?chartID=" + ChartId + "&parameters=[[CRNombers:1006414:000][IsDeleted:0]";
                     //url = "/Chart/GetRequestChartPV?chartID=" + ChartId + "&parameters=[[InvestorsPersonID:48430][ContryCodesNotIN:616|750][ContryCodesIN:665|666|601|518][IsDeleted:0]";
                     SelectedTabId = "tab-1";
-                   // StateHasChanged();
+                    // StateHasChanged();
                     await Task.Delay(1000);
                     SelectedTabId = "tab-2";
                     StateHasChanged();
                 }
             }
-           
+
 
         }
         catch (Exception ex)
         {
-            
-             
+
+
         }
-      
+
     }
 
     public async Task GetUrlFromPreview(string _url)
     {
-        await JSRuntime.InvokeVoidAsync("newSrc",_url);
+        await JSRuntime.InvokeVoidAsync("newSrc", _url);
     }
 
 
@@ -253,6 +251,4 @@
         StateHasChanged();
 
     }
-
-
-    }
+}
