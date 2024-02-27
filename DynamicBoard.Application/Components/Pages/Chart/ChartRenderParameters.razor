@@ -108,6 +108,7 @@
     IQueryable<ChartParameter> ChartParameterIQList;
     protected override async Task OnInitializedAsync()
     {
+        defaultValues = true;
         await GetData();
         await base.OnInitializedAsync();
 

@@ -152,6 +152,17 @@ namespace DynamicBoard.DataServices.Services
 
 
         }
+        public async Task ChartParametersDeleteAsync(long chartid)
+        {
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@ChartId", chartid, DbType.Int64);
+                parameters.Add("@IsDeleted", dbType: DbType.Boolean, direction: ParameterDirection.Output);
+                await conn.ExecuteAsync("Delete_ChartParameters", parameters, commandType: CommandType.StoredProcedure);
+                var isDeleted = parameters.Get<bool>("@IsDeleted");
+            }
+        }
 
         public async Task<long> ChartParametersAddUpdateAsync(long chartid, string tag, string sqlplaceholder, bool isRequired, string defaultValue)
         {

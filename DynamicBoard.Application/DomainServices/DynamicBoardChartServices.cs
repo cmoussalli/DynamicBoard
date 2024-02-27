@@ -16,6 +16,11 @@ namespace DynamicBoard.Application.DomainServices
         {
             return await db.ChartParametersAddUpdateAsync(chartid,tag, sqlplaceholder, isRequired, defaultValue);   
         }
+
+        public async Task  ChartParametersDeleteAsync(long chartid)
+        {
+             await db.ChartParametersDeleteAsync(chartid);
+        }
         public async Task<bool> DeleteChartAsync(long chartId)
         {
             return await db.DeleteChartAsync(chartId);

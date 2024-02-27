@@ -184,7 +184,7 @@ else
     </FluentDialog>
 
 
-    @code {
+@code {
 
     [Parameter]
     public long Id { get; set; }
@@ -249,6 +249,9 @@ else
     protected override async Task OnInitializedAsync()
     {
         ValueChanged += HandleRadioValueChanged;
+
+        isLoading = true;
+        StateHasChanged();
         await GetData();
         if (Id > 0)
         {
@@ -275,6 +278,7 @@ else
             refershTime = chart.RefershTime.ToString();
             selectedDBOption = chart.DBConnectionID.ToString();
             selectedChartTypeOption = chart.ChartTypeID.ToString();
+            selectedChartThemeOption = chart.ChartTheme.ToString();
             selectedDb = extendDBConnections.Where(option => option.ID == Convert.ToInt64(selectedDBOption)).Select(option => option.ID.ToString()).FirstOrDefault();
             selectedDb = selectedDBOption;
             selectedDbName = extendDBConnections.Where(option => option.ID == Convert.ToInt64(selectedDBOption)).Select(option => option.Database.ToString()).FirstOrDefault();
@@ -282,10 +286,8 @@ else
             selectedChart = chartTypes.Where(option => option.ID == Convert.ToInt64(selectedChartTypeOption)).Select(option => option.ID.ToString()).FirstOrDefault();
             selectedChart = selectedChartTypeOption;
             selectedChartTypeName = chartTypes.Where(option => option.ID == Convert.ToInt64(selectedChartTypeOption)).Select(option => option.TitleEn.ToString()).FirstOrDefault();
+            selectedTheme = selectedChartThemeOption; //chart.ChartTheme.ToString();
             script = chart.DataScript;
-            selectedTheme = chart.ChartTheme.ToString();
-            selectedChartThemeName = chartColorThemes.Where(option => option.ID == Convert.ToInt64(selectedChartThemeOption)).Select(option => option.Title.ToString()).FirstOrDefault();
-
             chartParameters = await commonServices.GetChartParametersByChartID(chart.ID);
 
             isLoading = false;
@@ -373,6 +375,8 @@ else
     {
         try
         {
+            isLoading = true;
+            StateHasChanged();
 
             if (Id > 0)
             {
@@ -403,7 +407,12 @@ else
                 }
 
                 Chart.DataScript = script;
-                Chart.ChartTheme = Convert.ToInt64(selectedChartThemeOption);
+
+                if (!string.IsNullOrEmpty(selectedChartThemeOption))
+                {
+                    Chart.ChartTheme = Convert.ToInt64(selectedChartThemeOption);
+                }
+
             }
             else
             {
@@ -420,12 +429,16 @@ else
 
                 if (result > 0)
                 {
+                    // ist delete all chart parameters by chart id
+                    await chartServices.ChartParametersDeleteAsync(Chart.ID);
                     if (chartParameters is not null)
                     {
                         if (chartParameters.Count > 0)
                         {
+
                             foreach (var item in chartParameters)
                             {
+                                // update the latest one chartparameters
                                 var res = await chartServices.ChartParametersAddUpdateAsync(Chart.ID, item.Tag, item.SQLPlaceHolder, item.IsRequired, item.DefaultValue);
                             }
                         }
@@ -457,10 +470,13 @@ else
                 StateHasChanged();
                 await Task.Delay(1500);
                 message = "";
+
+                isLoading = false;
                 await OnResponse.InvokeAsync(result);
 
             }
 
+            isLoading = false;
             StateHasChanged();
 
         }
@@ -581,6 +597,8 @@ else
     public bool showNorecordSection = false;
     public async Task OnDeleteChart()
     {
+        isLoading = true;
+        StateHasChanged();
         bool result = false;
         result = await chartsServices.DeleteChartAsync(chartID);
         if (result)
@@ -608,6 +626,7 @@ else
 
             await OnResponse.InvokeAsync(0);
         }
+        isLoading = false  ;
         StateHasChanged();
     }
 

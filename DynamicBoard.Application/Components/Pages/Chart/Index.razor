@@ -5,6 +5,7 @@
 @using Microsoft.AspNetCore.Components.Web
 @inject IDialogService DialogService
 @inject IJSRuntime JSRuntime
+@inject NavigationManager _navigationManager
 
 
 @rendermode InteractiveServer
@@ -18,7 +19,7 @@
             <div class="card" style="height: 90vh; overflow: auto;">
 
                 <FluentStack HorizontalAlignment="HorizontalAlignment.Center">
-                    <FluentButton  OnClick=" ()=>  OnOpen()" IconStart="@(new Icons.Regular.Size16.AddCircle())"  >
+                    <FluentButton OnClick=" ()=>  OnOpen()" IconStart="@(new Icons.Regular.Size16.AddCircle())">
                         <b>@newChart</b>
                     </FluentButton>
                 </FluentStack>
@@ -71,8 +72,7 @@
                             {
                                 <ChartRenderParameters @ref="@chartRenderParameters" ChartID="@ChartId" OnResponse="@GetUrlFromPreview"></ChartRenderParameters>
 
-                                <iframe id="ChartFrame" style="width: 100%;height: 100%;"></iframe>
-
+                                <iframe id="ChartFrame" src="@url" allowfullscreen style=" position: center;    width: 405px;    height:550px;    border: 0;    overflow: hidden;"></iframe>
                             }
                             else
                             {
@@ -247,6 +247,23 @@
     }
     private async Task GetResponse()
     {
+        charts = await chartsServices.ChartsGetByIdAsync(ChartId);
+        if (charts is not null)
+        {
+            if (charts.Count > 0)
+            {
+                await GetResponseMessage(ChartId);
+            }
+            else
+            {
+                _navigationManager.NavigateTo(_navigationManager.Uri, true);
+                
+
+            }
+        }
+
+
+
         await chartListView.GetCharts();
         StateHasChanged();
 
