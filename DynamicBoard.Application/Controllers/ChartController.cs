@@ -365,6 +365,10 @@ namespace DynamicBoard.Application.Controllers
                     //{
                     ExtendDashboard extendDashboard = new();
                     extendDashboard.DBConnections = extendCharts[0].DBConnections;
+                    if (string.IsNullOrEmpty(modifiedQueryScript))
+                    {
+                        modifiedQueryScript = extendCharts[0].DataScript;
+                    }
                     var title = "";
                     if (Language == 2)
                     {

@@ -22,6 +22,11 @@
 @* <p>Chart View </p>
 <SME.DynamicBoard.UI.Components.ChartRenderView @ref="chartRenderView1"  AutoLoad="true" IsAllowRefresh="true" ChartId="4" ChartData="@ChartData" />
  *@
+
+<SME.DynamicBoard.UI.Components.ChartRenderView Language=1 AutoLoad="true" ChartId="128" ChartData="EmptyChartData" />
+
+
+
 <div class="card">
     <div class="card-body">
         <div class="row">
@@ -83,7 +88,7 @@
     static string chartID = "4";
     static string chartIDLable = "99";
  
-
+    public SME.DynamicBoard.UI.ChartData EmptyChartData { get; set; } = new();
     public SME.DynamicBoard.UI.ChartData ChartDataForNewRequest { get; set; } = new();
     public SME.DynamicBoard.UI.ChartData ChartDataForPendingRequest { get; set; } = new();
     public SME.DynamicBoard.UI.ChartData ChartDataForIssuedRequest { get; set; } = new();
