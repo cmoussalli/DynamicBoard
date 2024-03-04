@@ -342,6 +342,14 @@ namespace DynamicBoard.Application.Controllers
                                             // get tshe ChartParameters dataset SQLPlaceHolder;
                                             string placeholder = chartparms.SQLPlaceHolder;
                                             string replacePlaceholderParam = ReplacePlaceholder(placeholder, valueCheck.Key.Trim(), paramDatasetValues);
+
+                                            if (replacePlaceholderParam.ToLower().Contains("in"))
+                                            {
+                                                var replacesinglequotes =  replacePlaceholderParam.Replace("''", "'");
+                                                replacePlaceholderParam = replacesinglequotes;
+
+                                            }
+                                            
                                             query = query.Replace("[[" + chartparms.Tag + "]]", replacePlaceholderParam);
                                             modifiedQueryScript = query;
                                         }
