@@ -105,12 +105,16 @@
     public List<ChartParameter> chartParameters = new();
     ChartParameter chartParameterModel = new();
 
+    ChartParameter chartParameter = new();
+
     IQueryable<ChartParameter> ChartParameterIQList;
     protected override async Task OnInitializedAsync()
     {
         defaultValues = true;
         await GetData();
         await base.OnInitializedAsync();
+
+        defaultValues = false ;
 
     }
     public async Task GetData()
@@ -122,6 +126,7 @@
     }
     public async Task Preview()
     {
+        var aaa = chartParameter.ChangValues;
         // REMAKE THE CHART URL WITH PARAMEYTERS
         string url = "";
         string parameters = "";
@@ -131,7 +136,10 @@
             {
                 if (String.IsNullOrEmpty(url) || !url.Contains(item.Tag))
                 {
-                    parameters += "[" + item.Tag + ":" + item.DefaultValueV2 + "]";
+                    if (!string.IsNullOrEmpty(item.DefaultValueV2))
+                    {
+                        parameters += "[" + item.Tag + ":" + item.DefaultValueV2 + "]";
+                    }
                 }
 
             }
@@ -140,7 +148,10 @@
 
                 if (String.IsNullOrEmpty(url) || !url.Contains(item.Tag))
                 {
-                    parameters += "[" + item.Tag + ":" + item.ChangValues + "]";
+                    if (!string.IsNullOrEmpty(item.ChangValues))
+                    {
+                        parameters += "[" + item.Tag + ":" + item.ChangValues + "]";
+                    }
                 }
             }
 

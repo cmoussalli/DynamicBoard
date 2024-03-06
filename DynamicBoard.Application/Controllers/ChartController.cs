@@ -32,7 +32,7 @@ namespace DynamicBoard.Application.Controllers
             //{
             ExtendDashboard extendDashboard = new();
             extendDashboard.DBConnections = extendCharts[0].DBConnections;
-            renderChart = ChartCommon.ChartManipulation(extendDashboard, extendCharts[0].ChartTypes.TitleEn, extendCharts[0].TitleEn, extendCharts[0].ID, "",null, extendCharts[0]);
+            renderChart = ChartCommon.ChartManipulation(extendDashboard, extendCharts[0].ChartTypes.TitleEn, extendCharts[0].TitleEn, extendCharts[0].ID, "", null, extendCharts[0]);
             //}
             // var json = Newtonsoft.Json.JsonConvert.SerializeObject(renderChart);
             return PartialView("ChartPv", renderChart);
@@ -302,7 +302,7 @@ namespace DynamicBoard.Application.Controllers
 
         [HttpGet]
         public async Task<IActionResult> ChartView(long chartID, string parameters, bool IsAllowRefresh = false, bool IsAllowPrint = false, int Language = 0)
-        {
+           {
             string modifiedQueryScript = "";
             List<ParamData> paramDataset = new List<ParamData>();
             List<ChartParameter> chartParameters = new();
@@ -323,6 +323,8 @@ namespace DynamicBoard.Application.Controllers
                 {
                     foreach (var chartparms in chartParameters)
                     {
+                        //if (chartparms.IsRequired)
+                        //{
 
                         if (!string.IsNullOrEmpty(query))
                         {
@@ -345,19 +347,83 @@ namespace DynamicBoard.Application.Controllers
 
                                             if (replacePlaceholderParam.ToLower().Contains("in"))
                                             {
-                                                var replacesinglequotes =  replacePlaceholderParam.Replace("''", "'");
+                                                var replacesinglequotes = replacePlaceholderParam.Replace("''", "'");
                                                 replacePlaceholderParam = replacesinglequotes;
 
                                             }
-                                            
+
                                             query = query.Replace("[[" + chartparms.Tag + "]]", replacePlaceholderParam);
                                             modifiedQueryScript = query;
+                                        }
+                                        else
+                                        {
+
+                                            //modifiedQueryScript = query.Replace("[[" + chartparms.Tag + "]]", "");
+                                            //query = modifiedQueryScript;
+                                            // test
+                                            if (chartparms.IsRequired)
+                                            {
+                                                // get tshe ChartParameters dataset SQLPlaceHolder;
+                                                string placeholder = chartparms.SQLPlaceHolder;
+                                                //modifiedQueryScript = query.Replace("[["+chartparms.Tag +"]]", placeholder);
+                                                //modifiedQueryScript = query.Replace("[["+ chartparms.Tag +"]]", chartparms.DefaultValue);
+                                                string replacePlaceholderParam = ReplacePlaceholder(placeholder, chartparms.Tag.Trim(), chartparms.DefaultValue);
+                                                modifiedQueryScript = query.Replace("[[" + chartparms.Tag + "]]", replacePlaceholderParam);
+                                                query = modifiedQueryScript;
+                                            }
+                                            else
+                                            {
+                                                if (query.Contains("=" + "[[" + chartparms.Tag + "]]"))
+                                                {
+                                                    modifiedQueryScript = query.Replace("=[[" + chartparms.Tag + "]]", "");
+
+                                                }
+                                                else
+                                                {
+                                                    modifiedQueryScript = query.Replace("[[" + chartparms.Tag + "]]", "");
+                                                }
+                                                query = modifiedQueryScript;
+                                            }
+
+
                                         }
 
                                     }
                                 }
+
+                                else
+                                {
+                                    if (chartparms.IsRequired)
+                                    {
+                                        // get tshe ChartParameters dataset SQLPlaceHolder;
+                                        string placeholder = chartparms.SQLPlaceHolder;
+                                        //modifiedQueryScript = query.Replace("[["+chartparms.Tag +"]]", placeholder);
+                                        //modifiedQueryScript = query.Replace("[["+ chartparms.Tag +"]]", chartparms.DefaultValue);
+                                        string replacePlaceholderParam = ReplacePlaceholder(placeholder, chartparms.Tag.Trim(), chartparms.DefaultValue);
+                                        modifiedQueryScript = query.Replace("[["+chartparms.Tag +"]]", replacePlaceholderParam);
+                                        query = modifiedQueryScript;
+                                    }
+                                    else
+                                    {
+                                        if (query.Contains("=" + "[[" + chartparms.Tag + "]]"))
+                                        {
+                                            modifiedQueryScript = query.Replace("=[[" + chartparms.Tag + "]]", "");
+
+                                        }
+                                        else
+                                        {
+                                            modifiedQueryScript = query.Replace("[[" + chartparms.Tag + "]]", "");
+                                        }
+                                        query = modifiedQueryScript;
+                                    }
+                                }
                             }
                         }
+                        //}
+                        //else
+                        //{
+                        //    modifiedQueryScript = query.Replace("[[" + chartparms.Tag + "]]", "");
+                        //}
                     }
 
 
@@ -388,7 +454,7 @@ namespace DynamicBoard.Application.Controllers
                     }
                     renderChart = ChartCommon.ChartManipulation(extendDashboard, extendCharts[0].ChartTypes.TitleEn, title, extendCharts[0].ID, "", chartThemes, extendCharts[0], modifiedQueryScript);
                     renderChart.IsAllowRefresh = IsAllowRefresh;
-                    renderChart.IsAllowPrint= IsAllowPrint;
+                    renderChart.IsAllowPrint = IsAllowPrint;
                     return View("ChartView", renderChart);
                 }
                 else
