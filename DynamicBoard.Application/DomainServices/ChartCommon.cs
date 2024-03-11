@@ -10,7 +10,7 @@ namespace DynamicBoard.Application.DomainServices
     public class ChartCommon
     {
 
-        public static RenderChart ChartManipulation(ExtendDashboard extendDashboard, string chartType, string chartTitle, long chartID, string chartCSS, List<ChartThemeExtends> chartThemes, ExtendChart extendChart = null, string modifiedQuery = "")
+        public   static async Task<RenderChart> ChartManipulation(ExtendDashboard extendDashboard, string chartType, string chartTitle, long chartID, string chartCSS, List<ChartThemeExtends> chartThemes, ExtendChart extendChart = null, string modifiedQuery = "")
         {
             string dataScript = "";
             DynamicBoardDataServices db = new DynamicBoardDataServices(Storage.DBConnectionString);
@@ -45,7 +45,7 @@ namespace DynamicBoard.Application.DomainServices
                 {
                     //var connesctionString = "Server=" + "10.38.38.199" + ";Database=" + extendDashboard.DBConnections.Database + ";Trusted_Connection=True;MultipleActiveResultSets=true;User Id=" + extendDashboard.DBConnections.User + ";Password=" + "SMedi@33333" + ";Integrated Security=False;";
                     var connesctionString = "Server=" + extendDashboard.DBConnections.Server + ";Database=" + extendDashboard.DBConnections.Database + ";Trusted_Connection=True;MultipleActiveResultSets=true;User Id=" + extendDashboard.DBConnections.User + ";Password=" + extendDashboard.DBConnections.Password + ";Integrated Security=False;";
-                    datasetResult = db.DatasetExecute(dataScript, connesctionString);
+                    datasetResult =await db.DatasetExecute(dataScript, connesctionString);
                     //renderChart.RefershTime = extendDashboard.Charts.RefershTime;
                 }
                 if (extendChart != null)
@@ -53,7 +53,7 @@ namespace DynamicBoard.Application.DomainServices
                     //var connesctionString = "Server=" + "10.38.38.199" + ";Database=" + extendChart.DBConnections.Database + ";Trusted_Connection=True;MultipleActiveResultSets=true;User Id=" + extendChart.DBConnections.User + ";Password=" + "SMedi@33333" + ";Integrated Security=False;";
                     var connesctionString = "Server=" + extendDashboard.DBConnections.Server + ";Database=" + extendDashboard.DBConnections.Database + ";Trusted_Connection=True;MultipleActiveResultSets=true;User Id=" + extendDashboard.DBConnections.User + ";Password=" + extendDashboard.DBConnections.Password + ";Integrated Security=False;";
 
-                    datasetResult = db.DatasetExecute(dataScript, connesctionString);
+                    datasetResult = await db.DatasetExecute(dataScript, connesctionString);
                     // renderChart.RefershTime = extendChart.RefershTime;
                 }
 
@@ -137,7 +137,7 @@ namespace DynamicBoard.Application.DomainServices
         }
 
 
-        public static RenderChart ChartManipulation_Old(ExtendDashboard extendDashboard, string chartType, string chartTitle, long chartID, string chartCSS, ExtendChart extendChart = null, string modifiedQuery = "")
+        public static async Task<RenderChart> ChartManipulation_Old(ExtendDashboard extendDashboard, string chartType, string chartTitle, long chartID, string chartCSS, ExtendChart extendChart = null, string modifiedQuery = "")
         {
             string dataScript = "";
             DynamicBoardDataServices db = new DynamicBoardDataServices(Storage.DBConnectionString);
@@ -170,7 +170,7 @@ namespace DynamicBoard.Application.DomainServices
                 {
                     //var connesctionString = "Server=" + "10.38.38.199" + ";Database=" + extendDashboard.DBConnections.Database + ";Trusted_Connection=True;MultipleActiveResultSets=true;User Id=" + extendDashboard.DBConnections.User + ";Password=" + "SMedi@33333" + ";Integrated Security=False;";
                     var connesctionString = "Server=" + extendDashboard.DBConnections.Server + ";Database=" + extendDashboard.DBConnections.Database + ";Trusted_Connection=True;MultipleActiveResultSets=true;User Id=" + extendDashboard.DBConnections.User + ";Password=" + extendDashboard.DBConnections.Password + ";Integrated Security=False;";
-                    datasetResult = db.DatasetExecute(dataScript, connesctionString);
+                    datasetResult = await db.DatasetExecute(dataScript, connesctionString);
                     //renderChart.RefershTime = extendDashboard.Charts.RefershTime;
                 }
                 if (extendChart != null)
@@ -178,7 +178,7 @@ namespace DynamicBoard.Application.DomainServices
                     //var connesctionString = "Server=" + "10.38.38.199" + ";Database=" + extendChart.DBConnections.Database + ";Trusted_Connection=True;MultipleActiveResultSets=true;User Id=" + extendChart.DBConnections.User + ";Password=" + "SMedi@33333" + ";Integrated Security=False;";
                     var connesctionString = "Server=" + extendDashboard.DBConnections.Server + ";Database=" + extendDashboard.DBConnections.Database + ";Trusted_Connection=True;MultipleActiveResultSets=true;User Id=" + extendDashboard.DBConnections.User + ";Password=" + extendDashboard.DBConnections.Password + ";Integrated Security=False;";
 
-                    datasetResult = db.DatasetExecute(dataScript, connesctionString);
+                    datasetResult = await db.DatasetExecute(dataScript, connesctionString);
                     // renderChart.RefershTime = extendChart.RefershTime;
                 }
 

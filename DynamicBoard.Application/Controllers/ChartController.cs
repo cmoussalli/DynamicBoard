@@ -32,7 +32,7 @@ namespace DynamicBoard.Application.Controllers
             //{
             ExtendDashboard extendDashboard = new();
             extendDashboard.DBConnections = extendCharts[0].DBConnections;
-            renderChart = ChartCommon.ChartManipulation(extendDashboard, extendCharts[0].ChartTypes.TitleEn, extendCharts[0].TitleEn, extendCharts[0].ID, "", null, extendCharts[0]);
+            renderChart = await ChartCommon.ChartManipulation(extendDashboard, extendCharts[0].ChartTypes.TitleEn, extendCharts[0].TitleEn, extendCharts[0].ID, "", null, extendCharts[0]);
             //}
             // var json = Newtonsoft.Json.JsonConvert.SerializeObject(renderChart);
             return PartialView("ChartPv", renderChart);
@@ -280,7 +280,7 @@ namespace DynamicBoard.Application.Controllers
                     //{
                     ExtendDashboard extendDashboard = new();
                     extendDashboard.DBConnections = extendCharts[0].DBConnections;
-                    renderChart = ChartCommon.ChartManipulation(extendDashboard, extendCharts[0].ChartTypes.TitleEn, extendCharts[0].TitleEn, extendCharts[0].ID, "", chartThemes, extendCharts[0], modifiedQueryScript);
+                    renderChart = await ChartCommon.ChartManipulation(extendDashboard, extendCharts[0].ChartTypes.TitleEn, extendCharts[0].TitleEn, extendCharts[0].ID, "", chartThemes, extendCharts[0], modifiedQueryScript);
 
                     return PartialView("ChartPv", renderChart);
                 }
@@ -302,7 +302,7 @@ namespace DynamicBoard.Application.Controllers
 
         [HttpGet]
         public async Task<IActionResult> ChartView(long chartID, string parameters, bool IsAllowRefresh = false, bool IsAllowPrint = false, int Language = 0)
-           {
+        {
             string modifiedQueryScript = "";
             List<ParamData> paramDataset = new List<ParamData>();
             List<ChartParameter> chartParameters = new();
@@ -349,10 +349,14 @@ namespace DynamicBoard.Application.Controllers
                                             {
                                                 var replacesinglequotes = replacePlaceholderParam.Replace("''", "'");
                                                 replacePlaceholderParam = replacesinglequotes;
+                                                query = query.Replace("[[" + chartparms.Tag + "]]", replacePlaceholderParam);
 
                                             }
-
-                                            query = query.Replace("[[" + chartparms.Tag + "]]", replacePlaceholderParam);
+                                            else
+                                            {
+                                                query = query.Replace("[["+chartparms.Tag+"]]", replacePlaceholderParam);
+                                            }
+                                           
                                             modifiedQueryScript = query;
                                         }
                                         else
@@ -400,7 +404,7 @@ namespace DynamicBoard.Application.Controllers
                                         //modifiedQueryScript = query.Replace("[["+chartparms.Tag +"]]", placeholder);
                                         //modifiedQueryScript = query.Replace("[["+ chartparms.Tag +"]]", chartparms.DefaultValue);
                                         string replacePlaceholderParam = ReplacePlaceholder(placeholder, chartparms.Tag.Trim(), chartparms.DefaultValue);
-                                        modifiedQueryScript = query.Replace("[["+chartparms.Tag +"]]", replacePlaceholderParam);
+                                        modifiedQueryScript = query.Replace("[[" + chartparms.Tag + "]]", replacePlaceholderParam);
                                         query = modifiedQueryScript;
                                     }
                                     else
@@ -452,7 +456,7 @@ namespace DynamicBoard.Application.Controllers
                     {
                         title = extendCharts[0].TitleAr;
                     }
-                    renderChart = ChartCommon.ChartManipulation(extendDashboard, extendCharts[0].ChartTypes.TitleEn, title, extendCharts[0].ID, "", chartThemes, extendCharts[0], modifiedQueryScript);
+                    renderChart = await ChartCommon.ChartManipulation(extendDashboard, extendCharts[0].ChartTypes.TitleEn, title, extendCharts[0].ID, "", chartThemes, extendCharts[0], modifiedQueryScript);
                     renderChart.IsAllowRefresh = IsAllowRefresh;
                     renderChart.IsAllowPrint = IsAllowPrint;
                     return View("ChartView", renderChart);

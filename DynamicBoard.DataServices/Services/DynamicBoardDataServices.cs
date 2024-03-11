@@ -103,7 +103,7 @@ namespace DynamicBoard.DataServices.Services
 
 
         #region Chart
-        public async Task<long> ChartAddEditAsync(long id, long chartTypeID, long dBConnectionID, string dataScript, string titleEn, string titleAr, long refershTime, bool isActive, bool isDeleted, long chartTheme=1,string createdBy = " ")
+        public async Task<long> ChartAddEditAsync(long id, long chartTypeID, long dBConnectionID, string dataScript, string titleEn, string titleAr, long refershTime, bool isActive, bool isDeleted, long chartTheme = 1, string createdBy = " ")
         {
             SqlConnection conn = new SqlConnection(connStr);
             try
@@ -434,18 +434,46 @@ namespace DynamicBoard.DataServices.Services
         //        return con.Query<ChartDataset>(script);
         //    }
         //}
-        public IEnumerable<ChartDataset> DatasetExecute(string script, string connectionString)
+        //public IEnumerable<ChartDataset> DatasetExecute(string script, string connectionString)
+        //{
+        //    using (var connection = new SqlConnection(connectionString))
+        //    {
+        //        connection.Open();
+
+        //        var result = connection.Query<ChartDataset>(script, commandType: CommandType.Text);
+
+        //        return result.ToList();
+        //    }
+        //}
+        public async Task<IEnumerable<ChartDataset>> DatasetExecute(string script, string connectionString)
         {
             using (var connection = new SqlConnection(connectionString))
             {
-                connection.Open();
+                // Increase the command timeout to 120 seconds (2 minutes)
+                connection.InfoMessage += (sender, e) =>
+                {
+                    if (e.Errors != null)
+                    {
+                        foreach (SqlError error in e.Errors)
+                        {
+                            // Check if this is a timeout error
+                            if (error.Class == 11)
+                            {
+                                //throw new TimeoutException("Query execution timed out.");
+                            }
+                        }
+                    }
+                };
 
-                var result = connection.Query<ChartDataset>(script, commandType: CommandType.Text);
+                connection.FireInfoMessageEventOnUserErrors = true;
+                await connection.OpenAsync(); // Open connection asynchronously
+                connection.CreateCommand().CommandTimeout = 120;
+
+                var result = await connection.QueryAsync<ChartDataset>(script, commandType: CommandType.Text); // Execute query asynchronously
 
                 return result.ToList();
             }
         }
-
 
         public async Task<List<ChartParameter>> GetChartParametersGetAll()
         {
