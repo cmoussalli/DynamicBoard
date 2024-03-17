@@ -123,7 +123,106 @@
 
             },
             options: {
-                legend: { display: false },
+                 responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        display:false
+                    },
+                    title: {
+                        display: true,
+                        text: canvasjsonchartTitle
+                    },
+                }, 
+
+                scales: {
+                    x: {
+                         stacked: Isstacked,
+                        // grid: {
+                        //     display: gridDisplay
+                        // }
+                    },
+                    y: {
+                          stacked: Isstacked,
+                        // grid: {
+                        //     display: gridDisplay 
+                        // }
+                    }
+                }  
+               
+            }
+        });
+
+        // Simulate a delay of 2 seconds before showing the canvas
+        setTimeout(function () {
+            // Show the canvas
+
+            canvasDiv.style.display = "block";
+            // Hide the loader
+            loader.style.display = "none";
+        }, 2000);
+
+    }
+    function LoadChartV2() {
+        debugger;
+        var RefershTime = '@Model.RefershTime';
+        var canvasChartType = '@Model.ChartType';
+        var canvasXaxis_labels = @Html.Raw(string.IsNullOrEmpty(Model?.JsonXaxis_labels) ? "null" : Model?.JsonXaxis_labels);
+        var configuration = @Html.Raw(string.IsNullOrEmpty(Model?.json_graphConfigurations) ? "null" : Model?.json_graphConfigurations);
+        var canvasjsonchartTitle = '@Html.Raw(string.IsNullOrEmpty(Model?.jsonchartTitle) ? "null" : Model?.jsonchartTitle)';
+        var Yaxis_Data = @Html.Raw(string.IsNullOrEmpty(Model?.json_graphConfigurations) ? "null" : Model?.json_graphConfigurations);
+        var Yaxis_Data_Dataset = Yaxis_Data;//Yaxis_Data[0].datasets;
+
+        //debugger
+        var Isstacked = false;
+        var _height = 0;
+        var gridDisplay = true;
+        if (canvasChartType == "Bar") {
+            canvasChartType = "bar";
+        }
+        if (canvasChartType == "Stacked Bar") {
+            canvasChartType = "bar";
+            Isstacked = true;
+        }
+        if (canvasChartType == "doughnut") {
+
+            canvasChartType = "doughnut";
+            gridDisplay = false;
+        }
+        if (canvasChartType == "Pie") {
+
+            canvasChartType = "pie";
+            gridDisplay = false;
+        }
+        if (canvasChartType == "Line") {
+            canvasChartType = "line";
+        }
+        if (canvasChartType == "polarArea") {
+            canvasChartType = "polarArea";
+
+        }
+        if (canvasChartType == "RadarChart") {
+            canvasChartType = "radar";
+        }
+
+        var canvas = 'canvas_' + @Model.ChartID;
+
+        //loadCanvas(@Model.ChartID);
+        var ctx = document.getElementById(canvas).getContext('2d');
+        //debugger
+
+
+        var myChart = new Chart(ctx, {
+            type: canvasChartType,
+            data: {
+                labels: canvasXaxis_labels,//x axis labels
+                datasets: Yaxis_Data_Dataset,
+                hoverOffset: 10,
+                borderWidth: 0,
+
+            },
+            options: {
+                legend: { display: true },
                 responsive: true,
                 plugins: {
                     title: {
@@ -143,7 +242,7 @@
                     y: {
                         // stacked: Isstacked,
                         grid: {
-                            display: gridDisplay 
+                            display: gridDisplay
                         }
                     }
                 },
@@ -164,6 +263,8 @@
         }, 2000);
 
     }
+
+
     function LoadChartOLD() {
         debugger;
         var RefershTime = '@Model.RefershTime';
