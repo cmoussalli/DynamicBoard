@@ -30,15 +30,26 @@
                     initializeCharts();
             });
 
-        function initializeCharts() {
-            @foreach (var chartData in Model.RenderCharts)
-            {
-                    @:loader = document.getElementById("loader_@chartData.ChartID");
-                    @:canvasDiv= document.getElementById("div_@chartData.ChartID");
-                    @:LoadChart('@chartData.RefershTime','@chartData.ChartType',@Html.Raw(string.IsNullOrEmpty(chartData?.JsonXaxis_labels) ? "null" : chartData?.JsonXaxis_labels),@Html.Raw(string.IsNullOrEmpty(chartData?.json_graphConfigurations) ? "null" : chartData?.json_graphConfigurations),'@Html.Raw(string.IsNullOrEmpty(chartData?.jsonchartTitle) ? "null" : chartData?.jsonchartTitle)',@chartData?.ChartID)
-                    @:setRefreshInterval('@chartData.RefershTime','@chartData.ChartType','@Html.Raw(string.IsNullOrEmpty(chartData?.JsonXaxis_labels) ? "null" : chartData?.JsonXaxis_labels)',@Html.Raw(string.IsNullOrEmpty(chartData?.json_graphConfigurations) ? "null" : chartData?.json_graphConfigurations),'@Html.Raw(string.IsNullOrEmpty(chartData?.jsonchartTitle) ? "null" : chartData?.jsonchartTitle)',@chartData?.ChartID)
-            }
+    function initializeCharts() {
+    @foreach (var chartData in Model.RenderCharts)
+    {
+        @:loader = document.getElementById("loader_@chartData.ChartID");
+        @:canvasDiv= document.getElementById("div_@chartData.ChartID");
+        @if (chartData.ChartType != "Label")
+        {
+
+            @:LoadChart('@chartData.RefershTime', '@chartData.ChartType', @Html.Raw(string.IsNullOrEmpty(chartData?.JsonXaxis_labels) ? "null" : chartData?.JsonXaxis_labels), @Html.Raw(string.IsNullOrEmpty(chartData?.json_graphConfigurations) ? "null" : chartData?.json_graphConfigurations), '@Html.Raw(string.IsNullOrEmpty(chartData?.jsonchartTitle) ? "null" : chartData?.jsonchartTitle)', @chartData?.ChartID)
+            @:setRefreshInterval('@chartData.RefershTime', '@chartData.ChartType', '@Html.Raw(string.IsNullOrEmpty(chartData?.JsonXaxis_labels) ? "null" : chartData?.JsonXaxis_labels)', @Html.Raw(string.IsNullOrEmpty(chartData?.json_graphConfigurations) ? "null" : chartData?.json_graphConfigurations), '@Html.Raw(string.IsNullOrEmpty(chartData?.jsonchartTitle) ? "null" : chartData?.jsonchartTitle)', @chartData?.ChartID)
         }
+        else
+        {
+            @:setRefreshInterval('@chartData.RefershTime', '@chartData.ChartType', '@Html.Raw(string.IsNullOrEmpty(chartData?.JsonXaxis_labels) ? "null" : chartData?.JsonXaxis_labels)', @Html.Raw(string.IsNullOrEmpty(chartData?.json_graphConfigurations) ? "null" : chartData?.json_graphConfigurations), '@Html.Raw(string.IsNullOrEmpty(chartData?.jsonchartTitle) ? "null" : chartData?.jsonchartTitle)', @chartData?.ChartID)
+            @:canvasDiv.style.display = "block";
+            @:loader.style.display = "none";
+        }
+    }
+            }
+
 
 
 
@@ -48,9 +59,9 @@
                  }
 
             setInterval(function() {
-                            loader = document.getElementById("loader_"+chartID);
+            loader = document.getElementById("loader_"+chartID);
               canvasDiv= document.getElementById("div_"+chartID);
-                   canvasDiv.style.display = "none";
+              canvasDiv.style.display = "none";
             loader.style.display = "block";
             refreshChart(chartID, document.getElementById("dashboardid").value, refreshTime, chartType, JsonXaxis, jsonGraphConfigurations, jsonChartTitle, document.getElementById("language").value, document.getElementById("parameters").value);
             }, refreshTime*1000);
@@ -88,22 +99,41 @@
 
 
     function refreshChart(chartID, dashboardID, refreshTime, chartType, JsonXaxis, jsonGraphConfigurations, jsonChartTitle, language, parameters) {
-                $.ajax({
+        if (chartType == 'Label') {
+            $.ajax({
                 url: '@Url.Action("GetChartPartialView", "Dashboard")',
                 type: 'GET',
-            data: { chartID: chartID, dashboardID: dashboardID, language: language, parameters: parameters },
-                success: function(result) {
-                     $('#partialViewContainer_'+chartID).html(result);
-                        //console.log(result);
-                         loader = document.getElementById("loader_"+chartID);
-                        canvasDiv= document.getElementById("div_"+chartID);
-                     LoadChart(refreshTime,chartType,JSON.parse(JsonXaxis),jsonGraphConfigurations,jsonChartTitle,chartID);
+                data: { chartID: chartID, dashboardID: dashboardID, language: language, parameters: parameters },
+                success: function (result) {
+                    $('#partialViewContainer_' + chartID).html(result);
+                    //console.log(result);
+                    loader = document.getElementById("loader_" + chartID);
+                    canvasDiv = document.getElementById("div_" + chartID);
+                    canvasDiv.style.display = "block";
+                    loader.style.display = "none";
                 },
-                error: function(xhr, status, error) {
+                error: function (xhr, status, error) {
                     alert('Error: ' + error);
                 }
             });
-
+        }
+        else {
+            $.ajax({
+                url: '@Url.Action("GetChartPartialView", "Dashboard")',
+                type: 'GET',
+                data: { chartID: chartID, dashboardID: dashboardID, language: language, parameters: parameters },
+                success: function (result) {
+                    $('#partialViewContainer_' + chartID).html(result);
+                    //console.log(result);
+                    loader = document.getElementById("loader_" + chartID);
+                    canvasDiv = document.getElementById("div_" + chartID);
+                    LoadChart(refreshTime, chartType, JSON.parse(JsonXaxis), jsonGraphConfigurations, jsonChartTitle, chartID);
+                },
+                error: function (xhr, status, error) {
+                    alert('Error: ' + error);
+                }
+            });
+        }
         }
 
         

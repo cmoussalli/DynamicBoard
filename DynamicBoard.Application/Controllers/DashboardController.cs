@@ -361,11 +361,6 @@ namespace DynamicBoard.Application.Controllers
                         }
 
                     }
-                    else
-                    {
-                        renderChartExtended.ErrorType = 1;
-                        return renderChartExtended; //PartialView("EmptyChart");
-                    }
 
                 }
                 else

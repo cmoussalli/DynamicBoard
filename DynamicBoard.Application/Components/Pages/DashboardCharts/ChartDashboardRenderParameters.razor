@@ -23,7 +23,7 @@
                         </thead>
                         <tbody>
 
-                            @foreach (var item in chartParameters)
+                            @foreach (ChartParameter item in chartParameters)
                             {
                                 <tr>
                                     <td>@item.Tag</td>
@@ -107,11 +107,19 @@
         defaultValues = true;
         await GetData();
         await base.OnInitializedAsync();
+        await Preview();
         defaultValues = false ;
     }
     public async Task GetData()
     {
         chartParameters = await dynamicBoardDashboardServices.GetChartParametersByDashboardIDAsync(DashboardID);
+        chartParameters = chartParameters.GroupBy(s => new { s.Tag, s.DefaultValueV2, s.DefaultValue, s.ChangValues }).Select(y => new ChartParameter()
+            {
+                Tag = y.Key.Tag,
+                DefaultValueV2 = y.Key.DefaultValueV2,
+                DefaultValue = y.Key.DefaultValue,
+                ChangValues = y.Key.ChangValues
+            }).ToList();
         ChartParameterIQList = chartParameters.AsQueryable();
         StateHasChanged();
     }
@@ -155,7 +163,7 @@
 
         //var encryptedData = EncryptionHelper.Encrypt(queryStringParameters);
 
-       // string qs = "dashboardID=" + DashboardID + "&language=2&parameters=[" + parameters + "]";
+        // string qs = "dashboardID=" + DashboardID + "&language=2&parameters=[" + parameters + "]";
 
         url = "/Dashboard/GetDashboardEncrypted?encryptedParam=" + encryptedData;
         //defaultValues = false;
@@ -165,7 +173,7 @@
     public async Task SetDefaultValues()
     {
         defaultValues = true;
-        await GetData();
+
         StateHasChanged();
     }
 

@@ -129,7 +129,7 @@
     // ChartAdd chartAdd;
     DashboardListView dashboardListView;
     DashboardAdd dashboardAdd;
-    
+
     ChartDashboardRenderParameters chartDashboardRenderParameters;
     ChartsLinkedWithDashboard chartsLinkedWithDashboard;
 
@@ -190,6 +190,7 @@
                     if (chartDashboardRenderParameters is not null)
                     {
                         await chartDashboardRenderParameters.GetData();
+                        await chartDashboardRenderParameters.Preview();
                     }
 
                     SelectedTabId = "tab-1";

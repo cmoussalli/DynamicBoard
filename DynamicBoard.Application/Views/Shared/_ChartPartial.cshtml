@@ -20,13 +20,35 @@
     }
     @if (@Model.IsAllowPrint)
     {
-        <img src="~/images/printer.png" onclick="printElement('div_@Model.ChartID')"  alt="printer" style="float: right; width: 25px;">
+        @if (Model.ChartType != "Label")
+        {
+            <img src="~/images/printer.png" onclick="printElement('div_@Model.ChartID','')"  alt="printer" style="float: right; width: 25px;">
+        }
+        else
+        {
+            <img src="~/images/printer.png" onclick="printElement('div_@Model.ChartID','Label')" alt="printer" style="float: right; width: 25px;">
+        }
     }
 
     <img id="loader_@Model.ChartID" class="loader" src="~/images/Spinne.gif" />
 
  <div id="div_@Model.ChartID" style="justify-content:center;display:none;">
-<canvas id="canvas_@Model.ChartID" width="405px" height="450px"></canvas>
+
+        @if (Model.ChartType != "Label")
+        {
+            <canvas id="canvas_@Model.ChartID" width="405px" height="450px"></canvas>
+        }
+        else
+        {
+            <div style="display: flex;justify-content:center;">
+                <h3 style="color:#1C459D">@Model.jsonchartTitle.Replace("\"", "")</h3>
+            </div>
+            <div style="display: flex;justify-content:center;">
+                <h3 style="margin: auto;font-size: 35px;font-style: inherit;text-align: center;color:#C1A968" id="Label_@Model.ChartID">@Model.LabelValue</h3>
+            </div>
+        }
+
+
 
 </div>
     </div>
