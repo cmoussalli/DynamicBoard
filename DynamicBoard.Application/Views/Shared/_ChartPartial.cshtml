@@ -1,0 +1,33 @@
+﻿<!-- ChartPartial.cshtml -->
+@using DynamicBoard.Application.Model
+@using DynamicBoard.Models
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+@model DynamicBoard.Application.Model.RenderChart
+
+         <div class="@Model.ChartCSS">
+     @if (@Model.IsAllowRefresh)
+    {
+        <img src="~/images/refresh.png" id="refreshButton_@Model.ChartID" onclick="refreshButton(this)"
+        data-chart-id="@Model.ChartID" 
+        data-refresh-time= "@Model.RefershTime"
+        data-chart-type= "@Model.ChartType"
+        data-json-axis-labels = "@System.Text.Json.JsonSerializer.Serialize(string.IsNullOrEmpty(@Model?.JsonXaxis_labels) ? "null" :@Model?.JsonXaxis_labels)"
+        data-json-graph-configurations = "@System.Text.Json.JsonSerializer.Serialize(string.IsNullOrEmpty(Model?.json_graphConfigurations) ? "null" :Model?.json_graphConfigurations)"
+        data-json-chart-title = "@Html.Raw(string.IsNullOrEmpty(Model?.jsonchartTitle) ? "null" : Model?.jsonchartTitle)"
+        alt="Refresh" style="float: right; width: 20px;">
+
+    }
+    @if (@Model.IsAllowPrint)
+    {
+        <img src="~/images/printer.png" onclick="printElement('div_@Model.ChartID')"  alt="printer" style="float: right; width: 25px;">
+    }
+
+    <img id="loader_@Model.ChartID" class="loader" src="~/images/Spinne.gif" />
+
+ <div id="div_@Model.ChartID" style="justify-content:center;display:none;">
+<canvas id="canvas_@Model.ChartID" width="405px" height="450px"></canvas>
+
+</div>
+    </div>
+    

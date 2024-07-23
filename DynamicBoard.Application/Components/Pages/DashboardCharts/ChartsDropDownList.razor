@@ -1,0 +1,45 @@
+﻿@page "/ChartsDropDownList"
+@using DynamicBoard.Application.DomainServices
+@using DynamicBoard.DataServices
+@using DynamicBoard.DataServices.Models;
+
+@rendermode InteractiveServer
+<FluentSelect Label="Select Chart for Dashboard" @bind-Value="SelectedValue" @onchange="OnChangeChartOption" TOption="string"
+              Style="width:100%;margin-top: 8px;">
+    <FluentOption Id="-1" Value="-1">Please select a Chart</FluentOption>
+
+    @foreach (var option in charts)
+    {
+        <FluentOption Id="@option.ID.ToString()" Value="@option.ID.ToString()">@option.TitleEn</FluentOption>
+    }
+</FluentSelect>
+
+@code {
+
+    [Parameter]
+    public EventCallback<int> OnResponse { get; set; }
+    [Parameter]
+    public string SelectedValue { get; set; }
+    [Parameter]
+    public List<ExtendChart> charts { get; set; }
+
+    int selectedChartOption = 0;
+    DynamicBoardUserServices dynamicBoardUserServices = new();
+    DynamicBoardChartServices dynamicBoardChartServices = new();
+    private string chartid = "";
+    protected override async Task OnInitializedAsync()
+    {
+        StateHasChanged();
+        await base.OnInitializedAsync();
+    }
+    public async Task GetData()
+    {
+        charts = await dynamicBoardChartServices.ChartsGetAllAsync();
+        StateHasChanged();
+    }
+    private async Task OnChangeChartOption(ChangeEventArgs e)
+    {
+        selectedChartOption =Convert.ToInt32(e.Value);
+        await OnResponse.InvokeAsync(selectedChartOption);
+    }
+}

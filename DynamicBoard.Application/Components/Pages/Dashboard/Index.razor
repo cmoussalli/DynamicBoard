@@ -1,16 +1,256 @@
 ﻿@page "/Dashboards"
+@using DynamicBoard.Application.Components.Pages.DashboardCharts
 @using DynamicBoard.Application.DomainServices
 @using DynamicBoard.DataServices
+@inject IDialogService DialogService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager _navigationManager
+
 @rendermode InteractiveServer
 
-<DashboardList>
-</DashboardList>
+<FluentThemeProvider>
+
+    <div class="row">
+        <div class="col-5 " style="width:20%">
+            <div class="card" style="height: 90vh; overflow: auto;">
+
+                <FluentStack HorizontalAlignment="HorizontalAlignment.Center">
+                    <FluentButton OnClick=" ()=>  OnOpen()" IconStart="@(new Icons.Regular.Size16.AddCircle())">
+                        <b>@newDashboard</b>
+                    </FluentButton>
+                </FluentStack>
+
+                <br />
+
+                <DashboardListView @ref="dashboardListView" OnResponse="GetResponseMessage"></DashboardListView>
+
+            </div>
+        </div>
+        <div class="col-7" style="width:80%">
+            <div class="card" style="height: 90vh; overflow:auto">
+                <FluentTabs @bind-ActiveTabId="@SelectedTabId">
+                    <FluentTab Id="tab-2">
+                        <Header>
+                            <FluentIcon Value="@(new Icons.Regular.Size16.TextFontInfo())" Color="@Color.Success" />
+                            Dashboard Info
+                        </Header>
+                        <Content>
+
+                            @if (DashboardID != 0)
+                            {
+                                <DashboardAdd OnResponse="GetResponse" @ref="dashboardAdd" Id=@DashboardID actionTitle="@actionTitle" Dashboard="@dashboardToAdd" />
+                            }
+                        </Content>
+                    </FluentTab>
+                    <FluentTab Id="tab-3">
+                        <Header>
+                            <FluentIcon Value="@(new Icons.Regular.Size16.PersonAdd())" Color="@Color.Error" />
+                            <span style="color:forestgreen;">Charts</span>
+                        </Header>
+                        <Content >
+                            @if (DashboardID != 0)
+                            {
+                                <DynamicBoard.Application.Components.Pages.DashboardCharts.ChartsLinkedWithDashboard @ref="@chartsLinkedWithDashboard" OnResponse="@CopyToClipboard" DashboardId="@DashboardID" />
+                            }
+
+                        </Content>
+                    </FluentTab>
+                    <FluentTab Id="tab-4" style="width: 100%;height: 501%;">
+                        <Header>
+                            <FluentIcon Value="@(new Icons.Regular.Size16.ContentViewGallery())" Color="@Color.Error" />
+                            <span style="color:forestgreen;">View</span>
+                        </Header>
+                        <Content>
+                            @if (DashboardID != 0)
+                            {
+                                <ChartDashboardRenderParameters @ref="@chartDashboardRenderParameters" DashboardID="@DashboardID" OnResponse="@GetUrlFromPreview"></ChartDashboardRenderParameters>
+                                <iframe id="ChartFrame" src="@url" allowfullscreen style=" position: center;    width:100%;height:100%;    border: 0;    overflow: hidden;"></iframe>
+                            }
+                            else
+                            {
+                                <FluentProgressRing Style="width:30px;height:30px" />
+                            }
+
+
+                        </Content>
+                    </FluentTab>
+                </FluentTabs>
+            </div>
+        </div>
+    </div>
+    @*    </div> *@
+
+</FluentThemeProvider>
+
+
+
+<FluentDialog @ref="_myFluentDialog" @bind-Hidden="@Hidden" aria-label="Simple dialog" Modal=@_modal TrapFocus=@_trapFocus
+              PreventScroll=@_preventScroll @ondialogdismiss=OnDismiss>
+    <FluentDialogHeader Visible="false" />
+    @if (ActionForAdd == true)
+    {
+        <h2>@actionTitle Dashboard</h2>
+
+        <DashboardAdd @ref="dashboardAdd" Id="@DashboardID" actionTitle="@actionTitle" Dashboard="dashboardToAdd" OnResponse="GetResponseMessage"></DashboardAdd>
+    }
+
+</FluentDialog>
+
+
+
+
 @code {
+    public long ChartId = 0;
+    public long DashboardID = 0;
+    ExtendChart chart = new();
+    ExtendChart chartForAdd = new();
+
+    Dashboards dashboard = new();
+    ExtendDashboard dashboardToAdd = new();
+
+    public string newDashboard = "< New Dashboard>";
+    private FluentDialog? _myFluentDialog;
+    private string? _status;
+    private bool Hidden { get; set; } = true;
+    private bool _trapFocus = true;
+    private bool _modal = true;
+    private bool _preventScroll = true;
+    public bool ActionForAdd = false;
+    string message = "";
+    DynamicBoardChartServices chartsServices = new();
+
+
+    string actionTitle = "Add";
+    List<ExtendChart> charts = new();
+    private int activeTabId = 1;
+    string SelectedTabId = "tab-1";
+
+
+    // ChartAdd chartAdd;
+    DashboardListView dashboardListView;
+    DashboardAdd dashboardAdd;
+    
+    ChartDashboardRenderParameters chartDashboardRenderParameters;
+    ChartsLinkedWithDashboard chartsLinkedWithDashboard;
+
+
+    string url = "";
+    public string Url { get; set; }
+
     DynamicBoardDashboardServices dashboardServices = new();
     List<Dashboards> dashboards = new();
     public IQueryable<Dashboards>? DashboardList;
     PaginationState pagination = new PaginationState { ItemsPerPage = 3 };
 
+
+
+    public async Task GetResponseMessage(long dashboardID)
+    {
+        try
+        {
+            SelectedTabId = "tab-1";
+            StateHasChanged();
+            await Task.Delay(1000);
+            _myFluentDialog!.Hide();
+            DashboardID = dashboardID;
+            dashboards = await dashboardServices.DashboardsByIDAsync(dashboardID);
+            if (dashboards is not null)
+            {
+                if (dashboards.Count > 0)
+                {
+                    dashboard = dashboards[0];
+                    dashboardToAdd.ID = dashboard.ID;
+                    dashboardToAdd.IsActive = dashboard.IsActive;
+                    dashboardToAdd.IsDeleted = dashboard.IsDeleted;
+                    dashboardToAdd.TitleAr = dashboard.TitleAr;
+                    dashboardToAdd.TitleEn = dashboard.TitleEn;
+                    dashboardToAdd.CreatedBy = dashboard.CreatedBy;
+
+                    actionTitle = "Update";
+                    if (dashboardListView is not null)
+                    {
+                        await dashboardListView.GetDashboards();
+                    }
+
+                    if (dashboardAdd is not null)
+                    {
+                        dashboardToAdd.ID = dashboard.ID;
+                        dashboardToAdd.IsActive = dashboard.IsActive;
+                        dashboardToAdd.IsDeleted = dashboard.IsDeleted;
+                        dashboardToAdd.TitleAr = dashboard.TitleAr;
+                        dashboardToAdd.TitleEn = dashboard.TitleEn;
+                        dashboardToAdd.CreatedBy = dashboard.CreatedBy;
+                        await dashboardAdd.AddValuesToForm(dashboardToAdd);
+                    }
+
+                    if (chartsLinkedWithDashboard is not null)
+                    {
+                        await chartsLinkedWithDashboard.LnkDashboardChartsGet(dashboard.ID);
+                    }
+                    if (chartDashboardRenderParameters is not null)
+                    {
+                        await chartDashboardRenderParameters.GetData();
+                    }
+
+                    SelectedTabId = "tab-1";
+                    // StateHasChanged();
+                    await Task.Delay(1000);
+                    SelectedTabId = "tab-2";
+                    StateHasChanged();
+                }
+            }
+
+
+        }
+        catch (Exception ex)
+        {
+
+
+        }
+
+    }
+
+
+    private void OnOpen()
+    {
+        actionTitle = "Add";
+        DashboardID = 0;
+        dashboards = new();
+        dashboard = new();
+        ActionForAdd = true;
+        StateHasChanged();
+        _status = "Dialog opened with button click";
+        // _myFluentDialog!.Show();
+
+        if (_myFluentDialog != null)
+        {
+            _myFluentDialog.Show();
+        }
+        else
+        {
+            _myFluentDialog = new FluentDialog();
+            _myFluentDialog.Show();
+        }
+
+        // StateHasChanged();
+        // DemoLogger.WriteLine(_status);
+    }
+
+    private void OnClose()
+    {
+        _status = $"Dialog dismissed with reason: Close button clicked";
+        _myFluentDialog!.Hide();
+        //  DemoLogger.WriteLine(_status);
+    }
+    private void OnDismiss(DialogEventArgs args)
+    {
+        if (args is not null && args.Reason is not null && args.Reason == "dismiss")
+        {
+            _status = $"Dialog dismissed with reason: Dismissed";
+            _myFluentDialog!.Hide();
+            //  DemoLogger.WriteLine(_status);
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -20,12 +260,45 @@
         await base.OnInitializedAsync();
 
     }
-    public IQueryable<Dashboards> DashboardsAll()
+
+    public async Task GetUrlFromPreview(string _url)
     {
-        dashboards = dashboardServices.DashboardsAll();
+        await JSRuntime.InvokeVoidAsync("newSrc", _url);
+    }
+
+    public async Task CopyToClipboard(string dataScript)
+    {
+        await JSRuntime.InvokeVoidAsync("copyTextToClipboard", dataScript);
+    }
+
+
+    public async Task<IQueryable<Dashboards>> DashboardsAll()
+    {
+        dashboards =await dashboardServices.DashboardsAllAsync();
         DashboardList = dashboards?.AsQueryable();
         return DashboardList;
     }
+
+    private async Task GetResponse()
+    {
+        dashboards = await dashboardServices.DashboardsByIDAsync(DashboardID);
+        if (dashboards is not null)
+        {
+            if (dashboards.Count > 0)
+            {
+                await GetResponseMessage(DashboardID);
+            }
+            else
+            {
+                _navigationManager.NavigateTo(_navigationManager.Uri, true);
+            }
+        }
+
+        await dashboardListView.GetDashboards();
+        StateHasChanged();
+    }
+
+
     private async Task GoToPageAsync(int pageIndex)
     {
         await pagination.SetCurrentPageIndexAsync(pageIndex);

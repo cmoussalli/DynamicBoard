@@ -7,6 +7,7 @@ using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -27,7 +28,7 @@ namespace DynamicBoard.DataServices.Services
         #endregion
 
         #region Dashboard
-        public List<Dashboards> DashboardsAll(string userID = "")
+        public async Task<List<Dashboards>> DashboardsAllAsync(string userID = "")
         {
             List<Dashboards> dashboards = new List<Dashboards>();
 
@@ -38,7 +39,7 @@ namespace DynamicBoard.DataServices.Services
                 {
                     UserId = userID
                 };
-                dashboards = conn.Query<Dashboards>("DashboardsGetALL @UserId", p).ToList();
+                dashboards =(await conn.QueryAsync<Dashboards>("DashboardsGetALL @UserId", p)).ToList();
             }
             catch (Exception ex)
             {
@@ -46,6 +47,7 @@ namespace DynamicBoard.DataServices.Services
             }
             return dashboards;
         }
+
         public async Task<List<Dashboards>> DashboardsByIDAsync(long dashboardId)
         {
             List<Dashboards> dashboards = new List<Dashboards>();
@@ -60,6 +62,24 @@ namespace DynamicBoard.DataServices.Services
 
             return dashboards;
         }
+
+
+        public async Task<Dashboards> GetDashboardByDashboardIDAsync(long dashboardId)
+        {
+            Dashboards dashboards = new Dashboards();
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                var p = new
+                {
+                    DashboardId = dashboardId
+                };
+                dashboards = (await conn.QueryAsync<Dashboards>("GetDashboardByDashboardID @DashboardId", p)).FirstOrDefault();
+            }
+
+            return dashboards;
+        }
+
+
         //Delete_Dashboards
         public async Task<bool> DeleteDashboardAsync(long dashboardId)
         {
@@ -76,34 +96,273 @@ namespace DynamicBoard.DataServices.Services
                 return isDeleted;
             }
         }
-        public async Task DashboardAddEditAsync(long ID, string TitleEn, string TitleAr, string UserId, bool isActive, bool isDeleted)
+        public async Task<long> DashboardAddEditAsync(long id, string titleEn, string titleAr, string userId, bool isActive, bool isDeleted)
+        {
+            SqlConnection conn = new SqlConnection(connStr);
+            try
+            {
+                using (var command = new SqlCommand("[dbo].[DashboardAddEdit]", conn))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@ID", id);
+                    command.Parameters.AddWithValue("@TitleEn", titleEn);
+                    command.Parameters.AddWithValue("@TitleAr", titleAr);
+                    command.Parameters.AddWithValue("@IsActive", isActive);
+                    command.Parameters.AddWithValue("@IsDeleted", isDeleted);
+                    command.Parameters.AddWithValue("@UserId", userId);
+                    var returnIdParameter = new SqlParameter
+                    {
+                        ParameterName = "@ReturnID",
+                        SqlDbType = SqlDbType.BigInt,
+                        Direction = ParameterDirection.Output
+
+                    };
+                    command.Parameters.Add(returnIdParameter);
+
+                    // Execute the command
+                    conn.Open();
+                    await command.ExecuteNonQueryAsync();
+
+                    // Retrieve the output value
+                    long returnId = (long)returnIdParameter.Value;
+
+                    // Close the connection and return the output value
+                    conn.Close();
+                    return returnId;
+                }
+
+            }
+            catch (Exception EX)
+            {
+
+                return 0;
+            }
+        }
+
+
+
+
+        public async Task<List<Lnk_Dashboards_Charts_Size_Extended>> GetLnkDashboardsChartsByDashboardIDAsync(long dashboardId)
+        {
+            List<Lnk_Dashboards_Charts_Size_Extended> lnk_Dashboards_Charts = new List<Lnk_Dashboards_Charts_Size_Extended>();
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connStr))
+                {
+                    var p = new
+                    {
+                        DashboardId = dashboardId
+                    };
+                    lnk_Dashboards_Charts = (await conn.QueryAsync<Lnk_Dashboards_Charts_Size_Extended>("GetLnkDashboardsChartsByDashboardID @DashboardId", p)).ToList();
+
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle the exception
+            }
+
+            return lnk_Dashboards_Charts;
+        }
+
+
+
+        public async Task<List<Dashboard_Charts_Details>> GetDashboardChartsDetailByIDAsync(long dashboardID)
+        {
+            List<Dashboard_Charts_Details> dashboard_Charts_Details = new List<Dashboard_Charts_Details>();
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connStr))
+                {
+                    var p = new
+                    {
+                        DashboardId = dashboardID
+                    };
+                    dashboard_Charts_Details = (await conn.QueryAsync<Dashboard_Charts_Details>("GetDashboardChartsDetailByID @DashboardId", p)).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle the exception
+            }
+            return dashboard_Charts_Details;
+        }
+
+
+
+
+        public async Task<List<ExtendLnk_Charts_Users>> GetLnkDashboardsChartsWithSizesByDashboardIDAsync(long chartId = 0)
+        {
+            List<ExtendLnk_Charts_Users> Lnk_Charts_Users = new List<ExtendLnk_Charts_Users>();
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connStr))
+                {
+                    var p = new
+                    {
+                        ChartID = chartId
+                    };
+
+                    Lnk_Charts_Users = (await conn.QueryAsync<ExtendLnk_Charts_Users, Charts, Users, ChartTypes, ExtendLnk_Charts_Users>(
+                        "GetLnk_Charts_UsersByChartID @ChartID",
+                        (ext, chart, user, charttypes) =>
+                        {
+                            ext.Charts = chart;
+                            ext.User = user;
+                            ext.ChartTypes = charttypes;
+                            return ext;
+                        },
+                        p
+                        )
+                    ).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle the exception
+            }
+
+            return Lnk_Charts_Users;
+        }
+
+
+
+
+        public async Task<List<ChartParameter>> GetChartParametersByDashboardIDAsync(long dashboardID)
+        {
+            List<ChartParameter> Lnk_Charts_Users = new List<ChartParameter>();
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connStr))
+                {
+                    var p = new
+                    {
+                        DashboardID = dashboardID
+                    };
+
+                    Lnk_Charts_Users = (await conn.QueryAsync<ChartParameter>(
+                        "GetChartParametersByDashboardID @DashboardID", p)).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle the exception
+            }
+
+            return Lnk_Charts_Users;
+        }
+
+
+        public async Task<long> InsertLnk_Dashboard_Charts(Lnk_Dashboards_Charts lnk_Dashboards_Charts)
+        {
+            SqlConnection conn = new SqlConnection(connStr);
+            try
+            {
+                using (var command = new SqlCommand("[dbo].[InsertLnkDashboardChart]", conn))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@ID", lnk_Dashboards_Charts.ID);
+                    command.Parameters.AddWithValue("@DashboardID", lnk_Dashboards_Charts.DashboardID);
+                    command.Parameters.AddWithValue("@ChartID", lnk_Dashboards_Charts.ChartID);
+                    command.Parameters.AddWithValue("@SizeID", lnk_Dashboards_Charts.SizeID);
+                    command.Parameters.AddWithValue("@SortID", lnk_Dashboards_Charts.SortID);
+                    command.Parameters.AddWithValue("@IsActive", lnk_Dashboards_Charts.IsActive);
+                    command.Parameters.AddWithValue("@IsDeleted", lnk_Dashboards_Charts.IsDeleted);
+
+                    var returnIdParameter = new SqlParameter
+                    {
+                        ParameterName = "@ReturnID",
+                        SqlDbType = SqlDbType.BigInt,
+                        Direction = ParameterDirection.Output
+                    };
+                    command.Parameters.Add(returnIdParameter);
+
+                    // Execute the command
+                    conn.Open();
+                    await command.ExecuteNonQueryAsync();
+
+                    // Retrieve the output value
+                    long returnId = (long)returnIdParameter.Value;
+
+                    // Close the connection and return the output value
+                    conn.Close();
+                    return returnId;
+                }
+
+            }
+            catch (Exception EX)
+            {
+
+                return 0;
+            }
+        }
+
+        public async Task<bool> DeleteLnkDashboardChartsAsync(long dashboardID, long chartID)
         {
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                var p = new
-                {
-                    ID = ID,
-                    TitleEn = TitleEn,
-                    TitleAr = TitleAr,
-                    UserId = UserId,
-                    isActive = isActive,
-                    isDeleted = isDeleted
-                };
-                try
-                {
-                    await conn.ExecuteAsync("DashboardAddEdit @ID, @TitleEn, @TitleAr, @UserId, @IsActive, @IsDeleted", p);
-                }
-                catch (Exception ex)
-                {
-                    // handle exception
-                }
+                var parameters = new DynamicParameters();
+                parameters.Add("@DashboardId", dashboardID, DbType.Int64);
+                parameters.Add("@ChartId", chartID, DbType.Int64);
+                parameters.Add("@IsDeleted", dbType: DbType.Boolean, direction: ParameterDirection.Output);
+                await conn.ExecuteAsync("Delete_LnkDashboardCharts", parameters, commandType: CommandType.StoredProcedure);
+                var isDeleted = parameters.Get<bool>("@IsDeleted");
+                return isDeleted;
             }
         }
-        #endregion
 
 
-        #region Chart
-        public async Task<long> ChartAddEditAsync(long id, long chartTypeID, long dBConnectionID, string dataScript, string titleEn, string titleAr, long refershTime, bool isActive, bool isDeleted, long chartTheme = 1, string createdBy = " ")
+        public async Task<long> UpdateLnkDashboardChartsSortOrderAsync(Dashboard_Charts_Details dashboard_Charts_Details)
+        {
+            SqlConnection conn = new SqlConnection(connStr);
+            try
+            {
+                using (var command = new SqlCommand("[dbo].[UpdateLnkDashboardChartsSortOrder]", conn))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@DashboardId", dashboard_Charts_Details.DashboardID);
+                    command.Parameters.AddWithValue("@ChartId", dashboard_Charts_Details.ChartID);
+                    command.Parameters.AddWithValue("@Order", dashboard_Charts_Details.SortID);
+                    var returnIdParameter = new SqlParameter
+                    {
+                        ParameterName = "@ReturnID",
+                        SqlDbType = SqlDbType.BigInt,
+                        Direction = ParameterDirection.Output
+
+                    };
+                    command.Parameters.Add(returnIdParameter);
+
+                    // Execute the command
+                    conn.Open();
+                    await command.ExecuteNonQueryAsync();
+
+                    // Retrieve the output value
+                    long returnId = (long)returnIdParameter.Value;
+
+                    // Close the connection and return the output value
+                    conn.Close();
+                    return returnId;
+                }
+
+            }
+            catch (Exception EX)
+            {
+
+                return 0;
+            }
+        }
+
+
+
+            #endregion
+
+
+            #region Chart
+            public async Task<long> ChartAddEditAsync(long id, long chartTypeID, long dBConnectionID, string dataScript, string titleEn, string titleAr, long refershTime, bool isActive, bool isDeleted, long chartTheme = 1, string createdBy = " ")
         {
             SqlConnection conn = new SqlConnection(connStr);
             try
@@ -257,6 +516,8 @@ namespace DynamicBoard.DataServices.Services
 
             return charts;
         }
+
+
         public async Task<List<ExtendChart>> ChartGetByIdAsync(long id)
         {
             List<ExtendChart> charts = new List<ExtendChart>();
@@ -290,6 +551,7 @@ namespace DynamicBoard.DataServices.Services
 
             return charts;
         }
+
         public async Task<List<ChartTypes>> GetChartTypes()
         {
             List<ChartTypes> chartTypes = new List<ChartTypes>();
@@ -300,6 +562,21 @@ namespace DynamicBoard.DataServices.Services
             }
             return chartTypes;
         }
+
+        public async Task<List<SizeStyles>> GetSizeStyles()
+        {
+            List<SizeStyles> sizeStyles = new List<SizeStyles>();
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                await conn.OpenAsync();
+                sizeStyles = (List<SizeStyles>)await conn.QueryAsync<SizeStyles>("GetSizeStyles");
+            }
+            return sizeStyles;
+        }
+
+
+
+
         public async Task<List<ChartColorTheme>> GetChartColorTheme()
         {
             List<ChartColorTheme> chartTypes = new List<ChartColorTheme>();

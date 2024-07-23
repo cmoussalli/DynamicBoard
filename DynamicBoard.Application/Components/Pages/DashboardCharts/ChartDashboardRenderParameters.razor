@@ -1,0 +1,173 @@
+﻿@page "/ChartDashboardRenderParameters"
+@using DynamicBoard.Application.DomainServices
+@using DynamicBoard.DataServices
+@using DynamicBoard.DataServices.Models
+@rendermode InteractiveServer
+
+@if (chartParameters is not null)
+{
+    <div class="content">
+
+        <div class="row">
+            @if (chartParameters.Count > 0)
+            {
+                <div class="col-8">
+                    <table id="ParametersTable" class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Tag</th>
+                                <th scope="col">Values</th>
+                                <th scope="col">DefaultValues</th>
+                                <th scope="col">IsRequired</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            @foreach (var item in chartParameters)
+                            {
+                                <tr>
+                                    <td>@item.Tag</td>
+                                    <td>
+                                        @if (defaultValues)
+                                        {
+                                            <FluentTextField Id="@item.Tag" @bind-Value=@item.DefaultValueV2 AriaLabel="No label"></FluentTextField>
+                                        }
+                                        else
+                                        {
+                                            <FluentTextField Id="@item.Tag" @bind-Value=@item.ChangValues AriaLabel="No label"></FluentTextField>
+                                        }
+
+                                    </td>
+                                    <td>
+                                        <FluentBadge Appearance="Appearance.Neutral" Fill="highlight" BackgroundColor="#fffdfa;" Color="#000">
+                                            @item.DefaultValue
+                                        </FluentBadge>
+                                    </td>
+                                    <td>
+                                        <FluentBadge Appearance="Appearance.Neutral" Fill="highlight" BackgroundColor="#339eb4;" Color="#000">
+                                            @item.IsRequired
+                                        </FluentBadge>
+                                    </td>
+                                </tr>
+                            }
+
+
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p> Chart Parameters are not avaliable</p>
+            }
+            @if (chartParameters.Count > 0)
+            {
+                <div class="col-4 d-flex flex-column justify-content-between">
+                    <FluentStack HorizontalAlignment="HorizontalAlignment.Right">
+                        <FluentButton Appearance="Appearance.Accent" OnClick="()=>SetDefaultValues()" Style="width:50%">
+                            Set DefaultValues
+                        </FluentButton>
+                    </FluentStack>
+                </div>
+            }
+            <FluentStack HorizontalAlignment="HorizontalAlignment.Right">
+
+                <FluentButton Appearance="Appearance.Accent" OnClick="()=>Preview()">
+                    Preview
+                </FluentButton>
+            </FluentStack>
+        </div>
+    </div>
+
+}
+
+@code {
+    [Parameter]
+    public long DashboardID { get; set; }
+    [Parameter]
+    public long ChartID { get; set; }
+    [Parameter]
+    public int language { get; set; }
+    [Parameter]
+    public string CRNombers { get; set; }
+    [Parameter]
+    public EventCallback<string> OnResponse { get; set; }
+
+    bool defaultValues = false;
+    DynamicBoardDashboardServices dynamicBoardDashboardServices = new();
+    public List<ChartParameter> chartParameters = new();
+
+    ChartParameter chartParameterModel = new();
+    string CRNumber = "";
+    ChartParameter chartParameter = new();
+
+    IQueryable<ChartParameter> ChartParameterIQList;
+    protected override async Task OnInitializedAsync()
+    {
+        defaultValues = true;
+        await GetData();
+        await base.OnInitializedAsync();
+        defaultValues = false ;
+    }
+    public async Task GetData()
+    {
+        chartParameters = await dynamicBoardDashboardServices.GetChartParametersByDashboardIDAsync(DashboardID);
+        ChartParameterIQList = chartParameters.AsQueryable();
+        StateHasChanged();
+    }
+
+
+    public async Task Preview()
+    {
+        // REMAKE THE CHART URL WITH PARAMEYTERS
+        string url = "";
+        string parameters = "";
+        foreach (ChartParameter item in chartParameters)
+        {
+            if (defaultValues)
+            {
+                if (String.IsNullOrEmpty(url) || !url.Contains(item.Tag))
+                {
+                    if (!string.IsNullOrEmpty(item.DefaultValueV2))
+                    {
+                        parameters += "[" + item.Tag + ":" + item.DefaultValueV2 + "]";
+                    }
+                }
+
+            }
+            else
+            {
+
+                if (String.IsNullOrEmpty(url) || !url.Contains(item.Tag))
+                {
+                    if (!string.IsNullOrEmpty(item.ChangValues))
+                    {
+                        parameters += "[" + item.Tag + ":" + item.ChangValues + "]";
+                    }
+                }
+            }
+
+
+        }
+
+        string queryStringParameters = "dashboardID=" + DashboardID + "&language=2&parameters=[" + parameters + "]";
+        var encryptedData = EncryptionHelper.Encrypt(queryStringParameters);
+
+        //var encryptedData = EncryptionHelper.Encrypt(queryStringParameters);
+
+       // string qs = "dashboardID=" + DashboardID + "&language=2&parameters=[" + parameters + "]";
+
+        url = "/Dashboard/GetDashboardEncrypted?encryptedParam=" + encryptedData;
+        //defaultValues = false;
+        await OnResponse.InvokeAsync(url);
+        //StateHasChanged();
+    }
+    public async Task SetDefaultValues()
+    {
+        defaultValues = true;
+        await GetData();
+        StateHasChanged();
+    }
+
+
+}

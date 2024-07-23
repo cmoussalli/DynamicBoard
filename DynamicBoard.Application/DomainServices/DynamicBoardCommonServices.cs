@@ -20,7 +20,12 @@ namespace DynamicBoard.Application.DomainServices
         {
             return await db.GetChartParametersByChartID(chartId);
         }
-       
+
+        public async Task<List<SizeStyles>> SizeStylesGetAllAsync()
+        {
+            return await db.GetSizeStyles();
+        }
+
 
     }
 }

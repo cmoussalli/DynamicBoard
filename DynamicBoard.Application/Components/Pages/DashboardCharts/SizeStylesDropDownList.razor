@@ -1,0 +1,46 @@
+﻿@page "/SizeStylesDropDownList"
+@using DynamicBoard.Application.DomainServices
+@using DynamicBoard.DataServices
+@using DynamicBoard.DataServices.Models;
+
+@rendermode InteractiveServer
+<FluentSelect Label="Select Size Style For Chart" @bind-Value="SelectedValue" @onchange="OnChangeSizeOption" TOption="string"
+              Style="width:100%;margin-top: 8px;">
+    <FluentOption Id="-1" Value="-1">Please select a Size Style</FluentOption>
+
+    @foreach (var option in sizeStyles)
+    {
+        <FluentOption Id="@option.ID.ToString()" Value="@option.ID.ToString()">@option.Title</FluentOption>
+    }
+</FluentSelect>
+
+@code {
+
+    [Parameter]
+    public EventCallback<int> OnResponse { get; set; }
+    [Parameter]
+    public string SelectedValue { get; set; }
+    [Parameter]
+    public List<SizeStyles> sizeStyles{ get; set; }
+
+    int selectedSizeOption = 0;
+    DynamicBoardCommonServices dynamicBoardCommonServices = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        //sizeStyles = new();
+        StateHasChanged();
+        //await GetData();
+        await base.OnInitializedAsync();
+    }
+    public async Task GetData()
+    {
+        sizeStyles = await dynamicBoardCommonServices.SizeStylesGetAllAsync();
+        StateHasChanged();
+    }
+    private async Task OnChangeSizeOption(ChangeEventArgs e)
+    {
+        selectedSizeOption =Convert.ToInt32(e.Value.ToString());
+        await OnResponse.InvokeAsync(selectedSizeOption);
+    }
+}

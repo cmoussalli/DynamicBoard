@@ -14,14 +14,14 @@ else
 {
     <FluentStack HorizontalAlignment="HorizontalAlignment.End">
 
-        @* <FluentAnchor Href="/DashboardAdd"
+        <FluentAnchor Href="/DashboardAdd"
     IconStart="@(new Icons.Regular.Size24.DocumentAdd().WithColor(Color.Success))">
     + Dashbard
-    </FluentAnchor> *@
-        <FluentAnchor @onclick="OnOpen"
+    </FluentAnchor>
+ @*        <FluentAnchor Onclick="OnOpen" Href=""
                       IconStart="@(new Icons.Regular.Size24.DocumentAdd().WithColor(Color.Success))">
             + Dashbard
-        </FluentAnchor>
+        </FluentAnchor> *@
 
     </FluentStack>
 
@@ -34,14 +34,13 @@ else
             <PropertyColumn Title="Deleted" Property="@(c => c!.IsDeleted)" Sortable="true" Align=Align.Start />
 
             <TemplateColumn Align="@Align.End">
-                <FluentButton Appearance="Appearance.Outline" OnClick="()=>ConformationForDelete( Convert.ToInt32(context.ID))"
+                <FluentButton Appearance="Appearance.Outline" OnClick="()=>ConformationForDelete(Convert.ToInt32(context.ID))"
                               IconStart="@(new Icons.Regular.Size24.Delete().WithColor(Color.Error))">Delete</FluentButton>
-
                  
-                    <FluentButton Appearance="Appearance.Outline" OnClick="()=>DashboardEdit( context.ID)"
+                    <FluentButton Appearance="Appearance.Outline" OnClick="()=>DashboardEdit(context.ID)"
                                   IconStart="@(new Icons.Regular.Size24.Edit().WithColor(Color.Success))">Edit</FluentButton>
-                @*
-
+                
+                    @*
             <FluentAnchor IconStart="@(new Icons.Regular.Size24.Edit().WithColor(Color.Success))"
             Appearance="Appearance.Outline"
             Href="@($"/AddUser/{context.Id}")">Edit</FluentAnchor> *@
@@ -78,7 +77,7 @@ else
     @if (ActionForAdd == true)
     {
         <h2>@actionTitle Dashboard</h2>
-        <DashboardAdd Id="dashboardID" Dashboard=@dashboard actionTitle="@actionTitle" OnResponse="@GetResponseMessage"></DashboardAdd>
+        <DashboardAdd Id="dashboardID"  actionTitle="@actionTitle" OnResponse="@GetResponseMessage"></DashboardAdd>
     }
     else if (ActionForDelete == true)
     {
@@ -94,7 +93,7 @@ else
 
  
 
-    @code {
+@code {
     DynamicBoardDashboardServices dashboardServices = new();
     List<Dashboards> dashboards = new();
     public IQueryable<Dashboards>? DashboardLists;
@@ -130,16 +129,18 @@ else
         await base.OnInitializedAsync();
 
     }
-    public IQueryable<Dashboards> DashboardsAll()
+    public async  Task<IQueryable<Dashboards>> DashboardsAll()
     {
-        dashboards = dashboardServices.DashboardsAll();
+        dashboards =await dashboardServices.DashboardsAllAsync();
         DashboardLists = dashboards?.AsQueryable();
         return DashboardLists;
     }
+
     private async Task GoToPageAsync(int pageIndex)
     {
         await pagination.SetCurrentPageIndexAsync(pageIndex);
     }
+
 
     private Appearance PageButtonAppearance(int pageIndex)
         => pagination.CurrentPageIndex == pageIndex ? Appearance.Accent : Appearance.Neutral;
@@ -217,7 +218,7 @@ else
         //  DemoLogger.WriteLine(_status);
     }
 
-    public void GetResponseMessage(int value)
+    public void GetResponseMessage(long value)
     {
         DashboardsAll();
         _status = $"Dialog dismissed with reason: Dismissed";

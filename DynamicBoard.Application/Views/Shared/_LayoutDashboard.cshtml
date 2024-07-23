@@ -1,0 +1,66 @@
+﻿
+<!doctype html>
+<html>
+<head>
+
+    <!-- TITLE -->
+    <title>@ViewData["Title"] - Dashboard Application</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <style>
+
+        .loader {
+            position: center;
+            z-index: 999999999999999999999999999999999999999;
+            opacity: .7;
+        }
+
+        .bottom-left {
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    @RenderBody()
+</body>
+<script src="~/js/dist/chart.umd.min.js"></script>
+<script src="~/js/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" charset="utf-8">
+
+    var isloading = true
+    var loader = '';
+    var canvasDiv = '';
+
+    function printElement(elementId) {
+        var element = document.getElementById(elementId);
+        var canvas = element.querySelector('canvas');
+        var printContents = element.innerHTML;
+        var originalContents = document.body.innerHTML;
+
+        // Create an image from the canvas content
+        var img = new Image();
+        img.onload = function () {
+            // Replace the canvas with the image in the printed content
+            printContents = printContents.replace('<canvas', '<img src="' + img.src + '"');
+
+            document.body.innerHTML = printContents;
+
+            // Print the page
+            window.print();
+
+            // Restore the original contents
+            document.body.innerHTML = originalContents;
+
+            // Reload the chart after printing
+            setTimeout(function () {
+                location.reload();
+            }, 1000); // Reload after 1 second
+        };
+        img.src = canvas.toDataURL();
+    }
+</script>
+
+</html>
+

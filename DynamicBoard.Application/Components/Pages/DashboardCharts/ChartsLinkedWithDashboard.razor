@@ -1,0 +1,302 @@
+﻿@page "/ChartsLinkedWithDashboard"
+@using DynamicBoard.Application.DomainServices
+@using DynamicBoard.DataServices
+@using DynamicBoard.DataServices.Models
+@inject IJSRuntime JSRuntime
+@inject NavigationManager _navigationManager
+@rendermode InteractiveServer
+
+
+@if (DashboardId != 0)
+{
+    <FluentStack HorizontalAlignment="HorizontalAlignment.Start">
+
+        <FluentAnchor OnClick="@OnOpen"
+                      IconStart="@(new Icons.Regular.Size24.DocumentAdd().WithColor(Color.Success))">
+            + Add Charts with Dashboard
+        </FluentAnchor>
+
+    </FluentStack>
+    <br />
+
+    <ChartLists @ref="@chartsList" OnResponseForShowData="UpdateChartResponse" DashboardId="@DashboardId"></ChartLists>
+}
+else
+{
+    <FluentLabel Style="color:red">Please select an Chart from list view.</FluentLabel>
+}
+
+
+<FluentDialog @ref="_myFluentDialog" @bind-Hidden="@Hidden"  aria-label="Simple dialog" Modal=@_modal PreventScroll=@_preventScroll @ondialogdismiss=OnDismiss>
+    <FluentDialogHeader Visible="true" />
+      
+     @if (ActionForAdd == true)
+    {
+        <div class="row">
+            <div class="col-md-12">
+                <SizeStylesDropDownList sizeStyles="@sizeStyles" SelectedValue="@sizeStyleID.ToString()" OnResponse="@GetSizeResponse"></SizeStylesDropDownList>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <ChartsDropDownList charts="@extendCharts" SelectedValue="@ChartId.ToString()" OnResponse="@GetResponse"></ChartsDropDownList>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <FluentTextArea @bind-Value=DataScript ReadOnly="true" Style="width:100% !important;" Rows="12">Data Script</FluentTextArea><br /> <br />
+                <FluentButton Appearance="Appearance.Accent" Autofocus="true" @onclick="InvokeCopytoClipboard">Copy to ClipBoard</FluentButton>
+            </div>
+        </div>
+
+        <br />
+        <FluentButton Appearance="Appearance.Accent" Autofocus="true" @onclick="OnAdd">Add</FluentButton>
+
+     }
+
+     @if (ActionForUpdate == true)
+    {
+        <div class="row">
+            <div class="col-md-12">
+                <SizeStylesDropDownList sizeStyles="@sizeStyles" SelectedValue="@sizeStyleID.ToString()"  OnResponse="@GetSizeResponse"></SizeStylesDropDownList>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <ChartsDropDownList charts="@extendCharts" SelectedValue="@ChartId.ToString()" OnResponse="@GetResponse"></ChartsDropDownList>
+
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <FluentTextArea @bind-Value=DataScript ReadOnly="true" Style="width:100% !important;" Rows="12">Data Script</FluentTextArea><br /> <br />
+                <FluentButton Appearance="Appearance.Accent" Autofocus="true" @onclick="InvokeCopytoClipboard">Copy to ClipBoard</FluentButton>
+            </div>
+        </div>
+
+        <br />
+        <FluentButton Appearance="Appearance.Accent" Autofocus="true" @onclick="OnUpdate">Update</FluentButton>
+    }
+
+            <FluentButton Appearance="Appearance.Accent" @onclick="OnClose">Cancel</FluentButton>
+            <br />
+            <FluentLabel Color="@((isError) ? Color.Success: Color.Error)">@message</FluentLabel>
+
+  
+    </FluentDialog>
+@code {
+    [Parameter]
+    public long DashboardId { get; set; }
+    [Parameter]
+    public EventCallback<string> OnResponse { get; set; }
+
+    public bool ActionForAdd = false;
+    public bool ActionForUpdate = false;
+    private string? _status;
+    public bool isError ;
+    string message = "";
+    long ChartId = 0;
+    int sizeStyleID =0;
+    string actionTitle = "Add";
+    private bool Hidden { get; set; } = true;
+    private FluentDialog? _myFluentDialog;
+    private bool _trapFocus = true;
+    private bool _modal = true;
+    private bool _preventScroll = true;
+    private long Lnk_Dashboard_Charts_ID = 0;
+
+    DynamicBoardCommonServices dynamicBoardCommonServices = new();
+    DynamicBoardChartServices chartsServices = new();
+    DynamicBoardDashboardServices dynamicBoardDashboardServices = new();
+
+
+    Lnk_Dashboards_Charts lnk_Dashboards_Charts = new();
+    ChartLists chartsList;
+    JustifyContent Justification = JustifyContent.FlexStart;
+    int Spacing = 3;
+    string DataScript = "";
+    List<ExtendChart> extendCharts;
+    List<SizeStyles> sizeStyles;
+    public async Task UpdateChartResponse(Dashboard_Charts_Details model)
+    {
+        ChartId = model.ChartID;
+        DashboardId = model.DashboardID;
+        sizeStyleID = model.SizeID;
+        DataScript = model.DataScript;
+        Lnk_Dashboard_Charts_ID=model.Lnk_Dashboard_Charts_ID;
+
+        ActionForAdd = false;
+        ActionForUpdate = true;
+        _status = "Dialog opened with button click";
+        _myFluentDialog!.Show();
+        StateHasChanged();
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        extendCharts = await chartsServices.ChartsGetAllAsync();
+        sizeStyles = await dynamicBoardCommonServices.SizeStylesGetAllAsync();
+    }
+
+    private async Task OnUpdate()
+    {
+        lnk_Dashboards_Charts.ChartID = ChartId;
+        lnk_Dashboards_Charts.SizeID = sizeStyleID;
+        lnk_Dashboards_Charts.DashboardID = DashboardId;
+        lnk_Dashboards_Charts.ID = Lnk_Dashboard_Charts_ID;
+        if (ChartId != 0 && sizeStyleID != 0)
+        {
+            long result = 0;
+            result = await dynamicBoardDashboardServices.InsertLnk_Dashboard_Charts(lnk_Dashboards_Charts);
+            if (result <= 0)
+            {
+                isError = false;
+                message = "something went wrong please try again";
+            }
+            else
+            {
+                isError = true;
+                message = "Chart has been updated Successfully";
+            }
+            StateHasChanged();
+            await Task.Delay(1000);
+            message = "";
+            lnk_Dashboards_Charts = new();
+            _status = $"Dialog dismissed with reason: Close button clicked";
+            _myFluentDialog!.Hide();
+            //await LnkChartUsersGet(0);
+            await LnkDashboardChartsGet(DashboardId);
+        }
+        else
+        {
+            if (ChartId == 0)
+            {
+                isError = false;
+                message = "Please select any chart";
+                return;
+            }
+            if (sizeStyleID == 0)
+            {
+                isError = false;
+                message = " Please select any size";
+                return;
+            }
+            StateHasChanged();
+        }
+    }
+
+
+    private void OnOpen()
+    {
+        ChartId = 0;
+        ActionForAdd = true;
+        ActionForUpdate = false;
+        DataScript = "";
+        sizeStyleID = 0;
+
+        _status = "Dialog opened with button click";
+        _myFluentDialog!.Show();
+        StateHasChanged();
+        // DemoLogger.WriteLine(_status);
+    }
+
+    private async Task OnAdd()
+    {
+        lnk_Dashboards_Charts.ChartID = ChartId;
+        lnk_Dashboards_Charts.SizeID = sizeStyleID;
+        lnk_Dashboards_Charts.IsActive = true;
+        lnk_Dashboards_Charts.SortID =1;
+        lnk_Dashboards_Charts.IsDeleted = false;
+        lnk_Dashboards_Charts.DashboardID = DashboardId;
+        if (ChartId!=0 && sizeStyleID!=0)
+        {
+            long result = 0;
+            result = await dynamicBoardDashboardServices.InsertLnk_Dashboard_Charts(lnk_Dashboards_Charts);
+            if (result <= 0)
+            {
+                isError = false;
+                message = "something went wron please try again";
+            }
+            else
+            {
+                isError = true;
+                message = "Chart has been added Successfully";
+            }
+            StateHasChanged();
+            await Task.Delay(1000);
+            message = "";
+            lnk_Dashboards_Charts = new();
+            _status = $"Dialog dismissed with reason: Close button clicked";
+            _myFluentDialog!.Hide();
+            //await LnkChartUsersGet(0);
+            await LnkDashboardChartsGet(DashboardId);
+        }
+        else
+        {
+            if (ChartId == 0)
+            {
+                isError = false;
+                message = "Please select any chart";
+                return;
+            }
+            if(sizeStyleID==0)
+            {
+                isError = false;
+                message = " Please select any size";
+                return;
+            }
+            StateHasChanged();
+        }
+
+        //  DemoLogger.WriteLine(_status);
+    }
+
+    private void OnDismiss(DialogEventArgs args)
+    {
+        if (args is not null && args.Reason is not null && args.Reason == "dismiss")
+        {
+            _status = $"Dialog dismissed with reason: Dismissed";
+            _myFluentDialog!.Hide();
+            //  DemoLogger.WriteLine(_status);
+        }
+    }
+
+    private void OnClose()
+    {
+        _status = $"Dialog dismissed with reason: Close button clicked";
+        _myFluentDialog!.Hide();
+        //  DemoLogger.WriteLine(_status);
+    }
+
+    public async Task LnkDashboardChartsGet(long dashboardID)
+    {
+        await chartsList.GetDashboardChartsDetailByIDAsync(dashboardID);
+        StateHasChanged();
+    }
+    public async Task GetResponse(int chartID)
+    {
+        if (chartID > 0)
+        {
+            ChartId = chartID;
+            List<ExtendChart> chartdetails = await chartsServices.ChartsGetByIdAsync(chartID);
+            DataScript = chartdetails.FirstOrDefault().DataScript;
+            StateHasChanged();
+        }
+    }
+
+    public async Task InvokeCopytoClipboard()
+    {
+        await OnResponse.InvokeAsync(DataScript);
+    }
+
+    public async Task GetSizeResponse(int sizeStyleId)
+    {
+        sizeStyleID = sizeStyleId;
+        StateHasChanged();
+    }
+
+  
+}

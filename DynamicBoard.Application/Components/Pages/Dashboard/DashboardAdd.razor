@@ -2,60 +2,320 @@
 @page "/DashboardAdd/{Id:int}"
 @using DynamicBoard.Application.DomainServices
 @using DynamicBoard.DataServices
+@using DynamicBoard.DataServices.Models
+@implements IDialogContentComponent
 @inject NavigationManager NavigationManager
 
 @rendermode InteractiveServer
 
-<FluentTextField Appearance="FluentInputAppearance.Filled"
-                 Label="Title English" @bind-Value="Dashboard!.TitleEn" Style="width:100%" />
-<FluentTextField Appearance="FluentInputAppearance.Filled"
-                 Label="Title Ar" @bind-Value="Dashboard!.TitleAr" Style="width:100%" />
-<FluentLabel Typo="Typography.Subject" Style="color:green">@message </FluentLabel>
+    @if (isLoading)
+    {
+        <FluentProgressRing Style="width:30px;height:30px" />
+    }
+    else
+    {
 
-    <FluentButton Appearance="Appearance.Accent" OnClick="()=> AddNewDashboard()">
+        @if (Id > 0)
+        {
+            <FluentStack HorizontalAlignment="HorizontalAlignment.Right">
+                <FluentButton Appearance="Appearance.Outline" OnClick="()=>ConformationForDelete( Convert.ToInt32(Id))"
+                              IconStart="@(new Icons.Regular.Size24.Delete().WithColor(Color.Error))">Delete</FluentButton>
+            </FluentStack>
+
+        }
+
+
+<div class="row">
+    <div class="col-6">
+        <FluentTextField Appearance="FluentInputAppearance.Filled" Label="Title English" @bind-Value="Dashboard!.TitleEn" Style="margin-top: 10px; width:100%" />
+    </div>
+
+    <div class="col-6">
+        <FluentTextField Appearance="FluentInputAppearance.Filled" Label="Title Ar" @bind-Value="Dashboard!.TitleAr" Style="margin-top: 10px ; width:100%">
+
+        </FluentTextField>
+    </div>
+</div>
+
+
+
+    @if (Id > 0)
+    {
+           <div class="row">
+                <div class="col-6">
+                <FluentRadioGroup @bind-Value=IsActive Label="Is Active">
+                    <FluentRadio Label="Yes" Value="true"></FluentRadio>
+                    <FluentRadio Label="No" Value="false"></FluentRadio>
+                </FluentRadioGroup>
+                    </div>
+                    </div>
+    }
+
+
+
+
+<FluentStack Style="display:flex" HorizontalAlignment="HorizontalAlignment.Right">
+    <FluentButton @onclick="OnClose" IconStart="@(new Icons.Regular.Size16.ArrowClockwise())"
+                  Appearance="Appearance.Neutral">Close</FluentButton>
+    <FluentButton Appearance="Appearance.Lightweight" Autofocus="true" IconStart="@(new Icons.Regular.Size24.Add().WithColor(Color.Success))"
+                  OnClick="()=>CreateNewDashboard()">
         @actionTitle
-</FluentButton>
+    </FluentButton>
+
+    <FluentLabel Color="@((isError) ? Color.Success: Color.Error)">@message</FluentLabel>
+
+</FluentStack>
 
 
+
+<FluentDialog @ref="_myFluentDialog" @bind-Hidden="@Hidden" aria-label="Simple dialog" Modal=@_modal TrapFocus=@_trapFocus PreventScroll=@_preventScroll @ondialogdismiss=OnDismiss>
+    <FluentDialogHeader Visible="false" />
+
+    @if (ActionForDelete == true)
+    {
+        <h2>Are you sure to delete this Chart</h2>
+        <br />
+
+        <FluentButton Appearance="Appearance.Neutral" Autofocus="true" @onclick="OnDeleteChart">Delete</FluentButton>
+    }
+    <FluentButton Appearance="Appearance.Lightweight" Autofocus="true" @onclick="OnClose">Close</FluentButton>
+    <br />
+    <FluentLabel Style="color:green">@message</FluentLabel>
+
+
+    </FluentDialog>
+
+}
 
 
 @code {
-
     [Parameter]
     public long Id { get; set; }
     [Parameter]
     public string actionTitle { get; set; } = "Add";
     [Parameter]
-    public Dashboards Dashboard { get; set; }
+    public ExtendDashboard Dashboard { get; set; }
+    [Parameter]
+    public EventCallback<long> OnResponse { get; set; }
 
+
+
+    public List<Dashboards>? Dashboards { get; set; } = new();
+    List<ExtendDBConnections> extendDBConnections = new();
+    DynamicBoardDashboardServices dashboardServices = new();
+    DynamicBoardCommonServices commonServices = new();
+    DynamicBoardChartServices chartServices = new();
+    List<ChartTypes> chartTypes = new();
+    List<ChartColorTheme> chartColorThemes = new();
+    public List<ChartParameter> chartParameters = new();
+
+
+    private FluentDialog? _myFluentDialog;
+    private string? _status;
     bool? canceled;
     string labelColor = "green";
     string message = "";
-    public List<Dashboards>? Dashboards { get; set; } = new();
-    // public Dashboards dashboard { get; set; } = new();
-    [Parameter]
-    public EventCallback<int> OnResponse { get; set; }
+    string script = "";
+    long dashboardID = -1;
+    bool isLoading = true;
+    public bool isError;
+    private bool isActive;
+    private bool isRequired;
+    public bool ActionForDelete = false;
+    private bool _modal = true;
+    private bool Hidden { get; set; } = true;
+    private bool _trapFocus = true;
+    private bool _preventScroll = true;
 
-    DynamicBoardDashboardServices dashboardServices = new();
 
-    public async Task AddNewDashboard()
+    public void HandleRadioValueChanged(bool isActive)
+    {
+        IsActive = isActive;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        ValueChanged += HandleRadioValueChanged;
+
+        isLoading = true;
+        StateHasChanged();
+        //await GetData();
+        if (Id > 0)
+        {
+            AddValuesToForm(Dashboard);
+        }
+        isLoading = false;
+        chartParameters = new();
+        StateHasChanged();
+        await base.OnInitializedAsync();
+    }
+
+    public async Task GetData()
+    {
+        extendDBConnections = new();
+        chartTypes = await chartServices.GetChartTypes();
+        extendDBConnections = await commonServices.GetDBConnections();
+        chartColorThemes = await chartServices.GetChartColorTheme();
+        StateHasChanged();
+    }
+
+
+
+    private void OnClose()
+    {
+        _status = $"Dialog dismissed with reason: Close button clicked";
+        _myFluentDialog!.Hide();
+    }
+
+    public bool IsActive
+    {
+        get { return isActive; }
+        set
+        {
+            if (isActive != value)
+            {
+                isActive = value;
+                RaiseValueChanged();
+            }
+        }
+    }
+    public bool IsRequired
+    {
+        get { return isRequired; }
+        set
+        {
+            if (isRequired != value)
+            {
+                isRequired = value;
+                RaiseValueChanged();
+            }
+        }
+    }
+    public event Action<bool> ValueChanged;
+
+
+    private void RaiseValueChanged()
+    {
+        ValueChanged?.Invoke(isActive);
+    }
+
+        private void OnDismiss(DialogEventArgs args)
+    {
+        if (args is not null && args.Reason is not null && args.Reason == "dismiss")
+        {
+            _status = $"Dialog dismissed with reason: Dismissed";
+            _myFluentDialog!.Hide();
+        }
+    }
+
+
+    private async Task ConformationForDelete(int id)
+    {
+        ActionForDelete = true;
+        StateHasChanged();
+        dashboardID = id;
+        _status = "Dialog opened with button click";
+        _myFluentDialog!.Show();
+        StateHasChanged();
+    }
+
+    public async Task CreateNewDashboard()
     {
         try
         {
+            isLoading = true;
+            StateHasChanged();
 
-            await dashboardServices.DashboardAddEdit(0, Dashboard.TitleEn, Dashboard.TitleAr, "", true, false);
-            if (actionTitle == "Add")
+            if (Id > 0)
             {
-                message = "Success fully Added";
-            }
-            else { message = "Success fully Updated"; }
+                Dashboard.IsActive = IsActive;
 
-            StateHasChanged();
-            await Task.Delay(1500);
-            actionTitle = "";
+                // Chart.RefershTime = 0;
+
+                // if (!string.IsNullOrEmpty(selectedDBOption))
+                // {
+                //     Chart.DBConnectionID = Convert.ToInt64(selectedDBOption);
+                // }
+                // else
+                // {
+                //     Chart.DBConnectionID = 0;
+                // }
+                // if (!string.IsNullOrEmpty(selectedChartTypeOption))
+                // {
+                //     Chart.ChartTypeID = Convert.ToInt64(selectedChartTypeOption);
+                // }
+                // else
+                // {
+                //     Chart.ChartTypeID = 0;
+                // }
+
+                // Chart.DataScript = script;
+
+                // if (!string.IsNullOrEmpty(selectedChartThemeOption))
+                // {
+                //     Chart.ChartTheme = Convert.ToInt64(selectedChartThemeOption);
+                // }
+
+            }
+            else
+            {
+                //Chart.DataScript = " ";
+            }
+            // validation
             message = "";
+            if (string.IsNullOrEmpty(validation()))
+            {
+                var result = await dashboardServices.DashboardAddEditAsync(Dashboard.ID, Dashboard.TitleEn, Dashboard.TitleAr, Dashboard.CreatedBy, Dashboard.IsActive, Dashboard.IsDeleted);
+
+                if (result > 0)
+                {
+                    // ist delete all chart parameters by chart id
+                    //await chartServices.ChartParametersDeleteAsync(Chart.ID);
+                    // if (chartParameters is not null)
+                    // {
+                    //     if (chartParameters.Count > 0)
+                    //     {
+
+                    //         foreach (var item in chartParameters)
+                    //         {
+                    //             // update the latest one chartparameters
+                    //             var res = await chartServices.ChartParametersAddUpdateAsync(Chart.ID, item.Tag, item.SQLPlaceHolder, item.IsRequired, item.DefaultValue);
+                    //         }
+                    //     }
+                    // }
+
+
+                    if (actionTitle == "Add")
+                    {
+                        isError = true;
+                        message = "Success fully Added";
+                    }
+
+                    else
+                    {
+                        isError = true;
+                        message = "Success fully Updated";
+                    }
+                }
+                else
+                {
+                    isError = true;
+                    message = "There is some issue please try again...";
+                }
+                Dashboard = new();
+                script = "";
+                IsActive = false;
+                StateHasChanged();
+                await Task.Delay(1500);
+                message = "";
+
+                isLoading = false;
+                await OnResponse.InvokeAsync(result);
+
+            }
+
+            isLoading = false;
             StateHasChanged();
-            await OnResponse.InvokeAsync(1);
 
         }
 
@@ -64,11 +324,162 @@
             actionTitle = "";
             message = "";
             message = "something went wrong please try again.";
+
             StateHasChanged();
             await OnResponse.InvokeAsync(0);
         }
 
 
     }
+    public string validation()
+    {
+        if (Id == 0)
+        {
+            // Ist Time add
+            if (string.IsNullOrEmpty(Dashboard.TitleEn))
+            {
+                isError = false;
+                message = "please add dashboard title in English";
+            }
+            else if (string.IsNullOrEmpty(Dashboard.TitleAr))
+            {
+                isError = false;
+                message = "please add dashboard title in Arabic";
+            }
+
+        }
+        else
+        {
+            if (string.IsNullOrEmpty(Dashboard.TitleEn))
+            {
+                isError = false;
+                message = "please add dashboard title in English";
+            }
+            if (string.IsNullOrEmpty(Dashboard.TitleAr))
+            {
+                isError = false;
+                message = "please add dashboard title in Arabic";
+            }
+
+            if (string.IsNullOrEmpty(Dashboard.TitleAr))
+            {
+                isError = false;
+                message = "please add dashboard title in Arabic";
+            }
+            if (string.IsNullOrEmpty(Dashboard.TitleEn))
+            {
+                isError = false;
+                message = "please add dashboard title in English";
+            }
+            if (Dashboard.IsActive != true && Dashboard.IsActive != false)
+            {
+                isError = false;
+                message = "Please check dashboard are active";
+            }
+        }
+
+        return message;
+
+
+    }
+
+    public bool showNorecordSection = false;
+        public async Task OnDeleteChart()
+    {
+        isLoading = true;
+        StateHasChanged();
+        bool result = false;
+        result = await dashboardServices.DeleteDashboardAsync(dashboardID);
+        if (result)
+        {
+            message = "Dashboard is successfully Deleted";
+            StateHasChanged();
+            await Task.Delay(2000);
+            message = "";
+            StateHasChanged();
+            _myFluentDialog!.Hide();
+            Id = -1;
+            showNorecordSection = true;
+            await OnResponse.InvokeAsync(100);
+            // GoToPage();
+        }
+        else
+
+        {
+            message = "Dashboard are linked with Charts/Users you can not delete this chart";
+            StateHasChanged();
+            await Task.Delay(2000);
+            message = "";
+            StateHasChanged();
+            _myFluentDialog!.Hide();
+
+            await OnResponse.InvokeAsync(0);
+        }
+        isLoading = false  ;
+        StateHasChanged();
+    }
+
+
+    public async Task AddValuesToForm(ExtendDashboard dashboard)
+    {
+        try
+        {
+            isLoading = true;
+            StateHasChanged();
+            await GetData();
+
+            Dashboard.ID = dashboard.ID;
+            Dashboard.IsActive = dashboard.IsActive;
+            Dashboard.IsDeleted = dashboard.IsDeleted;
+            Dashboard.TitleAr = dashboard.TitleAr;
+            Dashboard.TitleEn = dashboard.TitleEn;
+            Dashboard.CreatedBy = dashboard.CreatedBy;
+
+            IsActive = dashboard.IsActive;
+            //chartParameters = await commonServices.GetChartParametersByChartID(chart.ID);
+
+            isLoading = false;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+
+        }
+
+    }
+
+
+    // public async Task AddNewDashboard()
+    // {
+    //     try
+    //     {
+
+    //         await dashboardServices.DashboardAddEditAsync(0, Dashboard.TitleEn, Dashboard.TitleAr, "", true, false);
+    //         if (actionTitle == "Add")
+    //         {
+    //             message = "Success fully Added";
+    //         }
+    //         else { message = "Success fully Updated"; }
+
+    //         StateHasChanged();
+    //         await Task.Delay(1500);
+    //         actionTitle = "";
+    //         message = "";
+    //         StateHasChanged();
+    //         await OnResponse.InvokeAsync(1);
+
+    //     }
+
+    //     catch (Exception ex)
+    //     {
+    //         actionTitle = "";
+    //         message = "";
+    //         message = "something went wrong please try again.";
+    //         StateHasChanged();
+    //         await OnResponse.InvokeAsync(0);
+    //     }
+
+
+    // }
 
 }

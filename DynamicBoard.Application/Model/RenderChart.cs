@@ -12,7 +12,26 @@
         public bool IsAllowRefresh { get; set; }
         public bool IsAllowPrint { get; set; }
         public long LabelValue { get; set; }
-        
+        public int  Language { get; set; }
+        public string Parameters { get; set; }
+        public int ErrorType { get; set; }
+        public string ErrorMessage { get; set; }
+        public int SizeID { get; set; }
+        public int SortID { get; set; }
 
+    }
+
+    public class RenderChartExtended:RenderChart
+    {
+        public RenderChartExtended()
+        {
+            RenderCharts = new List<RenderChart>();
+        }
+        public List<RenderChart> RenderCharts { get; set; }
+      
+        public int DashboardID { get; set; }
+        public string DashboardTitle { get; set; }
+        public string CRNumber { get; set; }
+        public string Css { get; set; }
     }
 }

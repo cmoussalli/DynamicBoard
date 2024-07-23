@@ -1,0 +1,65 @@
+﻿@page "/DashboardListView"
+
+@rendermode InteractiveServer
+@using DynamicBoard.Application.DomainServices
+@using DynamicBoard.DataServices
+
+@if (stringOptions.Count<=0)
+{
+    <FluentProgressRing Style="width:30px;height:30px" />
+}
+
+else
+{
+    <FluentListbox Items="@stringOptions"
+                   OptionText="@(i => i.Text)"
+                   OptionValue="@(i => i.Value)"
+                   OptionSelected="@(i => i.Selected)"
+                   ValueChanged="@OnValueChanged"
+                   Height="100%">
+
+    </FluentListbox>
+
+}
+
+ 
+
+@code {
+
+    [Parameter]
+    public EventCallback<long> OnResponse { get; set; }
+
+    DynamicBoardDashboardServices dashboardServices = new();
+    List<ExtendChart> charts = new();
+
+    List<Dashboards> dashboards = new();
+
+    public IQueryable<ExtendChart>? ChartsLists;
+    public string stringValue { get; set; }
+
+    List<Option<string>> stringOptions = new List<Option<string>>();
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(1000);
+        await GetDashboards();
+    }
+
+    public async Task GetDashboards()
+    {
+        dashboards = new();
+        stringOptions = new();
+        dashboards = await dashboardServices.DashboardsAllAsync();
+
+        foreach (var item in dashboards)
+        {
+            stringOptions.Add(new Option<string> { Value = item.ID.ToString(), Text = item.TitleEn });
+        }
+        StateHasChanged();
+    }
+    private async Task OnValueChanged(string val)
+    {
+        await OnResponse.InvokeAsync(Convert.ToInt64(val));
+    }
+
+
+}

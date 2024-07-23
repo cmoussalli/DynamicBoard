@@ -1,0 +1,203 @@
+﻿@{
+    ViewData["Title"] = "Dashboard View";
+    Layout = "~/Views/Shared/_LayoutDashboard.cshtml";
+}
+
+@model RenderChartExtended
+@using DynamicBoard.Application.Model
+@using DynamicBoard.Models
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+
+<input type="hidden" id="dashboardid" value="@Model.DashboardID" />
+<input type="hidden" id="language" value="@Model.Language" />
+<input type="hidden" id="parameters" value="@Model.Parameters" />
+<div class="container-fluid">
+    <h1>@Model.DashboardTitle</h1>
+  <div class="row">
+@foreach (RenderChart item in Model.RenderCharts.OrderBy(o=>o.SortID).ToList())
+{ <div id="partialViewContainer_@item.ChartID">
+       @await Html.PartialAsync("_ChartPartial", item)
+  </div>
+}
+   </div>
+</div>    
+<link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+<script src="~/js/dist/chart.umd.min.js"></script>
+<script type="text/javascript"  charset="utf-8">
+          window.addEventListener("load", (event) => {
+                    setLanguage(document.getElementById("language").value);
+                    initializeCharts();
+            });
+
+        function initializeCharts() {
+            @foreach (var chartData in Model.RenderCharts)
+            {
+                    @:loader = document.getElementById("loader_@chartData.ChartID");
+                    @:canvasDiv= document.getElementById("div_@chartData.ChartID");
+                    @:LoadChart('@chartData.RefershTime','@chartData.ChartType',@Html.Raw(string.IsNullOrEmpty(chartData?.JsonXaxis_labels) ? "null" : chartData?.JsonXaxis_labels),@Html.Raw(string.IsNullOrEmpty(chartData?.json_graphConfigurations) ? "null" : chartData?.json_graphConfigurations),'@Html.Raw(string.IsNullOrEmpty(chartData?.jsonchartTitle) ? "null" : chartData?.jsonchartTitle)',@chartData?.ChartID)
+                    @:setRefreshInterval('@chartData.RefershTime','@chartData.ChartType','@Html.Raw(string.IsNullOrEmpty(chartData?.JsonXaxis_labels) ? "null" : chartData?.JsonXaxis_labels)',@Html.Raw(string.IsNullOrEmpty(chartData?.json_graphConfigurations) ? "null" : chartData?.json_graphConfigurations),'@Html.Raw(string.IsNullOrEmpty(chartData?.jsonchartTitle) ? "null" : chartData?.jsonchartTitle)',@chartData?.ChartID)
+            }
+        }
+
+
+
+             function setRefreshInterval(refreshTime,chartType,JsonXaxis,jsonGraphConfigurations, jsonChartTitle,chartID) {
+                 if(refreshTime=='' || refreshTime=='0'){
+                     refreshTime=5;
+                 }
+
+            setInterval(function() {
+                            loader = document.getElementById("loader_"+chartID);
+              canvasDiv= document.getElementById("div_"+chartID);
+                   canvasDiv.style.display = "none";
+            loader.style.display = "block";
+            refreshChart(chartID, document.getElementById("dashboardid").value, refreshTime, chartType, JsonXaxis, jsonGraphConfigurations, jsonChartTitle, document.getElementById("language").value, document.getElementById("parameters").value);
+            }, refreshTime*1000);
+        }
+
+        function setLanguage(language) {
+            if (language === '1') {
+                document.documentElement.setAttribute('lang', 'ar');
+                document.documentElement.setAttribute('dir', 'rtl');
+            } else {
+                document.documentElement.setAttribute('lang', 'en');
+                document.documentElement.setAttribute('dir', 'ltr');
+            }
+        }
+
+     function refreshButton(elm){
+             var chartID =$(elm).data('chart-id');
+           var dashboardID=document.getElementById("dashboardid").value; //$(elm).data('dashboard-id');
+           var language=document.getElementById("language").value;
+           var refreshTime=$(elm).data('refresh-time');
+           var chartType=$(elm).data('chart-type');
+           var JsonXaxis= JSON.parse($(elm).data('json-axis-labels'));
+           var jsonGraphConfigurations= JSON.parse($(elm).data('json-graph-configurations'));
+        var parameters = document.getElementById("parameters").value == '' ? "" : document.getElementById("parameters").value;
+        loader = document.getElementById("loader_"+chartID);
+              canvasDiv= document.getElementById("div_"+chartID);
+
+            canvasDiv.style.display = "none";
+            loader.style.display = "block";
+
+           var jsonChartTitle=$(elm).data('json-chart-title');
+        refreshChart(chartID, dashboardID, refreshTime, chartType, JsonXaxis, JSON.parse(jsonGraphConfigurations), jsonChartTitle, language, parameters);
+     }
+
+
+
+    function refreshChart(chartID, dashboardID, refreshTime, chartType, JsonXaxis, jsonGraphConfigurations, jsonChartTitle, language, parameters) {
+                $.ajax({
+                url: '@Url.Action("GetChartPartialView", "Dashboard")',
+                type: 'GET',
+            data: { chartID: chartID, dashboardID: dashboardID, language: language, parameters: parameters },
+                success: function(result) {
+                     $('#partialViewContainer_'+chartID).html(result);
+                        //console.log(result);
+                         loader = document.getElementById("loader_"+chartID);
+                        canvasDiv= document.getElementById("div_"+chartID);
+                     LoadChart(refreshTime,chartType,JSON.parse(JsonXaxis),jsonGraphConfigurations,jsonChartTitle,chartID);
+                },
+                error: function(xhr, status, error) {
+                    alert('Error: ' + error);
+                }
+            });
+
+        }
+
+        
+        
+    function LoadChart(refreshTime,chartType,canvasXaxis_labels,configuration,canvasjsonchartTitle,chartID) {
+        var RefershTime = refreshTime;
+        var canvasChartType = chartType;
+        var canvasXaxis_labels = canvasXaxis_labels;
+        var configuration = configuration;
+        var canvasjsonchartTitle = canvasjsonchartTitle;
+        var Yaxis_Data =configuration;
+        var Yaxis_Data_Dataset = Yaxis_Data;
+
+
+        var Isstacked = false;
+        var _height = 0;
+        var gridDisplay = true;
+        if (canvasChartType == "Bar") {
+            canvasChartType = "bar";
+        }
+        if (canvasChartType == "Stacked Bar") {
+            canvasChartType = "bar";
+            Isstacked = true;
+        }
+        if (canvasChartType == "doughnut") {
+
+            canvasChartType = "doughnut";
+            gridDisplay = false;
+        }
+        if (canvasChartType == "Pie") {
+
+            canvasChartType = "pie";
+            gridDisplay = false;
+        }
+        if (canvasChartType == "Line") {
+            canvasChartType = "line";
+        }
+        if (canvasChartType == "polarArea") {
+            canvasChartType = "polarArea";
+
+        }
+        if (canvasChartType == "RadarChart") {
+            canvasChartType = "radar";
+        }
+
+        var canvas = 'canvas_'+chartID;
+
+        var ctx = document.getElementById(canvas).getContext('2d');
+
+
+        var myChart = new Chart(ctx, {
+            type: canvasChartType,
+            data: {
+                labels: canvasXaxis_labels,//x axis labels
+                datasets: Yaxis_Data_Dataset,
+                hoverOffset: 10,
+                borderWidth: 0,
+
+            },
+            options: {
+                 responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        display:false
+                    },
+                    title: {
+                        display: true,
+                        text: canvasjsonchartTitle
+                    },
+                }, 
+
+                scales: {
+                    x: {
+                         stacked: Isstacked,
+                        grid: {
+                            display: gridDisplay
+                        }
+                    },
+                    y: {
+                          stacked: Isstacked,
+                        grid: {
+                            display: gridDisplay 
+                        }
+                    }
+                }  
+               
+            }
+        });
+
+            canvasDiv.style.display = "block";
+            loader.style.display = "none";
+
+
+    }
+        
+</script>

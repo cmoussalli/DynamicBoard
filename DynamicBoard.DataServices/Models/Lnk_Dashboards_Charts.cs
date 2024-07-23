@@ -22,4 +22,10 @@ namespace DynamicBoard.DataServices
         public int SizeID { get; set; }
 
     }
+
+    public class Lnk_Dashboards_Charts_Size_Extended : Lnk_Dashboards_Charts
+    {
+        public string Css { get; set; }
+    }
+
 }

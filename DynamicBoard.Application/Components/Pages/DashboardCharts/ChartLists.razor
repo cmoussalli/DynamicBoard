@@ -1,0 +1,205 @@
+﻿@page "/ChartLists"
+@using DynamicBoard.Application.DomainServices
+@using DynamicBoard.DataServices
+@using DynamicBoard.DataServices.Models
+
+@if (isLoading)
+{
+    <FluentProgressRing Style="width:30px;height:30px" />
+}
+else
+{
+    @if (IQDashboard_Charts_Details is not null)
+    {
+        <div class="grid">
+            <FluentDataGrid Id="Chartsgrid" Items=@IQDashboard_Charts_Details TGridItem=Dashboard_Charts_Details>
+                <PropertyColumn Title="ID" Property="@(c => c!.ChartID)" Sortable="true" Align=Align.Start />
+                <PropertyColumn Title="Chart Title" Property="@(c => c != null && !string.IsNullOrEmpty(c.ChartTitleEn) ? c.ChartTitleEn : "N/A")" Sortable="true" Align=Align.Start />
+                <PropertyColumn Title="Chart Type" Property="@(c => c != null && !string.IsNullOrEmpty(c.ChartTypeEn) ? c.ChartTypeEn : "N/A")" Sortable="true" Align=Align.Start />
+                <PropertyColumn Title="Refresh Time" Property="@(c => c!.RefershTime)" Sortable="true" Align=Align.Start />
+                <PropertyColumn Title="Data Script" Property="@(c => c != null && !string.IsNullOrEmpty(c.DataScript) ? c.DataScript : "N/A")" Sortable="true" Align=Align.Start />
+
+                <TemplateColumn Align="@Align.End" >
+                    <FluentButton Appearance="Appearance.Outline" OnClick="()=>ConformationForDelete( Convert.ToInt32(context.DashboardID),context.ChartID)"
+                                  IconStart="@(new Icons.Regular.Size24.Delete().WithColor(Color.Error))">Delete</FluentButton>
+                    <FluentButton Appearance="Appearance.Outline" OnClick="()=>ShowLnkChartEdit(context)"
+                                  IconStart="@(new Icons.Regular.Size24.Edit().WithColor(Color.Accent))">Edit</FluentButton>
+                </TemplateColumn>
+                <TemplateColumn Align="@Align.End" Context="context">
+                    @{
+                        var index = dashboard_Charts_Details.IndexOf(context);
+                    }
+                    @if(index>0)
+                    {
+                        <FluentButton Appearance="Appearance.Outline"  OnClick="() => MoveUp(context)">▲</FluentButton>
+                    }
+                    @if (index < dashboard_Charts_Details.Count-1)
+                    {
+                        <FluentButton Appearance="Appearance.Outline" OnClick="() => MoveDown(context)">▼</FluentButton>
+                    }
+                    
+                </TemplateColumn>
+
+            </FluentDataGrid>
+        </div>
+    }
+}
+
+<FluentDialog @ref="_myFluentDialog" @bind-Hidden="@Hidden" aria-label="Simple dialog" Modal=@_modal TrapFocus=@_trapFocus PreventScroll=@_preventScroll
+              @ondialogdismiss=OnDismiss>
+    <FluentDialogHeader Visible="false" />
+
+    <h4>Are you sure to delete this chart</h4>
+    <br />
+
+    <FluentButton Appearance="Appearance.Accent" 
+    Autofocus="true" @onclick="OnDeleteLnkChartUser"
+                  >Delete</FluentButton>
+
+    <FluentButton Appearance="Appearance.Accent" Autofocus="true" @onclick="OnClose"
+              >Close</FluentButton>
+    <br />
+
+    <FluentLabel Color="@((isError) ? Color.Success: Color.Error)">@message</FluentLabel>
+ </FluentDialog>
+
+@code {
+    [Parameter] public long DashboardID { get; set; }
+    [Parameter]
+    public EventCallback<Dashboard_Charts_Details> OnResponseForShowData { get; set; }
+
+    public IQueryable<ExtendLnk_Charts_Users> ExtendLnk_Charts_Users { get; set; }
+    public IQueryable<Dashboard_Charts_Details> IQDashboard_Charts_Details { get; set; }
+
+    public bool isError;
+    public long chartID = 0;
+    List<Dashboard_Charts_Details> dashboard_Charts_Details = new();
+    ExtendLnk_Charts_Users extendLnk_Charts_User = new();
+    private FluentDialog? _myFluentDialog;
+    public bool isLoading = false;
+
+    private bool _preventScroll = true;
+    private string? _status;
+    string message = "";
+    private bool Hidden { get; set; } = true;
+    public bool ActionForAdd = false;
+    private bool _trapFocus = true;
+    private bool _modal = true;
+
+    public bool ActionForDelete = false;
+    DynamicBoardChartServices chartsServices = new();
+    DynamicBoardUserServices dynamicBoardUserServices = new();
+    DynamicBoardDashboardServices dynamicBoardDashboardServices = new();
+
+    public async Task MoveUp(Dashboard_Charts_Details dashbboardchart)
+    {
+        int index = dashboard_Charts_Details.IndexOf(dashbboardchart);
+        if (index > 0)
+        {
+            var temp = dashboard_Charts_Details[index - 1];
+            dashboard_Charts_Details[index - 1] = dashbboardchart;
+            dashboard_Charts_Details[index] = temp;
+
+            await dynamicBoardDashboardServices.UpdateLnkDashboardChartsSortOrderAsync(dashboard_Charts_Details);
+        }
+        IQDashboard_Charts_Details = dashboard_Charts_Details.AsQueryable();
+        StateHasChanged();
+    }
+
+    public async Task MoveDown(Dashboard_Charts_Details dashbboardchart)
+    {
+        int index = dashboard_Charts_Details.IndexOf(dashbboardchart);
+        if (index < dashboard_Charts_Details.Count - 1)
+        {
+            var temp = dashboard_Charts_Details[index + 1];
+            dashboard_Charts_Details[index + 1] = dashbboardchart;
+            dashboard_Charts_Details[index] = temp;
+            await dynamicBoardDashboardServices.UpdateLnkDashboardChartsSortOrderAsync(dashboard_Charts_Details);
+        }
+        IQDashboard_Charts_Details = dashboard_Charts_Details.AsQueryable();
+        StateHasChanged();
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (DashboardID != 0)
+        {
+            await GetDashboardChartsDetailByIDAsync(DashboardID);
+        }
+    }
+
+
+    public async Task GetDashboardChartsDetailByIDAsync(long dashboardId)
+    {
+        dashboard_Charts_Details = await dynamicBoardDashboardServices.GetDashboardChartsDetailByIDAsync(dashboardId);
+        IQDashboard_Charts_Details = dashboard_Charts_Details.AsQueryable();
+        StateHasChanged();
+    }
+
+    private async Task ConformationForDelete(long dashboardId, long chartId)
+    {
+        ActionForDelete = true;
+        DashboardID = dashboardId;
+        chartID = chartId;
+        _status = "Dialog opened with button click";
+        _myFluentDialog!.Show();
+        StateHasChanged();
+    }
+
+
+    private async Task ShowLnkChartEdit(Dashboard_Charts_Details dashboard_Charts_Details)
+    {
+        await OnResponseForShowData.InvokeAsync(dashboard_Charts_Details);
+    }
+
+    private void OnClose()
+    {
+        _status = $"Dialog dismissed with reason: Close button clicked";
+        _myFluentDialog!.Hide();
+    }
+    private void OnDismiss(DialogEventArgs args)
+    {
+        if (args is not null && args.Reason is not null && args.Reason == "dismiss")
+        {
+            _status = $"Dialog dismissed with reason: Dismissed";
+            _myFluentDialog!.Hide();
+        }
+    }
+    public async Task OnDeleteLnkChartUser()
+    {
+        bool result = false;
+        result = await dynamicBoardDashboardServices.DeleteLnkDashboardChartsAsync(DashboardID, chartID);
+        if (result)
+        {
+            isError = true;
+            message = "Chart is successfully Deleted";
+            StateHasChanged();
+            if (DashboardID != 0)
+            {
+                await GetDashboardChartsDetailByIDAsync(DashboardID);
+            }
+            await Task.Delay(2000);
+            message = "";
+            StateHasChanged();
+            _myFluentDialog!.Hide();
+
+        }
+        else
+        {
+            isError = false;
+            message = "Their is some isssue please try again.";
+            StateHasChanged();
+            if (DashboardID != 0)
+            {
+                await GetDashboardChartsDetailByIDAsync(DashboardID);
+            }
+            await Task.Delay(2000);
+            message = "";
+            StateHasChanged();
+            _myFluentDialog!.Hide();
+        }
+        StateHasChanged();
+    }
+
+}
