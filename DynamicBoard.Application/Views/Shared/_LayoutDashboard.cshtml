@@ -42,6 +42,10 @@
             document.body.innerHTML = printContents;
             window.print();
             document.body.innerHTML = originalContents;
+            // Reload the chart after printing
+            setTimeout(function () {
+                location.reload();
+            }, 1000); // Reload after 1 second
         }
         else {
             var printContents = element.innerHTML;

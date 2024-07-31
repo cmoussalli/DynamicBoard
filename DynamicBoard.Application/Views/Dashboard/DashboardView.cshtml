@@ -7,37 +7,94 @@
 @using DynamicBoard.Application.Model
 @using DynamicBoard.Models
 @using Microsoft.JSInterop
+@using System.Text.Json;
+@using Newtonsoft.Json
+@using System.Web
 @inject IJSRuntime JSRuntime
-
+@{
+    int currentRowWidth = 0;
+    bool rowAlreadyAdded = false;
+}
 <input type="hidden" id="dashboardid" value="@Model.DashboardID" />
 <input type="hidden" id="language" value="@Model.Language" />
 <input type="hidden" id="parameters" value="@Model.Parameters" />
-<div class="container-fluid">
-    <h1>@Model.DashboardTitle</h1>
-  <div class="row">
-@foreach (RenderChart item in Model.RenderCharts.OrderBy(o=>o.SortID).ToList())
-{ <div id="partialViewContainer_@item.ChartID">
-       @await Html.PartialAsync("_ChartPartial", item)
-  </div>
-}
-   </div>
-</div>    
+<input type="hidden" id="hideChartButtons" value="@Model.HideChartButtons.ToString()" />
+<h1 style="margin-bottom: 40px;">@Model.DashboardTitle</h1>
+
+
+<div class="container-fluid h-100">
+    @foreach (RenderChart item in Model.RenderCharts.OrderBy(o=>o.SortID).ToList())
+    {
+        int columnSize = 0; // Get the column size for the current item
+        @if(item.ChartCSSTitle=="Full")
+        {
+            columnSize = 12;
+        }
+        else if(item.ChartCSSTitle=="Half")
+        {
+            columnSize = 6;
+        }
+        else if(item.ChartCSSTitle=="Third")
+        {
+            columnSize = 4;
+        }
+        else if(item.ChartCSSTitle=="Quarter")
+        {
+            columnSize = 3;
+        }
+         
+        if (currentRowWidth + columnSize > 12)
+        {
+           // Close the previous row and start a new row
+            @Html.Raw("</div> </br></br>") <!-- Close the row -->
+            @Html.Raw("<div class='row'>")
+            currentRowWidth = 0; // Reset the row width
+            rowAlreadyAdded = true;
+        }
+
+        if (currentRowWidth == 0 && !rowAlreadyAdded)
+        {
+            // Open a new row if it's the first column
+           @Html.Raw("<div class='row'>")
+        }
+        <div id="partialViewContainer_@item.ChartID" class="col @item.ChartCSS d-flex justify-content-center" style="padding-left:40px;padding-right:40px;">
+          @Html.Partial("_ChartPartial", item)
+        </div>
+
+        currentRowWidth += columnSize; // Accumulate the width
+        if (currentRowWidth == 12)
+        {
+            // Close the row if it's exactly full
+            @Html.Raw("</div> </br></br>")
+            currentRowWidth = 0;
+        }
+     
+    }
+
+    @if (currentRowWidth > 0)
+    {
+       @Html.Raw("</div>") <!-- Close the last row if it's not already closed -->
+    }
+</div>
+
+
+
 <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
 <script src="~/js/dist/chart.umd.min.js"></script>
 <script type="text/javascript"  charset="utf-8">
-          window.addEventListener("load", (event) => {
+    window.addEventListener("DOMContentLoaded", (event) => {
                     setLanguage(document.getElementById("language").value);
                     initializeCharts();
             });
 
     function initializeCharts() {
+
     @foreach (var chartData in Model.RenderCharts)
     {
         @:loader = document.getElementById("loader_@chartData.ChartID");
         @:canvasDiv= document.getElementById("div_@chartData.ChartID");
         @if (chartData.ChartType != "Label")
         {
-
             @:LoadChart('@chartData.RefershTime', '@chartData.ChartType', @Html.Raw(string.IsNullOrEmpty(chartData?.JsonXaxis_labels) ? "null" : chartData?.JsonXaxis_labels), @Html.Raw(string.IsNullOrEmpty(chartData?.json_graphConfigurations) ? "null" : chartData?.json_graphConfigurations), '@Html.Raw(string.IsNullOrEmpty(chartData?.jsonchartTitle) ? "null" : chartData?.jsonchartTitle)', @chartData?.ChartID)
             @:setRefreshInterval('@chartData.RefershTime', '@chartData.ChartType', '@Html.Raw(string.IsNullOrEmpty(chartData?.JsonXaxis_labels) ? "null" : chartData?.JsonXaxis_labels)', @Html.Raw(string.IsNullOrEmpty(chartData?.json_graphConfigurations) ? "null" : chartData?.json_graphConfigurations), '@Html.Raw(string.IsNullOrEmpty(chartData?.jsonchartTitle) ? "null" : chartData?.jsonchartTitle)', @chartData?.ChartID)
         }
@@ -48,23 +105,31 @@
             @:loader.style.display = "none";
         }
     }
+        
             }
-
-
 
 
              function setRefreshInterval(refreshTime,chartType,JsonXaxis,jsonGraphConfigurations, jsonChartTitle,chartID) {
                  if(refreshTime=='' || refreshTime=='0'){
-                     refreshTime=5;
+                loader = document.getElementById("loader_" + chartID);
+                canvasDiv = document.getElementById("div_" + chartID);
+                canvasDiv.style.display = "none";
+                loader.style.display = "block";
+                refreshChart(chartID, document.getElementById("dashboardid").value, refreshTime, chartType, JsonXaxis, jsonGraphConfigurations, jsonChartTitle, document.getElementById("language").value, document.getElementById("parameters").value);
+
+                 }
+                 else
+                 {
+            setInterval(function () {
+                loader = document.getElementById("loader_" + chartID);
+                canvasDiv = document.getElementById("div_" + chartID);
+                canvasDiv.style.display = "none";
+                loader.style.display = "block";
+                refreshChart(chartID, document.getElementById("dashboardid").value, refreshTime, chartType, JsonXaxis, jsonGraphConfigurations, jsonChartTitle, document.getElementById("language").value, document.getElementById("parameters").value);
+            }, refreshTime * 1000);
                  }
 
-            setInterval(function() {
-            loader = document.getElementById("loader_"+chartID);
-              canvasDiv= document.getElementById("div_"+chartID);
-              canvasDiv.style.display = "none";
-            loader.style.display = "block";
-            refreshChart(chartID, document.getElementById("dashboardid").value, refreshTime, chartType, JsonXaxis, jsonGraphConfigurations, jsonChartTitle, document.getElementById("language").value, document.getElementById("parameters").value);
-            }, refreshTime*1000);
+     
         }
 
         function setLanguage(language) {
@@ -99,11 +164,12 @@
 
 
     function refreshChart(chartID, dashboardID, refreshTime, chartType, JsonXaxis, jsonGraphConfigurations, jsonChartTitle, language, parameters) {
+        var hideChartButtons = document.getElementById("hideChartButtons").value;
         if (chartType == 'Label') {
             $.ajax({
                 url: '@Url.Action("GetChartPartialView", "Dashboard")',
                 type: 'GET',
-                data: { chartID: chartID, dashboardID: dashboardID, language: language, parameters: parameters },
+                data: { chartID: chartID, dashboardID: dashboardID, language: language, parameters: parameters, hideChartButtons: hideChartButtons },
                 success: function (result) {
                     $('#partialViewContainer_' + chartID).html(result);
                     //console.log(result);
@@ -139,6 +205,8 @@
         
         
     function LoadChart(refreshTime,chartType,canvasXaxis_labels,configuration,canvasjsonchartTitle,chartID) {
+
+        
         var RefershTime = refreshTime;
         var canvasChartType = chartType;
         var canvasXaxis_labels = canvasXaxis_labels;
@@ -151,8 +219,13 @@
         var Isstacked = false;
         var _height = 0;
         var gridDisplay = true;
-        if (canvasChartType == "Bar") {
+        var indexAxis='';
+        if (canvasChartType == "Bar" || canvasChartType == "Column") {
             canvasChartType = "bar";
+        }
+         if (canvasChartType == "Horizontal Bar Chart") {
+            canvasChartType = "bar";
+            indexAxis='y';
         }
         if (canvasChartType == "Stacked Bar") {
             canvasChartType = "bar";
@@ -195,6 +268,7 @@
             },
             options: {
                  responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: {
                         position: 'top',
@@ -219,15 +293,26 @@
                             display: gridDisplay 
                         }
                     }
-                }  
+                },
+                 indexAxis: indexAxis
                
             }
         });
-
             canvasDiv.style.display = "block";
             loader.style.display = "none";
 
 
+        setTimeout(function () {
+            if ($('#hideChartButtons').val() == 'True') {
+                $('.refreshbutton').hide();
+                $('.printbutton').hide();
+                //if (myChart) myChart.destroy();
+
+            }
+        }, 500);
+
+
+          
     }
         
 </script>

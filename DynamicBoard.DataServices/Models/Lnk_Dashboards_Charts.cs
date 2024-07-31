@@ -26,6 +26,7 @@ namespace DynamicBoard.DataServices
     public class Lnk_Dashboards_Charts_Size_Extended : Lnk_Dashboards_Charts
     {
         public string Css { get; set; }
+        public string ChartCSSTitle { get; set; }
     }
 
 }

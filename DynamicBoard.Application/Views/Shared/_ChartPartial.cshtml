@@ -5,34 +5,35 @@
 @inject IJSRuntime JSRuntime
 @model DynamicBoard.Application.Model.RenderChart
 
-         <div class="@Model.ChartCSS">
-     @if (@Model.IsAllowRefresh)
+
+    @if(Model.HideChartButtons==false)
     {
-        <img src="~/images/refresh.png" id="refreshButton_@Model.ChartID" onclick="refreshButton(this)"
+     @if (Model.IsAllowRefresh)
+    {
+        <img src="~/images/refresh.png"  id="refreshButton_@Model.ChartID" class="refreshbutton" onclick="refreshButton(this)"
         data-chart-id="@Model.ChartID" 
         data-refresh-time= "@Model.RefershTime"
         data-chart-type= "@Model.ChartType"
         data-json-axis-labels = "@System.Text.Json.JsonSerializer.Serialize(string.IsNullOrEmpty(@Model?.JsonXaxis_labels) ? "null" :@Model?.JsonXaxis_labels)"
         data-json-graph-configurations = "@System.Text.Json.JsonSerializer.Serialize(string.IsNullOrEmpty(Model?.json_graphConfigurations) ? "null" :Model?.json_graphConfigurations)"
         data-json-chart-title = "@Html.Raw(string.IsNullOrEmpty(Model?.jsonchartTitle) ? "null" : Model?.jsonchartTitle)"
-        alt="Refresh" style="float: right; width: 20px;">
-
+                 alt="Refresh" style="float: right; width: 20px;">
     }
-    @if (@Model.IsAllowPrint)
+    @if (Model.IsAllowPrint)
     {
         @if (Model.ChartType != "Label")
         {
-            <img src="~/images/printer.png" onclick="printElement('div_@Model.ChartID','')"  alt="printer" style="float: right; width: 25px;">
+            <img src="~/images/printer.png" onclick="printElement('div_@Model.ChartID','')" class="printbutton"  alt="printer" style="float: right; width: 25px;">
         }
         else
         {
-            <img src="~/images/printer.png" onclick="printElement('div_@Model.ChartID','Label')" alt="printer" style="float: right; width: 25px;">
+                <img src="~/images/printer.png" onclick="printElement('div_@Model.ChartID','Label')" class="printbutton" alt="printer" style="float: right; width: 25px;">
         }
     }
-
+    }
     <img id="loader_@Model.ChartID" class="loader" src="~/images/Spinne.gif" />
 
- <div id="div_@Model.ChartID" style="justify-content:center;display:none;">
+    <div id="div_@Model.ChartID" style=" display: flex;justify-content: center;align-items: center;">
 
         @if (Model.ChartType != "Label")
         {
@@ -47,9 +48,4 @@
                 <h3 style="margin: auto;font-size: 35px;font-style: inherit;text-align: center;color:#C1A968" id="Label_@Model.ChartID">@Model.LabelValue</h3>
             </div>
         }
-
-
-
-</div>
-    </div>
-    
+        </div>

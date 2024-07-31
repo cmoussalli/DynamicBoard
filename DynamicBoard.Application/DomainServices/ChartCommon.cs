@@ -25,7 +25,7 @@ namespace DynamicBoard.Application.DomainServices
             DynamicBoard.Application.Model.Dataset dataset = new();
             List<DynamicBoard.Application.Model.Dataset> datasets = new();
             List<GraphDatasetDetails> graphList = new List<GraphDatasetDetails>();
-            IEnumerable<DynamicBoard.DataServices.ChartDataset> datasetResult = null;
+            List<DynamicBoard.DataServices.ChartDataset> datasetResult = null;
 
             try
             {
@@ -59,6 +59,8 @@ namespace DynamicBoard.Application.DomainServices
 
                 if (datasetResult != null)
                 {
+                    if (datasetResult[0].Dataset_Label is null) { datasetResult[0].Dataset_Label = ""; }
+                    if (datasetResult[0].x_axis_labels is null) { datasetResult[0].x_axis_labels = ""; }
 
                     if (chartType == "Label")
                     {

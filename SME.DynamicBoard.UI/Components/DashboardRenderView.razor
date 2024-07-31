@@ -6,29 +6,25 @@ else
 {
     @if (!string.IsNullOrEmpty(url))
     {
-        @*         <iframe src="@url" style="width: 100%;height: 100%;"></iframe>
- *@
-
-        <iframe src="@url" allowfullscreen style=" position: center;    width: 405px;    height:450px;    border: 0;    overflow: hidden;"></iframe>
+        <iframe src="@url" allowfullscreen style=" position: center;border: 0;width:2200px;height:800px;"></iframe>
     }
-
 }
 
-
 @code {
-    [Parameter] public ChartData ChartData { get; set; } = new();
-    [Parameter] public string ChartId { get; set; } = string.Empty;
+    [Parameter] public DashboardData dashboardData { get; set; } = new();
+    [Parameter] public string DashboardId { get; set; } = string.Empty;
     [Parameter] public bool IsAllowRefresh { get; set; }
     [Parameter] public bool IsAllowPrint { get; set; }
     [Parameter] public bool AutoLoad { get; set; } = true;
     [Parameter] public int Language { get; set; } = 0;
+
     string url = "";
     bool isError = false;
     string errorMessage;
     string queryStringParameters = "";
     string parameters = "";
     string values = "";
-    private string ChartHTML { get; set; } = string.Empty;
+    private string dashboardHTML { get; set; } = string.Empty;
     private bool isLoading = false;
     HttpClient httpClient = new HttpClient();
     private bool isIframeLoaded;
@@ -64,19 +60,17 @@ else
         parameters = "";
         try
         {
-            if (string.IsNullOrEmpty(ChartId))
+            if (string.IsNullOrEmpty(DashboardId))
             {
-                errorMessage = "chart id required";
-
+                errorMessage = "Dashboard id required";
             }
-            else if (ChartData is not null && ChartData.ChartParams is null)
+            else if (dashboardData is not null && dashboardData.DashboardParams is null)
             {
-
-                errorMessage = "parameters for chart required";
+                errorMessage = "parameters for dashboard is required";
             }
-            else if (ChartData is not null &&  ChartData.ChartParams.Count == 0)
+            else if (dashboardData is not null && dashboardData.DashboardParams.Count == 0)
             {
-                errorMessage = "parameters for chart required";
+                errorMessage = "parameters for dashboard required";
             }
             else if (string.IsNullOrEmpty(Storage.EncryptionKey))
             {
@@ -88,35 +82,28 @@ else
             }
             else
             {
-                if (ChartData is not null &&  ChartData.ChartParams is not null)
+                if (dashboardData is not null && dashboardData.DashboardParams is not null)
                 {
-                    if (ChartData.ChartParams.Count > 0)
+                    if (dashboardData.DashboardParams.Count > 0)
                     {
-                        foreach (var item in ChartData.ChartParams)
+                        foreach (var item in dashboardData.DashboardParams)
                         {
-                            foreach (var val in item.Values)
-                            {
-                                values += val + "|";
-                            }
+                            var v = item.Values.ToList();
+                            values = string.Join("|", v);
+
                             parameters += "[" + item.Name + ":" + values + "]";
                             values = "";
                         }
-                        // queryStringParameters = "";
-                        // queryStringParameters =  "&parameters=[" + parameters + "]";
-
-
                     }
 
                 }
             }
-            queryStringParameters = "chartID=" + ChartId + "&parameters=[" + parameters + "]&token=" + "UserToken" + "&IsAllowRefresh=" + IsAllowRefresh + "&IsAllowPrint=" + IsAllowPrint + "&Language=" + Language;
-
+            queryStringParameters = "dashboardID="+DashboardId+"&language="+Language+"&parameters=["+parameters+"]";
             EncryptionHelper.encryptionKey = Storage.EncryptionKey;
             var encryptedData = EncryptionHelper.Encrypt(queryStringParameters);
+            url = Storage.RootAddress + "Dashboard/GetDashboardEncrypted?encryptedParam=" + encryptedData;
 
-            url = Storage.RootAddress + "Chart/GetChartEncrypted?Data=" + encryptedData;
-
-            ChartHTML = await httpClient.GetStringAsync(url);
+            dashboardHTML = await httpClient.GetStringAsync(url);
             isError = false;
             StateHasChanged();
         }

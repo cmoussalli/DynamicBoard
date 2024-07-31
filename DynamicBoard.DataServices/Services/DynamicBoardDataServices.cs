@@ -96,7 +96,7 @@ namespace DynamicBoard.DataServices.Services
                 return isDeleted;
             }
         }
-        public async Task<long> DashboardAddEditAsync(long id, string titleEn, string titleAr, string userId, bool isActive, bool isDeleted)
+        public async Task<long> DashboardAddEditAsync(long id, string titleEn, string titleAr, string userId, bool isActive, bool isDeleted,bool hideChartButtons)
         {
             SqlConnection conn = new SqlConnection(connStr);
             try
@@ -110,6 +110,8 @@ namespace DynamicBoard.DataServices.Services
                     command.Parameters.AddWithValue("@IsActive", isActive);
                     command.Parameters.AddWithValue("@IsDeleted", isDeleted);
                     command.Parameters.AddWithValue("@UserId", userId);
+                    command.Parameters.AddWithValue("@HideChartButtons", hideChartButtons);
+
                     var returnIdParameter = new SqlParameter
                     {
                         ParameterName = "@ReturnID",
@@ -362,8 +364,8 @@ namespace DynamicBoard.DataServices.Services
 
 
             #region Chart
-            public async Task<long> ChartAddEditAsync(long id, long chartTypeID, long dBConnectionID, string dataScript, string titleEn, string titleAr, long refershTime, bool isActive, bool isDeleted, long chartTheme = 1, string createdBy = " ")
-        {
+            public async Task<long> ChartAddEditAsync(long id, long chartTypeID, long dBConnectionID, string dataScript, string titleEn, string titleAr, long refershTime, bool isActive, bool isDeleted, long chartTheme = 1, string createdBy = " ",bool display=false)
+            {
             SqlConnection conn = new SqlConnection(connStr);
             try
             {
@@ -381,6 +383,7 @@ namespace DynamicBoard.DataServices.Services
                     command.Parameters.AddWithValue("@IsActive", isActive);
                     command.Parameters.AddWithValue("@IsDeleted", isDeleted);
                     command.Parameters.AddWithValue("@CreatedBy", createdBy);
+                    command.Parameters.AddWithValue("@Display", display);
                     var returnIdParameter = new SqlParameter
                     {
                         ParameterName = "@ReturnID",
@@ -722,7 +725,7 @@ namespace DynamicBoard.DataServices.Services
         //        return result.ToList();
         //    }
         //}
-        public async Task<IEnumerable<ChartDataset>> DatasetExecute(string script, string connectionString)
+        public async Task<List<ChartDataset>> DatasetExecute(string script, string connectionString)
         {
             using (var connection = new SqlConnection(connectionString))
             {
@@ -794,6 +797,15 @@ namespace DynamicBoard.DataServices.Services
             }
 
             return chartThemeExtends;
+        }
+
+
+        public async Task<ChartScriptTemplates> GetChartScriptTemplateByChartTypeIDAsync(long chartTypeID)
+        {
+            SqlConnection conn = new SqlConnection(connStr);
+            var result = (await conn.QueryAsync<ChartScriptTemplates>("GetChartScriptTemplateByChartTypeID @ChartTypeID",
+                new { ChartTypeID = chartTypeID })).FirstOrDefault();
+            return result;
         }
 
         #endregion

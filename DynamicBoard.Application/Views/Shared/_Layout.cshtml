@@ -37,9 +37,6 @@
         // Show loader initially
         loader.style.display = "block";
 
-
-
-
         $(document).ready(function () {
             // Show loader initially
 
@@ -78,12 +75,17 @@
         var Isstacked = false;
         var _height = 0;
         var gridDisplay = true;
-        if (canvasChartType == "Bar") {
+        var indexAxis='';
+        if (canvasChartType == "Bar" || canvasChartType == "Column") {
             canvasChartType = "bar";
         }
         if (canvasChartType == "Stacked Bar") {
             canvasChartType = "bar";
             Isstacked = true;
+        }
+           if (canvasChartType == "Horizontal Bar Chart") {
+            canvasChartType = "bar";
+            indexAxis='y';
         }
         if (canvasChartType == "doughnut") {
 
@@ -100,7 +102,6 @@
         }
         if (canvasChartType == "polarArea") {
             canvasChartType = "polarArea";
-
         }
         if (canvasChartType == "RadarChart") {
             canvasChartType = "radar";
@@ -148,7 +149,8 @@
                         //     display: gridDisplay 
                         // }
                     }
-                }  
+                },
+                 indexAxis: indexAxis
                
             }
         });

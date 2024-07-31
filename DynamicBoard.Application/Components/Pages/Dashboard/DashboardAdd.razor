@@ -25,17 +25,17 @@
         }
 
 
-<div class="row">
-    <div class="col-6">
-        <FluentTextField Appearance="FluentInputAppearance.Filled" Label="Title English" @bind-Value="Dashboard!.TitleEn" Style="margin-top: 10px; width:100%" />
-    </div>
+            <div class="row">
+                <div class="col-6">
+                    <FluentTextField Appearance="FluentInputAppearance.Filled" Label="Title English" @bind-Value="Dashboard!.TitleEn" Style="margin-top: 10px; width:100%" />
+                </div>
 
-    <div class="col-6">
-        <FluentTextField Appearance="FluentInputAppearance.Filled" Label="Title Ar" @bind-Value="Dashboard!.TitleAr" Style="margin-top: 10px ; width:100%">
+                <div class="col-6">
+                    <FluentTextField Appearance="FluentInputAppearance.Filled" Label="Title Ar" @bind-Value="Dashboard!.TitleAr" Style="margin-top: 10px ; width:100%">
 
-        </FluentTextField>
-    </div>
-</div>
+                    </FluentTextField>
+                </div>
+            </div>
 
 
 
@@ -47,6 +47,11 @@
                     <FluentRadio Label="Yes" Value="true"></FluentRadio>
                     <FluentRadio Label="No" Value="false"></FluentRadio>
                 </FluentRadioGroup>
+                    </div>
+                    <div class="col-6">
+                        <br/>
+                <FluentSwitch @bind-Value=@Dashboard.HideChartButtons Required="false">Hide Chart Buttons</FluentSwitch>
+
                     </div>
                     </div>
     }
@@ -265,7 +270,7 @@
             message = "";
             if (string.IsNullOrEmpty(validation()))
             {
-                var result = await dashboardServices.DashboardAddEditAsync(Dashboard.ID, Dashboard.TitleEn, Dashboard.TitleAr, Dashboard.CreatedBy, Dashboard.IsActive, Dashboard.IsDeleted);
+                var result = await dashboardServices.DashboardAddEditAsync(Dashboard.ID, Dashboard.TitleEn, Dashboard.TitleAr, Dashboard.CreatedBy, Dashboard.IsActive, Dashboard.IsDeleted,Dashboard.HideChartButtons);
 
                 if (result > 0)
                 {
@@ -434,7 +439,7 @@
             Dashboard.TitleAr = dashboard.TitleAr;
             Dashboard.TitleEn = dashboard.TitleEn;
             Dashboard.CreatedBy = dashboard.CreatedBy;
-
+            Dashboard.HideChartButtons = dashboard.HideChartButtons;
             IsActive = dashboard.IsActive;
             //chartParameters = await commonServices.GetChartParametersByChartID(chart.ID);
 
@@ -448,38 +453,5 @@
 
     }
 
-
-    // public async Task AddNewDashboard()
-    // {
-    //     try
-    //     {
-
-    //         await dashboardServices.DashboardAddEditAsync(0, Dashboard.TitleEn, Dashboard.TitleAr, "", true, false);
-    //         if (actionTitle == "Add")
-    //         {
-    //             message = "Success fully Added";
-    //         }
-    //         else { message = "Success fully Updated"; }
-
-    //         StateHasChanged();
-    //         await Task.Delay(1500);
-    //         actionTitle = "";
-    //         message = "";
-    //         StateHasChanged();
-    //         await OnResponse.InvokeAsync(1);
-
-    //     }
-
-    //     catch (Exception ex)
-    //     {
-    //         actionTitle = "";
-    //         message = "";
-    //         message = "something went wrong please try again.";
-    //         StateHasChanged();
-    //         await OnResponse.InvokeAsync(0);
-    //     }
-
-
-    // }
 
 }

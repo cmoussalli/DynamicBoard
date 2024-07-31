@@ -17,9 +17,9 @@ namespace DynamicBoard.Application.DomainServices
             return dashboards;
         }
 
-        public async Task<long> DashboardAddEditAsync(long ID, string TitleEn, string TitleAr, string UserId, bool isActive, bool isDeleted)
+        public async Task<long> DashboardAddEditAsync(long ID, string TitleEn, string TitleAr, string UserId, bool isActive, bool isDeleted,bool hideChartButtons)
         {
-           return await db.DashboardAddEditAsync(ID, TitleEn, TitleAr, UserId, isActive, isDeleted);
+           return await db.DashboardAddEditAsync(ID, TitleEn, TitleAr, UserId, isActive, isDeleted, hideChartButtons);
         }
         public async Task<bool> DeleteDashboardAsync(long dashboardId)
         {

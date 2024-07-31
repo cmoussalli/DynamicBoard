@@ -72,7 +72,7 @@ else
 }
 
 
-<FluentDialog @ref="_myFluentDialog" @bind-Hidden="@Hidden" aria-label="Simple dialog" Modal=@_modal TrapFocus=@_trapFocus PreventScroll=@_preventScroll @ondialogdismiss=OnDismiss>
+<FluentDialog @ref="_myFluentDialogMain" @bind-Hidden="@Hidden" aria-label="Simple dialog" Modal=@_modal TrapFocus=@_trapFocus PreventScroll=@_preventScroll @ondialogdismiss=OnDismiss>
     <FluentDialogHeader Visible="false" />
     @if (ActionForAdd == true)
     {
@@ -84,11 +84,9 @@ else
         <h2>Are you sure to delete this dashboard</h2>
         <FluentButton Appearance="Appearance.Neutral" Autofocus="true" @onclick="OnDeleteDashboard">Delete</FluentButton>
     }
-    <FluentButton Appearance="Appearance.Lightweight" Autofocus="true" @onclick="OnClose">Close</FluentButton>
+    <FluentButton Appearance="Appearance.Lightweight" Autofocus="true" @onclick="OnClosePopup">Close</FluentButton>
     <br />
     <FluentLabel  Style="color:green" >@message</FluentLabel>
-
-
 </FluentDialog>
 
  
@@ -99,7 +97,7 @@ else
     public IQueryable<Dashboards>? DashboardLists;
     PaginationState pagination = new PaginationState { ItemsPerPage = 3 };
     Dashboards dashboard = new();
-    private FluentDialog? _myFluentDialog; 
+    private FluentDialog? _myFluentDialogMain; 
     private bool _trapFocus = true;
     private bool _modal = true;
     private bool _preventScroll = true;
@@ -117,7 +115,7 @@ else
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
-            _myFluentDialog!.Hide();
+            _myFluentDialogMain!.Hide();
         DashboardsAll();
     }
     protected override async Task OnInitializedAsync()
@@ -162,7 +160,7 @@ else
 
         ActionForAdd = true;
         _status = "Dialog opened with button click";
-        _myFluentDialog!.Show();
+        _myFluentDialogMain!.Show();
         StateHasChanged();
     }
     private async Task ConformationForDelete(int id)
@@ -171,7 +169,7 @@ else
         ActionForDelete = true;
         dashboardID = id;
         _status = "Dialog opened with button click";
-        _myFluentDialog!.Show();
+        _myFluentDialogMain!.Show();
         StateHasChanged();
     }
     public async Task OnDeleteDashboard()
@@ -185,7 +183,7 @@ else
             await Task.Delay(1000);
             message = "";
             StateHasChanged();
-            _myFluentDialog!.Hide();
+            _myFluentDialogMain!.Hide();
         }
         else
 
@@ -193,7 +191,7 @@ else
             message = "Dashboard are linked with Charts/Users you can not delete this dashboard";
             StateHasChanged();
             await Task.Delay(1000);
-            _myFluentDialog!.Hide();
+            _myFluentDialogMain!.Hide();
         }
         DashboardsAll();
 
@@ -206,15 +204,16 @@ else
     {
         ActionForAdd = true;
         _status = "Dialog opened with button click";
-        _myFluentDialog!.Show();
+        _myFluentDialogMain!.Show();
         StateHasChanged();
         // DemoLogger.WriteLine(_status);
     }
 
-    private void OnClose()
+    private void OnClosePopup()
     {
         _status = $"Dialog dismissed with reason: Close button clicked";
-        _myFluentDialog!.Hide();
+        _myFluentDialogMain!.Hide();
+        StateHasChanged();
         //  DemoLogger.WriteLine(_status);
     }
 
@@ -222,7 +221,7 @@ else
     {
         DashboardsAll();
         _status = $"Dialog dismissed with reason: Dismissed";
-        _myFluentDialog!.Hide();
+        _myFluentDialogMain!.Hide();
         StateHasChanged();
     }
 
@@ -231,7 +230,7 @@ else
         if (args is not null && args.Reason is not null && args.Reason == "dismiss")
         {
             _status = $"Dialog dismissed with reason: Dismissed";
-            _myFluentDialog!.Hide();
+            _myFluentDialogMain!.Hide();
             //  DemoLogger.WriteLine(_status);
         }
     }

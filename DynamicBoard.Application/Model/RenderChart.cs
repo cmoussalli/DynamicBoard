@@ -18,7 +18,8 @@
         public string ErrorMessage { get; set; }
         public int SizeID { get; set; }
         public int SortID { get; set; }
-
+        public bool HideChartButtons { get; set; }
+        public string ChartCSSTitle { get; set; }
     }
 
     public class RenderChartExtended:RenderChart

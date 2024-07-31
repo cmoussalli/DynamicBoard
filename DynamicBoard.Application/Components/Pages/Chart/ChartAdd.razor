@@ -6,7 +6,7 @@
 @inject NavigationManager NavigationManager
 @implements IDialogContentComponent
 @rendermode InteractiveServer
-
+@inject IJSRuntime JSRuntime
 
 
 
@@ -56,7 +56,7 @@ else
 
                         @foreach (var option in chartTypes)
                         {
-                            <FluentOption Id="@option.ID.ToString()" Value="@option.ID.ToString()">@option.TitleEn</FluentOption>
+                            <FluentOption Id="@option.ID.ToString()" Value="@option.ID.ToString()" SelectedChanged="()=>ChartTypeChanged(option.ID)">@option.TitleEn</FluentOption>
 
                         }
 
@@ -93,50 +93,100 @@ else
                         <FluentRadio Label="Yes" Value="true"></FluentRadio>
                         <FluentRadio Label="No" Value="false"></FluentRadio>
                     </FluentRadioGroup>
-
-
-
-                    @*  <br />
-        <br />
-        <FluentTextField Type="number" Pattern="[0-9]*" Appearance="FluentInputAppearance.Filled" Label="Refresh Time"
-        @bind-Value="refershTime" Style="width:80%;  margin-top: 8px;" />
-        *@
-
+                    <br />
+                    <FluentTextField Appearance="FluentInputAppearance.Filled" TextFieldType="TextFieldType.Tel" Placeholder="Enter refresh time in seconds" Label="Refresh Time" Maxlength="4" @bind-Value="@refershTime" Style="margin-top: 10px; width:100%" />
+                    <br />
+                    <p>Chart Parameters</p>
+                    @if (chartParameters is not null)
+                    {
+                        @if (chartParameters.Count > 0)
+                        {
+                            <div class="col-6">
+                                <ChartParameterList ChartParameters="@chartParameters" OnResponse="@GetChartParameterListInResponse"
+                                                    OnResponseForShowData="@GetParameterInResponse"></ChartParameterList>
+                            </div>
+                        }
+                    }
+                    <br />
+                    <FluentButton Appearance="Appearance.Accent" OnClick="()=>OnOpen()">
+                        Add Chart Parameters +
+                    </FluentButton>
                 </div>
                 <div class="col-6">
-                    <br />
+                    <FluentTabs @bind-ActiveTabId="@SelectedTabId" Height="350px;">
+                        <FluentTab Id="tabchart-2">
+                            <Header>
+                                <FluentIcon Value="@(new Icons.Regular.Size16.DataBarVertical())" Color="@Color.Success" />
+                                Data Set
+                            </Header>
+                            <Content>
+                                @if (Id != 0)
+                                {
+                                    @if (IQCharts_ChartDataset is not null)
+                                    {
+                                        <div class="grid">
+                                            @if (@selectedChartTypeOption != null && @selectedChartTypeOption == "6")
+                                            {
+                                                <FluentDataGrid Id="Chartsgrid" Items=@IQCharts_ChartDataset TGridItem=ChartDataset>
+                                                    <PropertyColumn Title="Data" Property="@(c => c!.Data)" Sortable="true" Align=Align.Start />
+                                                </FluentDataGrid>
+                                            }
+                                            else
+                                            {
+                                                <FluentDataGrid Id="Chartsgrid" Items=@IQCharts_ChartDataset TGridItem=ChartDataset>
+                                                    <PropertyColumn Title="Data" Property="@(c => c!.Data)" Sortable="true" Align=Align.Start />
+                                                    <PropertyColumn Title="Dataset_Label" Property="@(c => c != null && c.Dataset_Label != null && !string.IsNullOrEmpty(c.Dataset_Label) ? c.Dataset_Label : "N/A")" Sortable="true" Align=Align.Start />
+                                                </FluentDataGrid>
+                                            }
+                                        </div>
+                                    }
+                                }
+                            </Content>
+                        </FluentTab>
+                        <FluentTab Id="tabchart-3">
+                            <Header>
+                                <FluentIcon Value="@(new Icons.Regular.Size16.ChartMultiple())" Color="@Color.Error" />
+                                <span style="color:forestgreen;">Output</span>
+                            </Header>
+                            <Content>
+                                @if (Id != 0)
+                                {
+                                    <iframe id="ChartDatasetFrame" src="@url" allowfullscreen style=" position: center;width:350px;height:400px;    border: 0;    overflow: hidden;"></iframe>
+                                }
+                            </Content>
+                        </FluentTab>
+                    </FluentTabs>
+          <br />
+          <br />
                     <br />
                     <FluentTextArea Label="Script" @bind-Value=@script Cols="80" Rows="8" aria-label="Script"
                                     Style="width: 100%; margin-top: 8px;">
                     </FluentTextArea>
 
+                    <br />
+
                 </div>
             </div>
             <div class="row">
-                <p>Chart Parameters</p>
-                @if (chartParameters is not null)
-                {
-                    @if (chartParameters.Count > 0)
-                    {
-                        <div class="col-6">
-                            <ChartParameterList ChartParameters="@chartParameters" OnResponse="@GetChartParameterListInResponse"
-                                                OnResponseForShowData="@GetParameterInResponse"></ChartParameterList>
-                        </div>
-                    }
-                }
-                <div class="col-4">
-
-                    <FluentButton Appearance="Appearance.Accent" OnClick="()=>OnOpen()">
-                        Add Chart Parameters +
-                    </FluentButton>
-                    @* <p style="color:red"> In case of adding Parameters must include 'and  1=1' in you script."</p>
-        *@
+                <div class="col-md-6">
+                </div>
+                <div class="col-md-6">
+                    <FluentSwitch @bind-Value=@Display Required="false">Show Print/Refresh Chart Button</FluentSwitch>
+         
+                </div>
+            </div>
+            <div class="row">
+           
+                <div class="col-6">
+                 
+                  
 
                 </div>
 
 
             </div>
 
+        
         }
 
 
@@ -216,7 +266,8 @@ else
     string selectedDbName = "Please select an Database Connection";
     string selectedChartTypeName = "Please select an chart type";
     string selectedChartThemeName = "Please select an chart theme";
-    string refershTime = "5";
+    string refershTime = "0";
+    bool Display = false;
     bool isLoading = true;
     private bool _trapFocus = true;
     private bool _modal = true;
@@ -237,6 +288,14 @@ else
     ChartParameter chartParameter = new();
     public List<ChartParameter> chartParameters = new();
     DynamicBoardChartServices chartsServices = new();
+    ChartScriptTemplates chartScriptTemplates = new();
+    List<ChartDataset> chartDatasets = new();
+    string SelectedTabId = "tabchart-1";
+
+
+    public IQueryable<ChartDataset> IQCharts_ChartDataset { get; set; }
+
+    string url = "";
 
     DynamicBoardChartServices dynamicBoardChartServices = new();
     private bool isActive;
@@ -259,10 +318,17 @@ else
         }
         isLoading = false;
         chartParameters = new();
+
+        SelectedTabId = "tabchart-2";
         StateHasChanged();
         await base.OnInitializedAsync();
-
     }
+
+    public async Task GetUrlFromPreview(string _url)
+    {
+        await JSRuntime.InvokeVoidAsync("newSrc", _url);
+    }
+
     public async Task AddValuesToForm(ExtendChart chart)
     {
         try
@@ -279,6 +345,7 @@ else
             selectedDBOption = chart.DBConnectionID.ToString();
             selectedChartTypeOption = chart.ChartTypeID.ToString();
             selectedChartThemeOption = chart.ChartTheme.ToString();
+            Display = chart.Display;
             selectedDb = extendDBConnections.Where(option => option.ID == Convert.ToInt64(selectedDBOption)).Select(option => option.ID.ToString()).FirstOrDefault();
             selectedDb = selectedDBOption;
             selectedDbName = extendDBConnections.Where(option => option.ID == Convert.ToInt64(selectedDBOption)).Select(option => option.Database.ToString()).FirstOrDefault();
@@ -289,8 +356,9 @@ else
             selectedTheme = selectedChartThemeOption; //chart.ChartTheme.ToString();
             script = chart.DataScript;
             chartParameters = await commonServices.GetChartParametersByChartID(chart.ID);
-
+            PopulateSQLScriptDataSet(chart.ID,(long)Convert.ToDouble(selectedChartTypeOption));
             isLoading = false;
+            Preview();
             StateHasChanged();
         }
         catch (Exception ex)
@@ -299,6 +367,15 @@ else
         }
 
     }
+
+    public async Task PopulateSQLScriptDataSet(long chartId,long chartTypeID)
+    {
+        chartScriptTemplates = await dynamicBoardChartServices.GetChartScriptTemplateByChartTypeIDAsync(chartTypeID);
+        chartDatasets = await commonServices.GetChartDatasets(chartId, chartScriptTemplates.SQLScriptTemplate);
+        IQCharts_ChartDataset = chartDatasets.AsQueryable();
+        StateHasChanged();
+    }
+
     public string SelectedChartTypeOption
     {
         get { return selectedChartTypeOption; }
@@ -381,14 +458,16 @@ else
             if (Id > 0)
             {
                 Chart.IsActive = IsActive;
-                // if (!string.IsNullOrEmpty(refershTime))
-                // {
-                //     Chart.RefershTime = Convert.ToInt32(refershTime);
-                // }
-                // else
-                // {
-                Chart.RefershTime = 0;
-                // }
+                if (!string.IsNullOrEmpty(refershTime))
+                {
+                    Chart.RefershTime = Convert.ToInt32(refershTime);
+                }
+                else
+                {
+                    Chart.RefershTime = 0;
+                }
+                Chart.Display = Display;
+
                 if (!string.IsNullOrEmpty(selectedDBOption))
                 {
                     Chart.DBConnectionID = Convert.ToInt64(selectedDBOption);
@@ -423,9 +502,7 @@ else
             message = "";
             if (string.IsNullOrEmpty(validation()))
             {
-                var result = await chartServices.ChartAddEdit(Chart.ID, Chart.ChartTypeID, Chart.DBConnectionID, Chart.DataScript, Chart.TitleEn, Chart.TitleAr, Chart.RefershTime, Chart.IsActive, Chart.IsDeleted, Chart.CreatedBy, Chart.ChartTheme);
-
-
+                var result = await chartServices.ChartAddEdit(Chart.ID, Chart.ChartTypeID, Chart.DBConnectionID, Chart.DataScript, Chart.TitleEn, Chart.TitleAr, Chart.RefershTime, Chart.IsActive, Chart.IsDeleted, Chart.CreatedBy, Chart.ChartTheme,Chart.Display);
 
                 if (result > 0)
                 {
@@ -665,6 +742,19 @@ else
 
             }
         }
+    }
+
+
+    private async Task Preview()
+    {
+          url = "/Chart/ChartTemplateView?chartTypeID=" + selectedChartTypeOption + "&chartID="+Id;
+        StateHasChanged();
+    }
+
+    private async void ChartTypeChanged(long optionID)
+    {
+        PopulateSQLScriptDataSet(Id, (long)Convert.ToDouble(optionID));
+        Preview();
     }
 
     private async void OnOpen()

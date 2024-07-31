@@ -79,7 +79,7 @@ namespace DynamicBoard.Application.Controllers
 
             if (dashboard == null)
             {
-                return PartialView("Error", "Dashboard Not Found.");
+                return PartialView("Error", "Dashboard Not Found / Currently In Active.");
             }
 
 
@@ -92,13 +92,14 @@ namespace DynamicBoard.Application.Controllers
 
             if (lnk_Dashboards_Charts.Any())
             {
-                List<RenderChart> renderCharts = await GenerateRenderChartData(lnk_Dashboards_Charts, chartID, dashboardID, language, parameters);
+                List<RenderChart> renderCharts = await GenerateRenderChartData(lnk_Dashboards_Charts, chartID, dashboardID, language, parameters,dashboard.HideChartButtons);
                 string dashboardTitle = dashboard.TitleEn;
                 if (language == 1)
                 {
                     dashboardTitle = dashboard.TitleAr;
                 }
-                return await DashboardView(renderCharts, dashboardTitle, dashboardID, language, parameters);
+                
+                return await DashboardView(renderCharts, dashboardTitle, dashboardID, language, parameters,dashboard.HideChartButtons);
             }
             else
             {
@@ -139,13 +140,13 @@ namespace DynamicBoard.Application.Controllers
             
             if(lnk_Dashboards_Charts.Any())
             {
-                List<RenderChart> renderCharts = await GenerateRenderChartData(lnk_Dashboards_Charts, chartID, dashboardID, language,parameters);
+                List<RenderChart> renderCharts = await GenerateRenderChartData(lnk_Dashboards_Charts, chartID, dashboardID, language,parameters, dashboard.HideChartButtons);
                 string dashboardTitle = dashboard.TitleEn;
                 if (language == 1)
                 {
                     dashboardTitle = dashboard.TitleAr;
                 }
-                return await DashboardView(renderCharts, dashboardTitle, dashboardID, language,parameters);
+                return await DashboardView(renderCharts, dashboardTitle, dashboardID, language,parameters, dashboard.HideChartButtons);
             }
             else
             {
@@ -154,7 +155,7 @@ namespace DynamicBoard.Application.Controllers
 
         }
 
-        private async Task<List<RenderChart>> GenerateRenderChartData(List<Lnk_Dashboards_Charts_Size_Extended> lnk_Dashboards_Charts,long chartID,int dashboardID,int language,string parameters)
+        private async Task<List<RenderChart>> GenerateRenderChartData(List<Lnk_Dashboards_Charts_Size_Extended> lnk_Dashboards_Charts,long chartID,int dashboardID,int language,string parameters,bool hideChartButtons)
         {
             string url = "";
             var renderChartData = new RenderChart();
@@ -169,21 +170,23 @@ namespace DynamicBoard.Application.Controllers
                 RenderChart renderChart = new RenderChart()
                 {
                     ChartID = Chart.ChartID,
-                    IsAllowPrint = true,
-                    IsAllowRefresh = true,
+                    IsAllowPrint = extendCharts[0].Display,
+                    IsAllowRefresh = extendCharts[0].Display,
                     Language = language,
                     Parameters = parameters,
                     SizeID=Chart.SizeID,
                     SortID=Chart.SortID,
                     ChartCSS=Chart.Css,
-                    RefershTime= extendCharts[0].RefershTime
+                    RefershTime= extendCharts[0].RefershTime,
+                    HideChartButtons=hideChartButtons,
+                    ChartCSSTitle=Chart.ChartCSSTitle
                 };
                 renderCharts.Add(renderChart);
             }
             return renderCharts;
         }
 
-        public async Task<IActionResult> GetChartPartialView(long chartID,int dashboardID, int language,string parameters)
+        public async Task<IActionResult> GetChartPartialView(long chartID,int dashboardID, int language,string parameters,bool hideChartButtons)
         {
             // var model = new MyModel { SomeProperty = "Updated Content" };
 
@@ -194,17 +197,18 @@ namespace DynamicBoard.Application.Controllers
             }
 
             RenderChart renderChart = new RenderChart();
-            List<RenderChart> renderCharts = await GenerateRenderChartData(lnk_Dashboards_Charts, chartID, dashboardID, language, parameters);
+            List<RenderChart> renderCharts = await GenerateRenderChartData(lnk_Dashboards_Charts, chartID, dashboardID, language, parameters,hideChartButtons);
             RenderChartExtended renderChartExtended = await ProcessCharts(renderCharts, parameters);
             renderChartExtended.DashboardID=dashboardID;
-            
+           
             renderChart = renderChartExtended?.RenderCharts?.ToList().FirstOrDefault();
+            renderChart.HideChartButtons=hideChartButtons;
             return PartialView("_ChartPartial", renderChart);
         }
 
 
         [HttpGet]
-        public async Task<IActionResult> DashboardView(List<RenderChart> renderCharts,string dashboardtitle,int dashboardID,int language,string parameters="")
+        public async Task<IActionResult> DashboardView(List<RenderChart> renderCharts,string dashboardtitle,int dashboardID,int language,string parameters="",bool hideChartButtons=false)
         {
             
             RenderChartExtended renderChartExtended = await ProcessCharts(renderCharts,parameters);
@@ -212,6 +216,9 @@ namespace DynamicBoard.Application.Controllers
             renderChartExtended.DashboardID = dashboardID;
             renderChartExtended.Language = language;
             renderChartExtended.Parameters = parameters;
+            renderChartExtended.HideChartButtons = hideChartButtons;
+         
+
             if (renderChartExtended != null)
             {
                 if (renderChartExtended.ErrorType == 1)
@@ -249,6 +256,7 @@ namespace DynamicBoard.Application.Controllers
                 string query = extendCharts[0].DataScript;
                 if (chartParameters != null)
                 {
+                    modifiedQueryScript = "";
                     if (chartParameters.Count > 0 && extendCharts.Count > 0)
                     {
                         foreach (var chartparms in chartParameters)
@@ -396,6 +404,8 @@ namespace DynamicBoard.Application.Controllers
                         renderChart.SortID = chartItem.SortID;
                         renderChart.ChartCSS = chartItem.ChartCSS;
                         renderChart.RefershTime = extendCharts[0].RefershTime;
+                        renderChart.HideChartButtons = chartItem.HideChartButtons;
+                        renderChart.ChartCSSTitle=chartItem.ChartCSSTitle;
                         renderChartExtended.RenderCharts.Add(renderChart);
                     }
                     else

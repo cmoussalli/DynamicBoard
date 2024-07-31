@@ -8,9 +8,9 @@ namespace DynamicBoard.Application.DomainServices
     {
         DynamicBoardDataServices db = new DynamicBoardDataServices(Storage.DBConnectionString);
         #region Chart
-        public async Task<long> ChartAddEdit(long id, long chartTypeID, long dBConnectionID, string dataScript, string titleEn, string titleAr, int refershTime, bool isActive, bool isDeleted, string createdBy, long chartTheme)
+        public async Task<long> ChartAddEdit(long id, long chartTypeID, long dBConnectionID, string dataScript, string titleEn, string titleAr, int refershTime, bool isActive, bool isDeleted, string createdBy, long chartTheme,bool display)
         {
-            return await db.ChartAddEditAsync(id, chartTypeID, dBConnectionID, dataScript, titleEn, titleAr, refershTime, isActive, isDeleted, chartTheme, createdBy);
+            return await db.ChartAddEditAsync(id, chartTypeID, dBConnectionID, dataScript, titleEn, titleAr, refershTime, isActive, isDeleted, chartTheme, createdBy, display);
         }
         public async Task<long> ChartParametersAddUpdateAsync(long chartid, string tag, string sqlplaceholder, bool isRequired, string defaultValue)
         {
@@ -51,6 +51,12 @@ namespace DynamicBoard.Application.DomainServices
         {
             return await db.GetChartTheme(chartId);
         }
+
+        public async Task<ChartScriptTemplates> GetChartScriptTemplateByChartTypeIDAsync(long chartTypeID)
+        {
+            return await db.GetChartScriptTemplateByChartTypeIDAsync(chartTypeID);
+        }
+
         #endregion
     }
 }

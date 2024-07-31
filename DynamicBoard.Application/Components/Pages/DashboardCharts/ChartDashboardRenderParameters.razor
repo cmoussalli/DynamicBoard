@@ -160,11 +160,6 @@
 
         string queryStringParameters = "dashboardID=" + DashboardID + "&language=2&parameters=[" + parameters + "]";
         var encryptedData = EncryptionHelper.Encrypt(queryStringParameters);
-
-        //var encryptedData = EncryptionHelper.Encrypt(queryStringParameters);
-
-        // string qs = "dashboardID=" + DashboardID + "&language=2&parameters=[" + parameters + "]";
-
         url = "/Dashboard/GetDashboardEncrypted?encryptedParam=" + encryptedData;
         //defaultValues = false;
         await OnResponse.InvokeAsync(url);

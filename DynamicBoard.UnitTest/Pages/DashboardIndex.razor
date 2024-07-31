@@ -2,39 +2,18 @@
 @using SME.DynamicBoard.UI
 @using SME.DynamicBoard.UI.Components
  
-
 <PageTitle>Index</PageTitle>
-
 <h1>Hello, world!</h1>
+<button type="button" @onclick="@LoadIframe">Load Iframe</button>
+<input type="text"  @bind="@crNo" />
 
-<input type="text" @bind="@dashboardID" placeholder="Enter dashboardID" />
-<input type="text" @bind="@language" placeholder="Enter Language " />
-<button type="button" @onclick="@LoadIframeV3">Load Iframe</button>
-
-@* <input type="text"  @bind="@crNo" /> *@
-@* @if (!string.IsNullOrEmpty(chartID))
-{
-    <SME.DynamicBoard.UI.Components.ChartRenderView @ref="chartRenderView" AutoLoad="false" IsAllowRefresh="true" ChartId="@chartID" ChartData="@ChartData" />
-    <br />
-    <p>Lable</p>
-   
-} *@
 <br />
 <br />
 <br />
 
-@* <p>Chart View </p>
-<SME.DynamicBoard.UI.Components.ChartRenderView @ref="chartRenderView1"  AutoLoad="true" IsAllowRefresh="true" ChartId="4" ChartData="@ChartData" />
- *@
+@* <SME.DynamicBoard.UI.Components.DashboardRenderView Language=1 AutoLoad="true" DashboardId="128" dashboardData="EmptyDashboardData" /> *@
 
-@* <SME.DynamicBoard.UI.Components.ChartRenderView Language=1 AutoLoad="true" ChartId="128" ChartData="EmptyChartData" /> *@
-@if (dashboardID!="" && dashboardID!="0")
-{
-    <SME.DynamicBoard.UI.Components.DashboardRenderView Language=@language AutoLoad="true" DashboardId="@dashboardID" dashboardData="EmptyDashboardData" />
-}
-
-@* 
-<div class="card">
+@* <div class="card">
     <div class="card-body">
         <div class="row">
             <div class="col-3">
@@ -89,32 +68,16 @@
     </div>
 </div> *@
 
-
 @code {
-
     public DashboardData DashboardData { get; set; } = new();
-    static string dashboardID = "";
-    public int language = 1;
-    public SME.DynamicBoard.UI.DashboardData EmptyDashboardData { get; set; } = new();
-
-
-
-
-
-    //  public ChartData ChartDataForNewRequest { get; set; } = new();
-    public ChartData ChartData { get; set; } = new();
-    static string chartID = "4";
+    static string dashboardID = "4";
     static string chartIDLable = "99";
-
-
-
-
-
-    public SME.DynamicBoard.UI.ChartData EmptyChartData { get; set; } = new();
-    public SME.DynamicBoard.UI.ChartData ChartDataForNewRequest { get; set; } = new();
-    public SME.DynamicBoard.UI.ChartData ChartDataForPendingRequest { get; set; } = new();
-    public SME.DynamicBoard.UI.ChartData ChartDataForIssuedRequest { get; set; } = new();
-    public SME.DynamicBoard.UI.ChartData ChartDataForRejectedRequest { get; set; } = new();
+ 
+    public SME.DynamicBoard.UI.DashboardData EmptyDashboardData { get; set; } = new();
+    public SME.DynamicBoard.UI.DashboardData DashboardDataForNewRequest { get; set; } = new();
+    public SME.DynamicBoard.UI.DashboardData DashboardDataForPendingRequest { get; set; } = new();
+    public SME.DynamicBoard.UI.DashboardData DashboardDataForIssuedRequest { get; set; } = new();
+    public SME.DynamicBoard.UI.DashboardData DashboardDataForRejectedRequest { get; set; } = new();
 
     string chartIdForNewRequest = "103";
     string chartIdForPendingRequest = "104";
@@ -123,23 +86,20 @@
     SME.DynamicBoard.UI.ChartData chartRenderView { get; set; } = new();
     SME.DynamicBoard.UI.Components.ChartRenderView chartRenderView1;
     string crNo = "1006414";
+
     protected override async Task OnInitializedAsync()
     {
 
     }
 
 
-    public async Task LoadIframeV3()
+    public async Task LoadIframe()
     {
-        ChartDataForNewRequest = new();
+        DashboardDataForNewRequest = new();
 
-        EmptyDashboardData = new();
         //ChartData.ReplaceValue("CRNombers", "1006414", "7058926");
-        ChartData.Add("CRNombers", new List<string> { crNo });
-        ChartData.Add("IsServiceEnded", new List<string> { "0" });
-
-        //EmptyDashboardData.Add("CRNombers", new List<string> { crNo });
-        EmptyDashboardData.Add("IsExpire", new List<string> { "1" });
+        DashboardData.Add("CRNombers", new List<string> { crNo });
+        DashboardData.Add("IsServiceEnded", new List<string> { "0" });
 
         // ChartData2.Add("YearOfEstablishment", new List<string> { "2023" });
 
@@ -150,16 +110,15 @@
         // {
         //     await chartRenderView1.Refersh();
         // }
-        ChartDataForNewRequest = new();
-        ChartDataForPendingRequest = new();
-        ChartDataForIssuedRequest = new();
-        ChartDataForRejectedRequest = new();
+        DashboardDataForNewRequest = new();
+        DashboardDataForPendingRequest = new();
+        DashboardDataForIssuedRequest = new();
+        DashboardDataForRejectedRequest = new();
 
-        ChartDataForNewRequest.Add("StartupsNewRequestStatus", new List<string> { "2" });
-        ChartDataForPendingRequest.Add("StartupsPendingRequestIds", new List<string> { "4", "5", "6", "7", "8", "9" });
-        ChartDataForIssuedRequest.Add("StartupsIssuedRequestID", new List<string> { "10" });
-        ChartDataForRejectedRequest.Add("StartupsRejectedRequest", new List<string> { "3" });
-        
+        // DashboardDataForNewRequest.Add("StartupsNewRequestStatus", new List<string> { "2" });
+        // DashboardDataForPendingRequest.Add("StartupsPendingRequestIds", new List<string> { "4", "5", "6", "7", "8", "9" });
+        // DashboardDataForIssuedRequest.Add("StartupsIssuedRequestID", new List<string> { "10" });
+        // DashboardDataForRejectedRequest.Add("StartupsRejectedRequest", new List<string> { "3" });
         StateHasChanged();
     }
 
