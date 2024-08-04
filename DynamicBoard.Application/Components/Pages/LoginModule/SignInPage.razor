@@ -1,0 +1,147 @@
+﻿@page "/signIn"
+@layout Layout.EmptyLayout
+@using CMouss.IdentityFramework
+@inject NavigationManager NavManager
+@rendermode InteractiveServer
+
+<PageTitle>SignIn</PageTitle>
+<div class="container">
+    <div class="col-md-6 offset-md-3 mt-5">
+        <div class="card">
+            <h4 class="card-header">Create Account</h4>
+            <div class="card-body">
+                <form>
+                    <div class="mt-3">
+                        <FluentTextField Appearance="FluentInputAppearance.Filled"
+                                         Label="Full Name" @bind-Value="fullName" Style="margin-top: 10px; width:100%" />
+
+                    </div>
+                    <div class="mt-3">
+                        <FluentTextField Appearance="FluentInputAppearance.Filled"
+                                         Label="Email" @bind-Value="email" Style="margin-top: 10px; width:100%" />
+
+                    </div>
+                    <div class="mt-3">
+                        <FluentTextField Appearance="FluentInputAppearance.Filled"
+                                         Label="User Name" @bind-Value="userName" Style="margin-top: 10px; width:100%" />
+
+                    </div>
+                    <div class="mt-3">
+                        <FluentTextField TextFieldType="TextFieldType.Password" Appearance="FluentInputAppearance.Filled"
+                                         Label="Password" @bind-Value="password" Style="margin-top: 10px; width:100%" />
+
+                    </div>
+                    <div class="mt-3">
+                        <FluentStack HorizontalAlignment="HorizontalAlignment.Left">
+                            <FluentButton @onclick="@(EventCallback.Factory.Create(this, SignIn))"
+                                          Appearance="Appearance.Neutral" BackgroundColor="Green" Color="white">Sign In</FluentButton>
+                            <FluentButton @onclick="@(EventCallback.Factory.Create(this, Cancel))"
+                                          Appearance="Appearance.Neutral" BackgroundColor="Red" Color="white">Cancel</FluentButton>
+                        </FluentStack>
+                    </div>
+                  
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="mt-3">
+                            <FluentLabel Color="Color.Error">
+                                @errorMessage
+                            </FluentLabel>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(successMessage))
+                    {
+                        <div class="mt-3">
+                            <FluentLabel Color="Color.Success">
+                                @successMessage
+                            </FluentLabel>
+                        </div>
+                    }
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    string userName;
+    string fullName;
+    string password;
+    string email;
+    string errorMessage;
+    string successMessage;
+
+    private void SignIn()
+    {
+        if (Validate())
+        {
+            IDFManager.UserServices.Create(userName, password, fullName, email);
+            InvokeAsync(async () =>
+            {
+                successMessage = "User Added Successfully";
+                StateHasChanged();
+                await Task.Delay(2_000);
+                successMessage = "";
+                StateHasChanged();
+            });
+        }
+    }
+
+    private bool Validate()
+    {
+        bool isValid = true;
+        if (string.IsNullOrEmpty(fullName))
+        {
+            isValid = false;
+            InvokeAsync(async () =>
+            {
+                errorMessage = "Enter Full Name";
+                StateHasChanged();
+                await Task.Delay(2_000);
+                errorMessage = "";
+                StateHasChanged();
+            });
+        }
+        else if (string.IsNullOrEmpty(email))
+        {
+            isValid = false;
+            InvokeAsync(async () =>
+            {
+                errorMessage = "Enter Email";
+                StateHasChanged();
+                await Task.Delay(2_000);
+                errorMessage = "";
+                StateHasChanged();
+            });
+        }
+        else if (string.IsNullOrEmpty(userName))
+        {
+            isValid = false;
+            InvokeAsync(async () =>
+            {
+                errorMessage = "Enter User Name";
+                StateHasChanged();
+                await Task.Delay(2_000);
+                errorMessage = "";
+                StateHasChanged();
+            });
+        }
+        else if (string.IsNullOrEmpty(password))
+        {
+            isValid = false;
+            InvokeAsync(async () =>
+            {
+                errorMessage = "Enter Password";
+                StateHasChanged();
+                await Task.Delay(2_000);
+                errorMessage = "";
+                StateHasChanged();
+            });
+        }
+        return isValid;
+    }
+
+    private async Task Cancel()
+    {
+        NavManager.NavigateTo(@"/");
+    }
+}

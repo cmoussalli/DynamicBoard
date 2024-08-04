@@ -15,33 +15,31 @@
     <link rel="stylesheet" href="app.css" />
     <link rel="stylesheet" href="DynamicBoard.Application.styles.css" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
-    <HeadOutlet />
+    <HeadOutlet @rendermode="new InteractiveServerRenderMode(prerender: false)" />
 </head>
 
 <body>
-    <Routes />
+    <Routes @rendermode="new InteractiveServerRenderMode(prerender: false)" />
 
-
-    
-@*
+    @*
     temporeraly comented
     <Router AppAssembly="@typeof(Program).Assembly">
     <Found Context="routeData">
-            <RouteView RouteData="@routeData" DefaultLayout="typeof(Layout.MainLayout)" />
-        @if (IsUserAuthenticated())
-            temporeraly comented 
-        {
-            <RouteView RouteData="@routeData" DefaultLayout="typeof(Layout.MainLayout)" />
-        }
-        else
-        {
-                <RouteView RouteData="@routeData" DefaultLayout="typeof(Layout.EmptyLayout)" />
-        }
+    <RouteView RouteData="@routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+    @if (IsUserAuthenticated())
+    temporeraly comented
+    {
+    <RouteView RouteData="@routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+    }
+    else
+    {
+    <RouteView RouteData="@routeData" DefaultLayout="typeof(Layout.EmptyLayout)" />
+    }
     </Found>
     <NotFound>
-        <!-- Handle
-                the 404 page -->
-        </NotFound>
+    <!-- Handle
+    the 404 page -->
+    </NotFound>
     </Router> *@
 
 
@@ -51,7 +49,7 @@
 
     <script src="js/DynamicBoard.js"></script>
     <script src="js/site.js"></script>
-</body> 
+</body>
 
 </html>
 @code {

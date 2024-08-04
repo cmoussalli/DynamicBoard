@@ -9,7 +9,11 @@
   <ItemGroup>
 	<PackageReference Include="bootstrap" Version="5.3.3" />
 	<PackageReference Include="CMouss.IdentityFramework" Version="1.0.21" />
+	<PackageReference Include="CMouss.IdentityFramework.API.Serving" Version="1.0.21" />
 	<PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter" Version="8.0.1" />
+	<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.6" />
+	<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.6" />
+	<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.6" />
 	<PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.*-* " />
     <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.*-* " />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.0" />

@@ -1,0 +1,173 @@
+﻿@page "/"
+@layout Layout.EmptyLayout
+
+@using CMouss.IdentityFramework
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject ProtectedLocalStorage BrowserStorage
+@inject NavigationManager NavManager
+
+<PageTitle>Login</PageTitle>
+<div class="container">
+    <div class="col-md-6 offset-md-3 mt-5">
+        <div class="card">
+            <h4 class="card-header">Login</h4>
+            <div class="card-body">
+                <form>
+                    <div class="mt-3">
+                        <FluentTextField Appearance="FluentInputAppearance.Filled"
+                                         Label="User Name" @bind-Value="userName" Style="margin-top: 10px; width:100%" />
+
+                    </div>
+                    <div class="mt-3">
+                        <FluentTextField TextFieldType="TextFieldType.Password" Appearance="FluentInputAppearance.Filled"
+                                         Label="Password" @bind-Value="password" Style="margin-top: 10px; width:100%" />
+
+                    </div>
+                    <div class="row mt-4">
+                        <div class="col-6">
+                            <FluentStack HorizontalAlignment="HorizontalAlignment.Left">
+                                <FluentButton @onclick="@(EventCallback.Factory.Create(this, UserLogin))" IconStart="@(new Icons.Regular.Size16.ArrowClockwise())"
+                                              Appearance="Appearance.Accent">Login</FluentButton>
+                            </FluentStack>                           
+                        </div>
+                        <div class="col-6">
+                            <FluentStack HorizontalAlignment="HorizontalAlignment.Right">
+                                <FluentButton @onclick="@(EventCallback.Factory.Create(this, SignIn))" IconStart="@(new Icons.Regular.Size16.PersonAdd())"
+                                              Appearance="Appearance.Outline">Create Account</FluentButton>
+                            </FluentStack>
+                        </div>                      
+                    </div>                    
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="mt-3">
+                            <FluentLabel Color="Color.Error">
+                                @errorMessage
+                            </FluentLabel>
+                        </div>
+                    }                    
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {    
+    string userName;
+    string password;
+    string errorMessage;
+
+    private async Task UserLogin()
+    {
+        if (Validate())
+        {
+            AuthResult authResult = IDFManager.AuthService.AuthUserLogin(userName, password);
+            if (authResult.SecurityValidationResult == SecurityValidationResult.Ok)
+            {
+                UserToken userToken = authResult.UserToken;
+                if (userToken != null)
+                {
+                    if (!String.IsNullOrEmpty(userToken.Token))
+                    {
+                        if (userToken.User != null)
+                        {
+                            if (userToken.User.Roles is not null)
+                            {
+                                if (userToken.User.Roles.Count > 0)
+                                {
+                                    bool containsAdminstratorRole = userToken.User.Roles.Any(item => item.Title.ToLower().Trim() == "administrators");
+                                    if (containsAdminstratorRole)
+                                    {                                        
+                                        await BrowserStorage.DeleteAsync("token");
+                                        await BrowserStorage.SetAsync("token", userToken.Token);
+                                        NavManager.NavigateTo(@"/Home");
+                                    }
+                                    else
+                                    {
+                                        await InvokeAsync(async () =>
+                                         {
+                                             errorMessage = "Permission denied";
+                                             StateHasChanged();
+                                             await Task.Delay(2_000);
+                                             errorMessage = "";
+                                             StateHasChanged();
+                                         });
+                                    }
+                                }
+                                else
+                                {
+                                    await InvokeAsync(async () =>
+                                    {
+                                        errorMessage = "Permission denied";
+                                        StateHasChanged();
+                                        await Task.Delay(3_000);
+                                        errorMessage = "";
+                                        StateHasChanged();
+                                    });
+                                }
+                            }
+                            else
+                            {
+                                await InvokeAsync(async () =>
+                                {
+                                    errorMessage = "Permission denied";
+                                    StateHasChanged();
+                                    await Task.Delay(3_000);
+                                    errorMessage = "";
+                                    StateHasChanged();
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                await InvokeAsync(async () =>
+                {
+                    errorMessage = "Incorrect UserName or Password";
+                    StateHasChanged();
+                    await Task.Delay(2_000);
+                    errorMessage = "";
+                    StateHasChanged();
+                });
+            }
+        }
+    }
+
+    private bool Validate()
+    {
+        bool isValid = true;
+        if (string.IsNullOrEmpty(userName))
+        {
+            isValid = false;
+            InvokeAsync(async () =>
+            {
+                errorMessage = "Enter User Name";
+                StateHasChanged();
+                await Task.Delay(2_000);
+                errorMessage = "";
+                StateHasChanged();
+            });
+        }
+        else if (string.IsNullOrEmpty(password))
+        {
+            isValid = false;
+            InvokeAsync(async () =>
+            {
+                errorMessage = "Enter Password";
+                StateHasChanged();
+                await Task.Delay(2_000);
+                errorMessage = "";
+                StateHasChanged();
+            });
+        }
+        return isValid;
+    }
+
+    private async Task SignIn()
+    {
+        NavManager.NavigateTo(@"/signIn");
+    }
+}
+

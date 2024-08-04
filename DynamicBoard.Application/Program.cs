@@ -1,11 +1,13 @@
+using CMouss.IdentityFramework;
 using DynamicBoard.Application;
 using DynamicBoard.Application.Components;
 using DynamicBoard.Application.DomainServices;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.FluentUI.AspNetCore.Components;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddRazorPages();
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
@@ -13,12 +15,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddFluentUIComponents();
 
 builder.Services.AddControllersWithViews();
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
 
-builder.Services.AddFluentUIComponents();
-
-builder.Services.AddRazorPages();
 // temporarly commented builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 
 
@@ -34,18 +31,23 @@ if (System.IO.File.Exists(@"C:\production.inf"))
 
 Storage.DBConnectionString = Connectionstring;
 
+IDFManager.Configure(new IDFManagerConfig
+{
+
+    DatabaseType = DatabaseType.MSSQL,
+    DBConnectionString = Storage.DBConnectionString,
+    DefaultListPageSize = 25,
+    DBLifeCycle = DBLifeCycle.Both,
+    IsActiveByDefault = true,
+    IsLockedByDefault = false,
+    DefaultTokenLifeTime = new LifeTime(30, 0, 0)
+});
+
 var encryptedKeySection = configuration.GetSection("EncryptedKeySection");
 var encryptedKey = encryptedKeySection["EncryptedKey"];
 Storage.EncryptionKey = encryptedKey;
 
 var app = builder.Build();
-
-
-
-
-app.UseHttpsRedirection();
-
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
@@ -54,14 +56,16 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
+app.UseRouting();
+app.UseAuthorization();
+app.MapRazorPages();
 app.UseAntiforgery();
 
-app.MapRazorComponents<App>()
+app.MapRazorComponents<DynamicBoard.Application.Components.App>()
     .AddInteractiveServerRenderMode();
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
 
+app.MapControllerRoute(
+name: "default",
+    pattern: "{controller=Login}/{action=Index}/{id?}");
 app.Run();

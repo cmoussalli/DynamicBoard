@@ -1,17 +1,17 @@
-﻿@rendermode InteractiveServer
+﻿@using DynamicBoard.Application.Model
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject ProtectedLocalStorage BrowserStorage
+@inject NavigationManager NavManager
 
 <div class="navmenu">
     <input type="checkbox" title="Menu expand/collapse toggle" id="navmenu-toggle" class="navmenu-icon" />
     <label for="navmenu-toggle" class="navmenu-icon"><FluentIcon Value="@(new Icons.Regular.Size20.Navigation())" Color="Color.Fill" /></label>
     <nav class="sitenav" aria-labelledby="main-menu" onclick="document.getElementById('navmenu-toggle').click();">
         <FluentNavMenu Id="main-menu" Collapsible="true" Width="250" Title="Navigation menu" @bind-Expanded="expanded">
-            <FluentNavLink Href="/" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size20.Home())" IconColor="Color.Accent">Home</FluentNavLink>
+            <FluentNavLink Href="/home" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size20.Home())" IconColor="Color.Accent">Home</FluentNavLink>
             <FluentNavLink Href="Dashboards" Icon="@(new Icons.Regular.Size20.Board())" IconColor="Color.Accent">Dashboards</FluentNavLink>
             <FluentNavLink Href="Charts" Icon="@(new Icons.Regular.Size20.ChartMultiple())" IconColor="Color.Accent">Charts</FluentNavLink>
-@*             <FluentNavLink Href="Users" Icon="@(new Icons.Regular.Size20.Person())" IconColor="Color.Accent">Users</FluentNavLink>
-            <FluentNavLink Href="TestPage" Icon="@(new Icons.Regular.Size20.TextEditStyle())" IconColor="Color.Accent">Test</FluentNavLink> *@
-            
-        
+            <FluentNavLink OnClick="LogoutUser" Icon="@(new Icons.Regular.Size20.SignOut())" IconColor="Color.Accent">Sign Out</FluentNavLink>
         </FluentNavMenu>
     </nav>
 </div>
@@ -19,5 +19,14 @@
 @code {
     private bool expanded = true;
 
+    public void LogoutUser()
+    {
+        BrowserStorage.DeleteAsync("token");
+        StateHasChanged();
+        NavManager.NavigateTo("/");
+    }
+
+
 }
+
 
