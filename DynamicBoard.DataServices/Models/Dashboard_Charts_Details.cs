@@ -27,6 +27,7 @@ namespace DynamicBoard.DataServices
 
         public int SortID { get; set; }
         public int SizeID { get; set; }
+        public string ChartSize { get; set; }
     }
 
 }

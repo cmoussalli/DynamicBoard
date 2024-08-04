@@ -6,29 +6,41 @@ else
 {
     @if (!string.IsNullOrEmpty(url))
     {
-        <iframe src="@url" allowfullscreen style=" position: center;border: 0;width:2200px;height:800px;"></iframe>
+        <iframe src="@url" style="width:100%;border:0;display:none;" id="iframedashbaord"></iframe>
     }
 }
+<script type="text/javascript">
+    window.addEventListener('message', function (e) {
+        var $iframe = document.getElementById('iframedashbaord');
+        var eventName = e.data[0];
+        var data = e.data[1];
+        switch (eventName) {
+            case 'setHeight':
+                $iframe.height = data;
+                $iframe.style = "width:100%;border:0;display:block;";
+                break;
+        }
+    }, false);
 
+</script>
 @code {
-    [Parameter] public DashboardData dashboardData { get; set; } = new();
-    [Parameter] public string DashboardId { get; set; } = string.Empty;
-    [Parameter] public bool IsAllowRefresh { get; set; }
-    [Parameter] public bool IsAllowPrint { get; set; }
-    [Parameter] public bool AutoLoad { get; set; } = true;
-    [Parameter] public int Language { get; set; } = 0;
+        [Parameter] public DashboardData dashboardData { get; set; } = new();
+        [Parameter] public string DashboardId { get; set; } = string.Empty;
+        [Parameter] public bool IsAllowRefresh { get; set; }
+        [Parameter] public bool IsAllowPrint { get; set; }
+        [Parameter] public bool AutoLoad { get; set; } = true;
+        [Parameter] public int Language { get; set; } = 0;
 
-    string url = "";
-    bool isError = false;
-    string errorMessage;
-    string queryStringParameters = "";
-    string parameters = "";
-    string values = "";
+        string url = "";
+        bool isError = false;
+        string errorMessage;
+        string queryStringParameters = "";
+        string parameters = "";
+        string values = "";
     private string dashboardHTML { get; set; } = string.Empty;
     private bool isLoading = false;
     HttpClient httpClient = new HttpClient();
     private bool isIframeLoaded;
-
     protected override async Task OnInitializedAsync()
     {
         // await LoadIframe();
@@ -40,19 +52,15 @@ else
 
     protected override async Task OnParametersSetAsync()
     {
-
         if (AutoLoad)
         {
             await LoadIframe();
         }
-
     }
 
     public async Task Refersh()
     {
-
         await LoadIframe();
-
     }
 
     public async Task LoadIframe()
@@ -98,6 +106,7 @@ else
 
                 }
             }
+
             queryStringParameters = "dashboardID="+DashboardId+"&language="+Language+"&parameters=["+parameters+"]";
             EncryptionHelper.encryptionKey = Storage.EncryptionKey;
             var encryptedData = EncryptionHelper.Encrypt(queryStringParameters);

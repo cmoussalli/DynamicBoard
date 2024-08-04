@@ -371,9 +371,12 @@ else
     public async Task PopulateSQLScriptDataSet(long chartId,long chartTypeID)
     {
         chartScriptTemplates = await dynamicBoardChartServices.GetChartScriptTemplateByChartTypeIDAsync(chartTypeID);
-        chartDatasets = await commonServices.GetChartDatasets(chartId, chartScriptTemplates.SQLScriptTemplate);
-        IQCharts_ChartDataset = chartDatasets.AsQueryable();
-        StateHasChanged();
+        if (chartScriptTemplates != null)
+        {
+            chartDatasets = await commonServices.GetChartDatasets(chartId, chartScriptTemplates?.SQLScriptTemplate);
+            IQCharts_ChartDataset = chartDatasets.AsQueryable();
+            StateHasChanged();
+        }
     }
 
     public string SelectedChartTypeOption

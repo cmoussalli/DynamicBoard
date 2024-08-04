@@ -41,7 +41,6 @@
             // Show loader initially
 
             var canvasChartType = '@Model.ChartType';
-            debugger;
             if (canvasChartType == "Label") {
                 LoadLabel();
             }
@@ -54,7 +53,6 @@
     });
 
     function LoadLabel() {
-        debugger;
         document.getElementById("Label_@Model.ChartID").innerHTML = @Model.LabelValue;
         var div = document.getElementById("div_@Model.ChartID");
         div.style.display = 'block';
@@ -62,7 +60,6 @@
 
     }
     function LoadChart() {
-        debugger;
         var RefershTime = '@Model.RefershTime';
         var canvasChartType = '@Model.ChartType';
         var canvasXaxis_labels = @Html.Raw(string.IsNullOrEmpty(Model?.JsonXaxis_labels) ? "null" : Model?.JsonXaxis_labels);
@@ -166,7 +163,6 @@
 
     }
     function LoadChartV2() {
-        debugger;
         var RefershTime = '@Model.RefershTime';
         var canvasChartType = '@Model.ChartType';
         var canvasXaxis_labels = @Html.Raw(string.IsNullOrEmpty(Model?.JsonXaxis_labels) ? "null" : Model?.JsonXaxis_labels);
@@ -268,7 +264,6 @@
 
 
     function LoadChartOLD() {
-        debugger;
         var RefershTime = '@Model.RefershTime';
         var canvasChartType = '@Model.ChartType';
         var canvasXaxis_labels = @Html.Raw(string.IsNullOrEmpty(Model?.JsonXaxis_labels) ? "null" : Model?.JsonXaxis_labels);
@@ -366,7 +361,6 @@
 
     }
     function printElement(elementId) {
-        debugger;
         var element = document.getElementById(elementId);
         var canvas = element.querySelector('canvas');
         var printContents = element.innerHTML;

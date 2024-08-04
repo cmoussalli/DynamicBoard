@@ -17,7 +17,7 @@ else
                 <PropertyColumn Title="Chart Title" Property="@(c => c != null && !string.IsNullOrEmpty(c.ChartTitleEn) ? c.ChartTitleEn : "N/A")" Sortable="true" Align=Align.Start />
                 <PropertyColumn Title="Chart Type" Property="@(c => c != null && !string.IsNullOrEmpty(c.ChartTypeEn) ? c.ChartTypeEn : "N/A")" Sortable="true" Align=Align.Start />
                 <PropertyColumn Title="Refresh Time" Property="@(c => c!.RefershTime)" Sortable="true" Align=Align.Start />
-                <PropertyColumn Title="Data Script" Property="@(c => c != null && !string.IsNullOrEmpty(c.DataScript) ? c.DataScript : "N/A")" Sortable="true" Align=Align.Start />
+                <PropertyColumn Title="Chart Size" Property="@(c => c != null && !string.IsNullOrEmpty(c.ChartSize) ? c.ChartSize : "N/A")" Sortable="true" Align=Align.Start />
 
                 <TemplateColumn Align="@Align.End" >
                     <FluentButton Appearance="Appearance.Outline" OnClick="()=>ConformationForDelete( Convert.ToInt32(context.DashboardID),context.ChartID)"

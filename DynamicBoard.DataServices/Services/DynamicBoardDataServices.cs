@@ -96,7 +96,7 @@ namespace DynamicBoard.DataServices.Services
                 return isDeleted;
             }
         }
-        public async Task<long> DashboardAddEditAsync(long id, string titleEn, string titleAr, string userId, bool isActive, bool isDeleted,bool hideChartButtons)
+        public async Task<long> DashboardAddEditAsync(long id, string titleEn, string titleAr, string userId, bool isActive, bool isDeleted,bool hideChartButtons, int chartHeight)
         {
             SqlConnection conn = new SqlConnection(connStr);
             try
@@ -111,6 +111,7 @@ namespace DynamicBoard.DataServices.Services
                     command.Parameters.AddWithValue("@IsDeleted", isDeleted);
                     command.Parameters.AddWithValue("@UserId", userId);
                     command.Parameters.AddWithValue("@HideChartButtons", hideChartButtons);
+                    command.Parameters.AddWithValue("@ChartHeight", chartHeight);
 
                     var returnIdParameter = new SqlParameter
                     {

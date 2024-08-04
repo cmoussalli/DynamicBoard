@@ -92,14 +92,14 @@ namespace DynamicBoard.Application.Controllers
 
             if (lnk_Dashboards_Charts.Any())
             {
-                List<RenderChart> renderCharts = await GenerateRenderChartData(lnk_Dashboards_Charts, chartID, dashboardID, language, parameters,dashboard.HideChartButtons);
+                List<RenderChart> renderCharts = await GenerateRenderChartData(lnk_Dashboards_Charts, chartID, dashboardID, language, parameters,dashboard.HideChartButtons, dashboard.ChartHeight);
                 string dashboardTitle = dashboard.TitleEn;
                 if (language == 1)
                 {
                     dashboardTitle = dashboard.TitleAr;
                 }
                 
-                return await DashboardView(renderCharts, dashboardTitle, dashboardID, language, parameters,dashboard.HideChartButtons);
+                return await DashboardView(renderCharts, dashboardTitle, dashboardID, language, parameters,dashboard.HideChartButtons, dashboard.ChartHeight);
             }
             else
             {
@@ -140,13 +140,13 @@ namespace DynamicBoard.Application.Controllers
             
             if(lnk_Dashboards_Charts.Any())
             {
-                List<RenderChart> renderCharts = await GenerateRenderChartData(lnk_Dashboards_Charts, chartID, dashboardID, language,parameters, dashboard.HideChartButtons);
+                List<RenderChart> renderCharts = await GenerateRenderChartData(lnk_Dashboards_Charts, chartID, dashboardID, language,parameters, dashboard.HideChartButtons, dashboard.ChartHeight);
                 string dashboardTitle = dashboard.TitleEn;
                 if (language == 1)
                 {
                     dashboardTitle = dashboard.TitleAr;
                 }
-                return await DashboardView(renderCharts, dashboardTitle, dashboardID, language,parameters, dashboard.HideChartButtons);
+                return await DashboardView(renderCharts, dashboardTitle, dashboardID, language,parameters, dashboard.HideChartButtons, dashboard.ChartHeight);
             }
             else
             {
@@ -155,7 +155,7 @@ namespace DynamicBoard.Application.Controllers
 
         }
 
-        private async Task<List<RenderChart>> GenerateRenderChartData(List<Lnk_Dashboards_Charts_Size_Extended> lnk_Dashboards_Charts,long chartID,int dashboardID,int language,string parameters,bool hideChartButtons)
+        private async Task<List<RenderChart>> GenerateRenderChartData(List<Lnk_Dashboards_Charts_Size_Extended> lnk_Dashboards_Charts,long chartID,int dashboardID,int language,string parameters,bool hideChartButtons,int chartHeight)
         {
             string url = "";
             var renderChartData = new RenderChart();
@@ -179,14 +179,15 @@ namespace DynamicBoard.Application.Controllers
                     ChartCSS=Chart.Css,
                     RefershTime= extendCharts[0].RefershTime,
                     HideChartButtons=hideChartButtons,
-                    ChartCSSTitle=Chart.ChartCSSTitle
+                    ChartCSSTitle=Chart.ChartCSSTitle,
+                    ChartHeight= chartHeight
                 };
                 renderCharts.Add(renderChart);
             }
             return renderCharts;
         }
 
-        public async Task<IActionResult> GetChartPartialView(long chartID,int dashboardID, int language,string parameters,bool hideChartButtons)
+        public async Task<IActionResult> GetChartPartialView(long chartID,int dashboardID, int language,string parameters,bool hideChartButtons,int chartHeight)
         {
             // var model = new MyModel { SomeProperty = "Updated Content" };
 
@@ -197,7 +198,7 @@ namespace DynamicBoard.Application.Controllers
             }
 
             RenderChart renderChart = new RenderChart();
-            List<RenderChart> renderCharts = await GenerateRenderChartData(lnk_Dashboards_Charts, chartID, dashboardID, language, parameters,hideChartButtons);
+            List<RenderChart> renderCharts = await GenerateRenderChartData(lnk_Dashboards_Charts, chartID, dashboardID, language, parameters,hideChartButtons, chartHeight);
             RenderChartExtended renderChartExtended = await ProcessCharts(renderCharts, parameters);
             renderChartExtended.DashboardID=dashboardID;
            
@@ -208,7 +209,7 @@ namespace DynamicBoard.Application.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> DashboardView(List<RenderChart> renderCharts,string dashboardtitle,int dashboardID,int language,string parameters="",bool hideChartButtons=false)
+        public async Task<IActionResult> DashboardView(List<RenderChart> renderCharts,string dashboardtitle,int dashboardID,int language,string parameters="",bool hideChartButtons=false,int chartHeight=0)
         {
             
             RenderChartExtended renderChartExtended = await ProcessCharts(renderCharts,parameters);
@@ -217,7 +218,7 @@ namespace DynamicBoard.Application.Controllers
             renderChartExtended.Language = language;
             renderChartExtended.Parameters = parameters;
             renderChartExtended.HideChartButtons = hideChartButtons;
-         
+            renderChartExtended.ChartHeight = chartHeight;
 
             if (renderChartExtended != null)
             {
@@ -406,6 +407,7 @@ namespace DynamicBoard.Application.Controllers
                         renderChart.RefershTime = extendCharts[0].RefershTime;
                         renderChart.HideChartButtons = chartItem.HideChartButtons;
                         renderChart.ChartCSSTitle=chartItem.ChartCSSTitle;
+                        renderChart.ChartHeight = chartItem.ChartHeight;
                         renderChartExtended.RenderCharts.Add(renderChart);
                     }
                     else

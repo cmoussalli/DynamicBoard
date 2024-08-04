@@ -19,6 +19,7 @@
 <input type="hidden" id="language" value="@Model.Language" />
 <input type="hidden" id="parameters" value="@Model.Parameters" />
 <input type="hidden" id="hideChartButtons" value="@Model.HideChartButtons.ToString()" />
+<input type="hidden" id="chartHeight" value="@Model.ChartHeight" />
 <h1 style="margin-bottom: 40px;">@Model.DashboardTitle</h1>
 
 
@@ -55,7 +56,7 @@
         if (currentRowWidth == 0 && !rowAlreadyAdded)
         {
             // Open a new row if it's the first column
-           @Html.Raw("<div class='row'>")
+            @Html.Raw("<div class='row'> ")
         }
         <div id="partialViewContainer_@item.ChartID" class="col @item.ChartCSS d-flex justify-content-center" style="padding-left:40px;padding-right:40px;">
           @Html.Partial("_ChartPartial", item)
@@ -85,7 +86,21 @@
     window.addEventListener("DOMContentLoaded", (event) => {
                     setLanguage(document.getElementById("language").value);
                     initializeCharts();
-            });
+
+        setTimeout(function () {
+            var height = document.getElementsByTagName("html")[0].scrollHeight;
+            window.parent.postMessage(["setHeight", height], "*");
+        }, 500);
+
+
+    });
+
+    window.onresize = function (event) {
+        setTimeout(function () {
+            var height = document.getElementsByTagName("html")[0].scrollHeight;
+            window.parent.postMessage(["setHeight", height], "*");
+        }, 500);
+    };
 
     function initializeCharts() {
 
@@ -165,11 +180,12 @@
 
     function refreshChart(chartID, dashboardID, refreshTime, chartType, JsonXaxis, jsonGraphConfigurations, jsonChartTitle, language, parameters) {
         var hideChartButtons = document.getElementById("hideChartButtons").value;
+        var chartHeight = document.getElementById("chartHeight").value;
         if (chartType == 'Label') {
             $.ajax({
                 url: '@Url.Action("GetChartPartialView", "Dashboard")',
                 type: 'GET',
-                data: { chartID: chartID, dashboardID: dashboardID, language: language, parameters: parameters, hideChartButtons: hideChartButtons },
+                data: { chartID: chartID, dashboardID: dashboardID, language: language, parameters: parameters, hideChartButtons: hideChartButtons, chartHeight: chartHeight },
                 success: function (result) {
                     $('#partialViewContainer_' + chartID).html(result);
                     //console.log(result);
@@ -187,7 +203,7 @@
             $.ajax({
                 url: '@Url.Action("GetChartPartialView", "Dashboard")',
                 type: 'GET',
-                data: { chartID: chartID, dashboardID: dashboardID, language: language, parameters: parameters },
+                data: { chartID: chartID, dashboardID: dashboardID, language: language, parameters: parameters, hideChartButtons: hideChartButtons, chartHeight: chartHeight },
                 success: function (result) {
                     $('#partialViewContainer_' + chartID).html(result);
                     //console.log(result);

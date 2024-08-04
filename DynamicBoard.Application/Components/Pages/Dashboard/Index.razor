@@ -64,7 +64,7 @@
                             @if (DashboardID != 0)
                             {
                                 <ChartDashboardRenderParameters @ref="@chartDashboardRenderParameters" DashboardID="@DashboardID" OnResponse="@GetUrlFromPreview"></ChartDashboardRenderParameters>
-                                <iframe id="ChartFrame" src="@url" allowfullscreen style=" position: center; width:100%;height:100%;    border: 0;    overflow: hidden;"></iframe>
+                                <iframe id="ChartFrame" src="@url" allowfullscreen seamless="seamless" allowTransparency="true" style="position:center; width:100%;height:100%;border:0;overflow:hidden;"></iframe>
                             }
                             else
                             {
@@ -166,6 +166,7 @@
                     dashboardToAdd.TitleEn = dashboard.TitleEn;
                     dashboardToAdd.CreatedBy = dashboard.CreatedBy;
                     dashboardToAdd.HideChartButtons = dashboard.HideChartButtons;
+                    dashboardToAdd.ChartHeight = dashboard.ChartHeight;
                     actionTitle = "Update";
                     if (dashboardListView is not null)
                     {
@@ -181,6 +182,7 @@
                         dashboardToAdd.TitleEn = dashboard.TitleEn;
                         dashboardToAdd.CreatedBy = dashboard.CreatedBy;
                         dashboardToAdd.HideChartButtons = dashboard.HideChartButtons;
+                        dashboardToAdd.ChartHeight = dashboard.ChartHeight;
                         await dashboardAdd.AddValuesToForm(dashboardToAdd);
                     }
 

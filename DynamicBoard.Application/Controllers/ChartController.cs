@@ -68,47 +68,56 @@ namespace DynamicBoard.Application.Controllers
         public async Task<IActionResult> ChartTemplateView(int chartTypeID,long chartID)
         {
             RenderChart renderChart = new RenderChart();
+            List<ChartDataset> chartDatasets = new();
             renderChart.ChartID = chartID;
             renderChart.IsAllowPrint = false;
             renderChart.IsAllowRefresh = false;
             ChartScriptTemplates chartScriptTemplates = await dynamicBoardChartServices.GetChartScriptTemplateByChartTypeIDAsync(chartTypeID);
-            List<ChartDataset> chartDatasets = await dynamicBoardCommonServices.GetChartDatasets(chartID, chartScriptTemplates.SQLScriptTemplate);
-            List<DynamicBoard.Application.Model.Dataset> datasets = new();
-            var result = EnumExtensions.ParseEnumValue<ChartType>(chartScriptTemplates.ID);
-
-            if (result.EnumValue.ToString() == "Label")
+            if (chartScriptTemplates != null)
             {
-                renderChart.ChartType = result.DisplayName;
-                renderChart.ChartID = chartID;
-                renderChart.json_graphConfigurations = "";
-                renderChart.JsonXaxis_labels = "";
-                renderChart.jsonchartTitle = Newtonsoft.Json.JsonConvert.SerializeObject(chartScriptTemplates.ChartTitle.Replace("\r\n", ""));
-                renderChart.LabelValue = chartDatasets.Select(a => a.Data).FirstOrDefault();
-                return View("ChartTemplateView", renderChart);
+                chartDatasets = await dynamicBoardCommonServices.GetChartDatasets(chartID, chartScriptTemplates.SQLScriptTemplate);
+
+                List<DynamicBoard.Application.Model.Dataset> datasets = new();
+                var result = EnumExtensions.ParseEnumValue<ChartType>(chartScriptTemplates.ID);
+
+                if (result.EnumValue.ToString() == "Label")
+                {
+                    renderChart.ChartType = result.DisplayName;
+                    renderChart.ChartID = chartID;
+                    renderChart.json_graphConfigurations = "";
+                    renderChart.JsonXaxis_labels = "";
+                    renderChart.jsonchartTitle = Newtonsoft.Json.JsonConvert.SerializeObject(chartScriptTemplates.ChartTitle.Replace("\r\n", ""));
+                    renderChart.LabelValue = chartDatasets.Select(a => a.Data).FirstOrDefault();
+                    return View("ChartTemplateView", renderChart);
+                }
+                else
+                {
+                    var DataArary = chartDatasets.Select(a => a.Data).ToArray();
+                    var DatasetLabels = chartDatasets.Select(a => a.Dataset_Label.Replace("\r\n", "")).ToArray();
+                    var TitleLabel = chartDatasets.Select(a => a.x_axis_labels).FirstOrDefault();
+                    DynamicBoard.Application.Model.Dataset dataset = new();
+
+                    dataset.label = chartScriptTemplates.ChartTitle;
+                    dataset.data = DataArary.ToList();
+                    datasets.Add(dataset);
+
+
+                    var jsongraphConfigurations = Newtonsoft.Json.JsonConvert.SerializeObject(datasets);
+                    var json_x_axis_labels = Newtonsoft.Json.JsonConvert.SerializeObject(DatasetLabels);
+                    var jsonchartTitle = chartScriptTemplates.ChartTitle;// Newtonsoft.Json.JsonConvert.SerializeObject(chartTitle.Replace("\r\n", ""));
+
+                    renderChart.ChartType = result.DisplayName;
+                    renderChart.ChartID = chartID;
+                    renderChart.json_graphConfigurations = jsongraphConfigurations;
+                    renderChart.JsonXaxis_labels = json_x_axis_labels.ToString();
+                    renderChart.jsonchartTitle = chartScriptTemplates.ChartTitle; ;
+
+                    return View("ChartTemplateView", renderChart);
+                }
             }
             else
             {
-                var DataArary = chartDatasets.Select(a => a.Data).ToArray();
-                var DatasetLabels = chartDatasets.Select(a => a.Dataset_Label.Replace("\r\n", "")).ToArray();
-                var TitleLabel = chartDatasets.Select(a => a.x_axis_labels).FirstOrDefault();
-                DynamicBoard.Application.Model.Dataset dataset = new();
-
-                dataset.label = chartScriptTemplates.ChartTitle;
-                dataset.data = DataArary.ToList();
-                datasets.Add(dataset);
-
-
-                var jsongraphConfigurations = Newtonsoft.Json.JsonConvert.SerializeObject(datasets);
-                var json_x_axis_labels = Newtonsoft.Json.JsonConvert.SerializeObject(DatasetLabels);
-                var jsonchartTitle = chartScriptTemplates.ChartTitle;// Newtonsoft.Json.JsonConvert.SerializeObject(chartTitle.Replace("\r\n", ""));
-
-                renderChart.ChartType = result.DisplayName;
-                renderChart.ChartID = chartID;
-                renderChart.json_graphConfigurations = jsongraphConfigurations;
-                renderChart.JsonXaxis_labels = json_x_axis_labels.ToString();
-                renderChart.jsonchartTitle = chartScriptTemplates.ChartTitle; ;
-
-                return View("ChartTemplateView", renderChart);
+                return PartialView("EmptyChart");
             }
         }
 

@@ -33,7 +33,7 @@
     }
     <img id="loader_@Model.ChartID" class="loader" src="~/images/Spinne.gif" />
 
-    <div id="div_@Model.ChartID" style=" display: flex;justify-content: center;align-items: center;">
+<div id="div_@Model.ChartID" style="display: flex;justify-content: center;align-items: center; @(Model.ChartType != "Label"? (Model.ChartHeight>300? "height:"+Model.ChartHeight+"px;":"height:300px;"):"")">
 
         @if (Model.ChartType != "Label")
         {

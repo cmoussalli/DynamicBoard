@@ -21,6 +21,7 @@ namespace DynamicBoard.DataServices
         public bool IsDeleted { get; set; }
         public string CreatedBy { get; set; } = "test user";
         public bool HideChartButtons { get; set; }
+        public int ChartHeight { get; set; }
     }
 
 }

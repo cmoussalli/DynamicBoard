@@ -20,6 +20,7 @@
         public int SortID { get; set; }
         public bool HideChartButtons { get; set; }
         public string ChartCSSTitle { get; set; }
+        public int ChartHeight { get; set; }
     }
 
     public class RenderChartExtended:RenderChart

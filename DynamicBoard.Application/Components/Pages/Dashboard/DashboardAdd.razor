@@ -41,6 +41,7 @@
 
     @if (Id > 0)
     {
+   
            <div class="row">
                 <div class="col-6">
                 <FluentRadioGroup @bind-Value=IsActive Label="Is Active">
@@ -54,6 +55,13 @@
 
                     </div>
                     </div>
+                         <div class="row">
+            <div class="col-6">
+                <FluentNumberField Appearance="FluentInputAppearance.Filled" Label="Chart Height" @bind-Value="Dashboard.ChartHeight" Style="margin-top: 10px ; width:100%">
+                </FluentNumberField>
+                </div>
+            <div class="col-6"></div>
+        </div>
     }
 
 
@@ -204,7 +212,7 @@
         ValueChanged?.Invoke(isActive);
     }
 
-        private void OnDismiss(DialogEventArgs args)
+    private void OnDismiss(DialogEventArgs args)
     {
         if (args is not null && args.Reason is not null && args.Reason == "dismiss")
         {
@@ -234,33 +242,6 @@
             if (Id > 0)
             {
                 Dashboard.IsActive = IsActive;
-
-                // Chart.RefershTime = 0;
-
-                // if (!string.IsNullOrEmpty(selectedDBOption))
-                // {
-                //     Chart.DBConnectionID = Convert.ToInt64(selectedDBOption);
-                // }
-                // else
-                // {
-                //     Chart.DBConnectionID = 0;
-                // }
-                // if (!string.IsNullOrEmpty(selectedChartTypeOption))
-                // {
-                //     Chart.ChartTypeID = Convert.ToInt64(selectedChartTypeOption);
-                // }
-                // else
-                // {
-                //     Chart.ChartTypeID = 0;
-                // }
-
-                // Chart.DataScript = script;
-
-                // if (!string.IsNullOrEmpty(selectedChartThemeOption))
-                // {
-                //     Chart.ChartTheme = Convert.ToInt64(selectedChartThemeOption);
-                // }
-
             }
             else
             {
@@ -270,7 +251,7 @@
             message = "";
             if (string.IsNullOrEmpty(validation()))
             {
-                var result = await dashboardServices.DashboardAddEditAsync(Dashboard.ID, Dashboard.TitleEn, Dashboard.TitleAr, Dashboard.CreatedBy, Dashboard.IsActive, Dashboard.IsDeleted,Dashboard.HideChartButtons);
+                var result = await dashboardServices.DashboardAddEditAsync(Dashboard.ID, Dashboard.TitleEn, Dashboard.TitleAr, Dashboard.CreatedBy, Dashboard.IsActive, Dashboard.IsDeleted,Dashboard.HideChartButtons,Dashboard.ChartHeight);
 
                 if (result > 0)
                 {
@@ -389,7 +370,7 @@
     }
 
     public bool showNorecordSection = false;
-        public async Task OnDeleteChart()
+    public async Task OnDeleteChart()
     {
         isLoading = true;
         StateHasChanged();
@@ -440,6 +421,7 @@
             Dashboard.TitleEn = dashboard.TitleEn;
             Dashboard.CreatedBy = dashboard.CreatedBy;
             Dashboard.HideChartButtons = dashboard.HideChartButtons;
+            Dashboard.ChartHeight = dashboard.ChartHeight;
             IsActive = dashboard.IsActive;
             //chartParameters = await commonServices.GetChartParametersByChartID(chart.ID);
 
