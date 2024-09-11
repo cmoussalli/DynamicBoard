@@ -80,7 +80,7 @@
             canvasChartType = "bar";
             Isstacked = true;
         }
-           if (canvasChartType == "Horizontal Bar Chart") {
+        if (canvasChartType == "Horizontal Bar Chart") {
             canvasChartType = "bar";
             indexAxis='y';
         }
@@ -103,6 +103,30 @@
         if (canvasChartType == "RadarChart") {
             canvasChartType = "radar";
         }
+        if (canvasChartType == "Progress Pie Chart") {
+            debugger
+            var chartDiv = document.getElementById('div_' + @Model.ChartID);
+            var progressDiv = document.getElementById('Progress-' + @Model.ChartID);
+            var select = (param) => {
+                return document.querySelector(param);
+            }
+            var $ppc = select('.progress-pie-chart');
+            var dynamicPercent = @Model.LabelValue;
+            $ppc.setAttribute('data-percent', dynamicPercent);
+            var percent = parseInt($ppc.getAttribute('data-percent')),
+                deg = 360 * percent / 100;
+            if (percent > 50) {
+                $ppc.classList.add('gt-50');
+            }
+            select('.ppc-progress-fill').style.transform = 'rotate(' + deg + 'deg)';
+            select('.ppc-percents span').innerHTML = (percent + '%');
+            setTimeout(function () {
+                chartDiv.style.display = "block";
+                progressDiv.style.display = "block";
+                loader.style.display = "none";
+            }, 2000);
+            return;
+        }
 
         var canvas = 'canvas_' + @Model.ChartID;
 
@@ -121,7 +145,7 @@
 
             },
             options: {
-                 responsive: true,
+                responsive: true,
                 plugins: {
                     legend: {
                         position: 'top',
@@ -131,24 +155,24 @@
                         display: true,
                         text: canvasjsonchartTitle
                     },
-                }, 
+                },
 
                 scales: {
                     x: {
-                         stacked: Isstacked,
+                        stacked: Isstacked,
                         // grid: {
                         //     display: gridDisplay
                         // }
                     },
                     y: {
-                          stacked: Isstacked,
+                        stacked: Isstacked,
                         // grid: {
-                        //     display: gridDisplay 
+                        //     display: gridDisplay
                         // }
                     }
                 },
-                 indexAxis: indexAxis
-               
+                indexAxis: indexAxis
+
             }
         });
 
@@ -264,6 +288,7 @@
 
 
     function LoadChartOLD() {
+        debugger
         var RefershTime = '@Model.RefershTime';
         var canvasChartType = '@Model.ChartType';
         var canvasXaxis_labels = @Html.Raw(string.IsNullOrEmpty(Model?.JsonXaxis_labels) ? "null" : Model?.JsonXaxis_labels);

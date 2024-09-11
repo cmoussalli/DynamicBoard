@@ -7,8 +7,89 @@
 @using Microsoft.JSInterop
 @model RenderChart
 @inject IJSRuntime JSRuntime
+<style>
+    .progress-pie-chart {
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background-color: #E5E5E5;
+        position: relative;
+        &.gt-50
 
+    {
+        background-color: #81CE97;
+    }
 
+    }
+
+    .ppc-progress {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        left: calc(50% - 100px);
+        top: calc(50% - 100px);
+        width: 200px;
+        height: 200px;
+        clip: rect(0, 200px, 200px, 100px);
+        .ppc-progress-fill
+
+    {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        left: calc(50% - 100px);
+        top: calc(50% - 100px);
+        width: 200px;
+        height: 200px;
+        clip: rect(0, 100px, 200px, 0);
+        background: #81CE97;
+        transform: rotate(60deg);
+    }
+
+    }
+
+    .gt-50 .ppc-progress {
+        clip: rect(0, 100px, 200px, 0);
+        .ppc-progress-fill
+
+    {
+        clip: rect(0, 200px, 200px, 100px);
+        background: #E5E5E5;
+    }
+
+    }
+
+    .ppc-percents {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        left: calc(50% - 173.91304px/2);
+        top: calc(50% - 173.91304px/2);
+        width: 173.91304px;
+        height: 173.91304px;
+        background: #fff;
+        text-align: center;
+        display: table;
+        span
+
+    {
+        display: block;
+        font-size: 2.6em;
+        font-weight: bold;
+        color: #81CE97;
+    }
+
+    }
+
+    .pcc-percents-wrapper {
+        display: table-cell;
+        vertical-align: middle;
+    }
+
+    .progress-pie-chart {
+        margin: 50px auto 0;
+    }
+</style>
 <div>
     @if (Model.IsAllowRefresh)
     {
@@ -23,11 +104,7 @@
     <img id="loader_@Model.ChartID" class="loader" src="~/images/Spinne.gif" />
 
     <div id="div_@Model.ChartID" style="justify-content:center;display:none;">
-        @if (Model.ChartType != "Label")
-        {
-            <canvas id="canvas_@Model.ChartID" width="405px" height="450px"> </canvas>
-        }
-        else
+        @if (Model.ChartType == "Label")
         {
             <div style="display: flex;justify-content:center;">
                 <h3 style="color:#1C459D">@Model.jsonchartTitle.Replace("\"", "")</h3>
@@ -35,6 +112,23 @@
             <div style="display: flex;justify-content:center;">
                 <h3 style="margin: auto;font-size: 35px;font-style: inherit;text-align: center;color:#C1A968" id="Label_@Model.ChartID"></h3>
             </div>
+        }
+        else if (Model.ChartType == "Progress Pie Chart")
+        {
+            <div id='Progress-@Model.ChartID' class='progress-pie-chart' data-percent='0'>
+                <div class='ppc-progress'>
+                    <div class='ppc-progress-fill'></div>
+                </div>
+                <div class='ppc-percents'>
+                    <div class='pcc-percents-wrapper'>
+                        <span>%</span>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <canvas id="canvas_@Model.ChartID" width="405px" height="450px"> </canvas>
         }
     </div>
 </div>
