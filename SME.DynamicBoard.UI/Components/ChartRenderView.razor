@@ -9,7 +9,7 @@ else
         @*         <iframe src="@url" style="width: 100%;height: 100%;"></iframe>
  *@
 
-        <iframe src="@url" allowfullscreen style=" position: center;    width: 405px;    height:450px;    border: 0;    overflow: hidden;"></iframe>
+        <iframe src="@url" allowfullscreen style=" position: center;    width: @(Width)px;    height:@(Height)px;    border: 0;    overflow: hidden;"></iframe>
     }
 
 }
@@ -22,6 +22,8 @@ else
     [Parameter] public bool IsAllowPrint { get; set; }
     [Parameter] public bool AutoLoad { get; set; } = true;
     [Parameter] public int Language { get; set; } = 0;
+    [Parameter] public int Height { get; set; } = 450;
+    [Parameter] public int Width { get; set; } = 405;
     string url = "";
     bool isError = false;
     string errorMessage;

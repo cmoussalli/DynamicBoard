@@ -125,7 +125,7 @@ else
                                     @if (IQCharts_ChartDataset is not null)
                                     {
                                         <div class="grid">
-                                            @if (@selectedChartTypeOption != null && @selectedChartTypeOption == "6")
+                                            @if (@selectedChartTypeOption != null && (@selectedChartTypeOption == "6" || SelectedChartTypeOption == "11"))
                                             {
                                                 <FluentDataGrid Id="Chartsgrid" Items=@IQCharts_ChartDataset TGridItem=ChartDataset>
                                                     <PropertyColumn Title="Data" Property="@(c => c!.Data)" Sortable="true" Align=Align.Start />

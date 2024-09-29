@@ -16,26 +16,28 @@ namespace DynamicBoard.DataServices.Models
     }
     public enum ChartType
     {
-        [Display(Name ="Line")]
-        Line=1,
+        [Display(Name = "Line")]
+        Line = 1,
         [Display(Name = "Bar")]
-        Bar =2,
+        Bar = 2,
         [Display(Name = "Pie")]
-        Pie =3,
+        Pie = 3,
         [Display(Name = "Stacked Bar")]
-        StackedBar =4,
+        StackedBar = 4,
         [Display(Name = "Column")]
-        Column =5,
+        Column = 5,
         [Display(Name = "Label")]
-        Label =6,
+        Label = 6,
         [Display(Name = "doughnut")]
-        Doughnut =7,
+        Doughnut = 7,
         [Display(Name = "polarArea")]
-        PolarArea =8,
+        PolarArea = 8,
         [Display(Name = "RadarChart")]
-        RadarChart =9,
+        RadarChart = 9,
         [Display(Name = "Horizontal Bar Chart")]
-        HorizontalBarChart =10
+        HorizontalBarChart = 10,
+        [Display(Name = "Progress Pie Chart")]
+        PieProgress = 11
     }
 
 

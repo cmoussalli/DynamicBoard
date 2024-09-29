@@ -73,6 +73,17 @@ namespace DynamicBoard.Application.DomainServices
                         renderChart.LabelValue = datasetResult.Select(a => a.Data).FirstOrDefault();
                         return renderChart;
                     }
+                    else if(chartType == "Progress Pie Chart")
+                    {
+                        renderChart.ChartType = chartType;
+                        renderChart.ChartID = chartID;
+                        renderChart.json_graphConfigurations = "";
+                        renderChart.JsonXaxis_labels = "";
+                        renderChart.ChartCSS = chartCSS;
+                        renderChart.jsonchartTitle = Newtonsoft.Json.JsonConvert.SerializeObject(chartTitle.Replace("\r\n", ""));
+                        renderChart.LabelValue = datasetResult.Select(a => a.Data).FirstOrDefault();
+                        return renderChart;
+                    }
 
                     var DataArary = datasetResult.Select(a => a.Data).ToArray();
                     var DatasetLabels = datasetResult.Select(a => a.Dataset_Label.Replace("\r\n", "")).ToArray();

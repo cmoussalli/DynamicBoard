@@ -80,7 +80,7 @@ namespace DynamicBoard.Application.Controllers
                 List<DynamicBoard.Application.Model.Dataset> datasets = new();
                 var result = EnumExtensions.ParseEnumValue<ChartType>(chartScriptTemplates.ID);
 
-                if (result.EnumValue.ToString() == "Label")
+                if (result.EnumValue.ToString() == "Label" || result.EnumValue.ToString()== "PieProgress")
                 {
                     renderChart.ChartType = result.DisplayName;
                     renderChart.ChartID = chartID;
