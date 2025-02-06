@@ -105,7 +105,6 @@
             canvasChartType = "radar";
         }
         if (canvasChartType == "Progress Pie Chart") {
-            debugger
             var chartDiv = document.getElementById('div_' + @Model.ChartID);
             var progressDiv = document.getElementById('Progress-' + @Model.ChartID);
             var percent = @Model.LabelValue / 100;
@@ -330,7 +329,6 @@
 
 
     function LoadChartOLD() {
-        debugger
         var RefershTime = '@Model.RefershTime';
         var canvasChartType = '@Model.ChartType';
         var canvasXaxis_labels = @Html.Raw(string.IsNullOrEmpty(Model?.JsonXaxis_labels) ? "null" : Model?.JsonXaxis_labels);

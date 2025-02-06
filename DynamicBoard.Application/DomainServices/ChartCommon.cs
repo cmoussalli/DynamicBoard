@@ -57,10 +57,10 @@ namespace DynamicBoard.Application.DomainServices
                     // renderChart.RefershTime = extendChart.RefershTime;
                 }
 
-                if (datasetResult != null)
+                if (datasetResult != null && datasetResult.Count > 0)
                 {
-                    if (datasetResult[0].Dataset_Label is null) { datasetResult[0].Dataset_Label = ""; }
-                    if (datasetResult[0].x_axis_labels is null) { datasetResult[0].x_axis_labels = ""; }
+                        if (datasetResult[0].Dataset_Label is null) { datasetResult[0].Dataset_Label = ""; }
+                        if (datasetResult[0].x_axis_labels is null) { datasetResult[0].x_axis_labels = ""; }
 
                     if (chartType == "Label")
                     {
@@ -136,8 +136,15 @@ namespace DynamicBoard.Application.DomainServices
                     renderChart.JsonXaxis_labels = json_x_axis_labels.ToString();
                     renderChart.jsonchartTitle = chartTitle;
                     renderChart.ChartCSS = chartCSS;
-
-
+                }
+                else
+                {
+                    renderChart.ChartType = chartType;
+                    renderChart.ChartID = chartID;
+                    renderChart.json_graphConfigurations = "";
+                    renderChart.JsonXaxis_labels = "";
+                    renderChart.jsonchartTitle = chartTitle;
+                    renderChart.ChartCSS = chartCSS;
                 }
             }
             catch (Exception ex)

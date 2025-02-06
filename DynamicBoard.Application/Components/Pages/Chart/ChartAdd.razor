@@ -304,7 +304,8 @@ else
     {
         OnUserListUpdated?.Invoke();
     }
-
+    private int devDBConnectionID = 4;
+    private int prodDBConnectionID = 1;
     protected override async Task OnInitializedAsync()
     {
         ValueChanged += HandleRadioValueChanged;
@@ -447,7 +448,6 @@ else
         //Task<List<ChartColorTheme>> GetChartColorTheme()
         chartColorThemes = await chartServices.GetChartColorTheme();
         StateHasChanged();
-
     }
 
 
@@ -473,11 +473,33 @@ else
 
                 if (!string.IsNullOrEmpty(selectedDBOption))
                 {
-                    Chart.DBConnectionID = Convert.ToInt64(selectedDBOption);
+                    if (selectedDBOption == "0")
+                    {
+                        if (System.IO.File.Exists(@"C:\production.inf"))
+                        {
+                            Chart.DBConnectionID = prodDBConnectionID;
+                        }
+                        else
+                        {
+                            Chart.DBConnectionID = devDBConnectionID;
+                        }
+                    }
+                    else
+                    {
+                        Chart.DBConnectionID = Convert.ToInt64(selectedDBOption);
+                    }
                 }
                 else
                 {
-                    Chart.DBConnectionID = 0;
+                    //if its production then set default db connection to 1
+                    if (System.IO.File.Exists(@"C:\production.inf"))
+                    {
+                        Chart.DBConnectionID = prodDBConnectionID;
+                    }
+                    else
+                    {
+                        Chart.DBConnectionID = devDBConnectionID;
+                    }
                 }
                 if (!string.IsNullOrEmpty(selectedChartTypeOption))
                 {
@@ -499,7 +521,15 @@ else
             else
             {
                 Chart.DataScript = " ";
-
+                //if its production then set default db connection to 1
+                if (System.IO.File.Exists(@"C:\production.inf"))
+                {
+                    Chart.DBConnectionID = prodDBConnectionID;
+                }
+                else
+                {
+                    Chart.DBConnectionID = devDBConnectionID;
+                }
             }
             // validation
             message = "";
