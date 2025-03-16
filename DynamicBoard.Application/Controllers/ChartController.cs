@@ -1,14 +1,9 @@
-﻿using DynamicBoard.Application.Components.Pages.Chart;
-using DynamicBoard.Application.DomainServices;
+﻿using DynamicBoard.Application.DomainServices;
 using DynamicBoard.Application.Model;
 using DynamicBoard.DataServices;
 using DynamicBoard.DataServices.Models;
-using Humanizer.Configuration;
 using Microsoft.AspNetCore.Mvc;
-using NuGet.Common;
-using System.Collections.Specialized;
 using System.Text.RegularExpressions;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace DynamicBoard.Application.Controllers
 {
@@ -65,7 +60,7 @@ namespace DynamicBoard.Application.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> ChartTemplateView(int chartTypeID,long chartID)
+        public async Task<IActionResult> ChartTemplateView(int chartTypeID, long chartID)
         {
             RenderChart renderChart = new RenderChart();
             List<ChartDataset> chartDatasets = new();
@@ -75,12 +70,22 @@ namespace DynamicBoard.Application.Controllers
             ChartScriptTemplates chartScriptTemplates = await dynamicBoardChartServices.GetChartScriptTemplateByChartTypeIDAsync(chartTypeID);
             if (chartScriptTemplates != null)
             {
-                chartDatasets = await dynamicBoardCommonServices.GetChartDatasets(chartID, chartScriptTemplates.SQLScriptTemplate);
 
-                List<DynamicBoard.Application.Model.Dataset> datasets = new();
+
+                List<Dataset> datasets = new();
                 var result = EnumExtensions.ParseEnumValue<ChartType>(chartScriptTemplates.ID);
+                //if (!result.EnumValue.ToString().Equals("DataGrid"))
+                //{
+                    chartDatasets = await dynamicBoardCommonServices.GetChartDatasets(chartID, chartScriptTemplates.SQLScriptTemplate);
+                //}
+                //else
+                //{
 
-                if (result.EnumValue.ToString() == "Label" || result.EnumValue.ToString()== "PieProgress")
+                //    chartDatasets = await db.GridDatasetExecute(chartID, chartScriptTemplates.SQLScriptTemplate);
+
+                //}
+
+                if (result.EnumValue.ToString() == "Label" || result.EnumValue.ToString() == "PieProgress")
                 {
                     renderChart.ChartType = result.DisplayName;
                     renderChart.ChartID = chartID;
@@ -90,12 +95,19 @@ namespace DynamicBoard.Application.Controllers
                     renderChart.LabelValue = chartDatasets.Select(a => a.Data).FirstOrDefault();
                     return View("ChartTemplateView", renderChart);
                 }
+                else if (result.EnumValue.ToString().Equals("DataGrid"))
+                {
+                    renderChart.ChartType = result.DisplayName;
+                    renderChart.ChartID = chartID;
+                    renderChart.jsonchartTitle = Newtonsoft.Json.JsonConvert.SerializeObject(chartScriptTemplates.ChartTitle.Replace("\r\n", ""));
+                    return View("ChartTemplateView", renderChart);
+                }
                 else
                 {
                     var DataArary = chartDatasets.Select(a => a.Data).ToArray();
                     var DatasetLabels = chartDatasets.Select(a => a.Dataset_Label.Replace("\r\n", "")).ToArray();
                     var TitleLabel = chartDatasets.Select(a => a.x_axis_labels).FirstOrDefault();
-                    DynamicBoard.Application.Model.Dataset dataset = new();
+                    Dataset dataset = new();
 
                     dataset.label = chartScriptTemplates.ChartTitle;
                     dataset.data = DataArary.ToList();
@@ -122,7 +134,7 @@ namespace DynamicBoard.Application.Controllers
         }
 
 
-            [HttpGet]
+        [HttpGet]
         public async Task<IActionResult> GetChartEncrypted(string data)
         {
             long chartId = 0;
@@ -412,9 +424,9 @@ namespace DynamicBoard.Application.Controllers
                                             }
                                             else
                                             {
-                                                query = query.Replace("[["+chartparms.Tag+"]]", replacePlaceholderParam);
+                                                query = query.Replace("[[" + chartparms.Tag + "]]", replacePlaceholderParam);
                                             }
-                                           
+
                                             modifiedQueryScript = query;
                                         }
                                         else
@@ -514,10 +526,12 @@ namespace DynamicBoard.Application.Controllers
                     {
                         title = extendCharts[0].TitleAr;
                     }
+
                     renderChart = await ChartCommon.ChartManipulation(extendDashboard, extendCharts[0].ChartTypes.TitleEn, title, extendCharts[0].ID, "", chartThemes, extendCharts[0], modifiedQueryScript);
                     renderChart.IsAllowRefresh = IsAllowRefresh;
                     renderChart.IsAllowPrint = IsAllowPrint;
                     return View("ChartView", renderChart);
+
                 }
                 else
                 {

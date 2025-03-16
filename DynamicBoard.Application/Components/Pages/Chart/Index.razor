@@ -71,8 +71,15 @@
                             @if (ChartId != 0)
                             {
                                 <ChartRenderParameters @ref="@chartRenderParameters" ChartID="@ChartId" OnResponse="@GetUrlFromPreview"></ChartRenderParameters>
-
-                                <iframe id="ChartFrame" src="@url" allowfullscreen style="position:center;width:405px;height:550px;border: 0;overflow: hidden;"></iframe>
+                                @if (chart.ChartTypeID==12)
+                                {
+                                    <iframe id="ChartFrame" src="@url" allowfullscreen style="position:center;width:100%;height:550px;border: 0;overflow: hidden;"></iframe>
+                                }
+                                else
+                                {
+                                    <iframe id="ChartFrame" src="@url" allowfullscreen style="position:center;width:405px;height:550px;border: 0;overflow: hidden;"></iframe>
+                                }
+                                
                             }
                             else
                             {

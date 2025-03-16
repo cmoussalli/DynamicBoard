@@ -173,4 +173,14 @@ code {
         height: 20px;
         border: none;
     }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        border: 2px solid black; /* Increased border width for visibility */
+        padding: 8px;
+        text-align: center;
+    }
 }

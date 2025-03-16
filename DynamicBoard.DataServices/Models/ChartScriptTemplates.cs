@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace DynamicBoard.DataServices.Models
 {
@@ -37,7 +32,10 @@ namespace DynamicBoard.DataServices.Models
         [Display(Name = "Horizontal Bar Chart")]
         HorizontalBarChart = 10,
         [Display(Name = "Progress Pie Chart")]
-        PieProgress = 11
+        PieProgress = 11,
+        [Display(Name = "Data Grid")]
+        DataGrid = 12
+
     }
 
 

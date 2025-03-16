@@ -1,6 +1,6 @@
 ﻿@{
-    ViewData["Title"] = "Dashboard View";
-    Layout = "~/Views/Shared/_LayoutDashboard.cshtml";
+	ViewData["Title"] = "Dashboard View";
+	Layout = "~/Views/Shared/_LayoutDashboard.cshtml";
 }
 
 @model RenderChartExtended
@@ -12,8 +12,8 @@
 @using System.Web
 @inject IJSRuntime JSRuntime
 @{
-    int currentRowWidth = 0;
-    bool rowAlreadyAdded = false;
+	int currentRowWidth = 0;
+	bool rowAlreadyAdded = false;
 }
 <input type="hidden" id="dashboardid" value="@Model.DashboardID" />
 <input type="hidden" id="language" value="@Model.Language" />
@@ -24,311 +24,312 @@
 
 
 <div class="container-fluid h-100">
-    @foreach (RenderChart item in Model.RenderCharts.OrderBy(o=>o.SortID).ToList())
-    {
-        int columnSize = 0; // Get the column size for the current item
-        @if(item.ChartCSSTitle=="Full")
-        {
-            columnSize = 12;
-        }
-        else if(item.ChartCSSTitle=="Half")
-        {
-            columnSize = 6;
-        }
-        else if(item.ChartCSSTitle=="Third")
-        {
-            columnSize = 4;
-        }
-        else if(item.ChartCSSTitle=="Quarter")
-        {
-            columnSize = 3;
-        }
-         
-        if (currentRowWidth + columnSize > 12)
-        {
-           // Close the previous row and start a new row
-            @Html.Raw("</div> </br></br>") <!-- Close the row -->
-            @Html.Raw("<div class='row'>")
-            currentRowWidth = 0; // Reset the row width
-            rowAlreadyAdded = true;
-        }
+	@foreach (RenderChart item in Model.RenderCharts.OrderBy(o => o.SortID).ToList())
+	{
+		int columnSize = 0; // Get the column size for the current item
+		@if (item.ChartCSSTitle == "Full")
+		{
+			columnSize = 12;
+		}
+		else if (item.ChartCSSTitle == "Half")
+		{
+			columnSize = 6;
+		}
+		else if (item.ChartCSSTitle == "Third")
+		{
+			columnSize = 4;
+		}
+		else if (item.ChartCSSTitle == "Quarter")
+		{
+			columnSize = 3;
+		}
 
-        if (currentRowWidth == 0 && !rowAlreadyAdded)
-        {
-            // Open a new row if it's the first column
-            @Html.Raw("<div class='row'> ")
-        }
-        <div id="partialViewContainer_@item.ChartID" class="col @item.ChartCSS d-flex justify-content-center" style="padding-left:40px;padding-right:40px;">
-          @Html.Partial("_ChartPartial", item)
-        </div>
+		if (currentRowWidth + columnSize > 12)
+		{
+			// Close the previous row and start a new row
+			@Html.Raw("</div> </br></br>") <!-- Close the row -->
+			@Html.Raw("<div class='row'>")
+			currentRowWidth = 0; // Reset the row width
+			rowAlreadyAdded = true;
+		}
 
-        currentRowWidth += columnSize; // Accumulate the width
-        if (currentRowWidth == 12)
-        {
-            // Close the row if it's exactly full
-            @Html.Raw("</div> </br></br>")
-            currentRowWidth = 0;
-        }
-     
-    }
+		if (currentRowWidth == 0 && !rowAlreadyAdded)
+		{
+			// Open a new row if it's the first column
+			@Html.Raw("<div class='row'> ")
+		}
+		<div id="partialViewContainer_@item.ChartID" class="col @item.ChartCSS d-flex justify-content-center" style="padding-left:40px;padding-right:40px;">
+			@Html.Partial("_ChartPartial", item)
+		</div>
 
-    @if (currentRowWidth > 0)
-    {
-       @Html.Raw("</div>") <!-- Close the last row if it's not already closed -->
-    }
+		currentRowWidth += columnSize; // Accumulate the width
+		if (currentRowWidth == 12)
+		{
+			// Close the row if it's exactly full
+			@Html.Raw("</div> </br></br>")
+			currentRowWidth = 0;
+		}
+
+	}
+
+	@if (currentRowWidth > 0)
+	{
+		@Html.Raw("</div>") <!-- Close the last row if it's not already closed -->
+	}
 </div>
 
 
 
 <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
 <script src="~/js/dist/chart.umd.min.js"></script>
-<script type="text/javascript"  charset="utf-8">
-    window.addEventListener("DOMContentLoaded", (event) => {
-                    setLanguage(document.getElementById("language").value);
-                    initializeCharts();
+<script type="text/javascript" charset="utf-8">
+	window.addEventListener("DOMContentLoaded", (event) => {
+					setLanguage(document.getElementById("language").value);
+					initializeCharts();
 
-        setTimeout(function () {
-            var height = document.getElementsByTagName("html")[0].scrollHeight;
-            window.parent.postMessage(["setHeight", height], "*");
-        }, 500);
-
-
-    });
-
-    window.onresize = function (event) {
-        setTimeout(function () {
-            var height = document.getElementsByTagName("html")[0].scrollHeight;
-            window.parent.postMessage(["setHeight", height], "*");
-        }, 500);
-    };
-
-    function initializeCharts() {
-
-    @foreach (var chartData in Model.RenderCharts)
-    {
-        @:loader = document.getElementById("loader_@chartData.ChartID");
-        @:canvasDiv= document.getElementById("div_@chartData.ChartID");
-        @if (chartData.ChartType != "Label")
-        {
-            @:LoadChart('@chartData.RefershTime', '@chartData.ChartType', @Html.Raw(string.IsNullOrEmpty(chartData?.JsonXaxis_labels) ? "null" : chartData?.JsonXaxis_labels), @Html.Raw(string.IsNullOrEmpty(chartData?.json_graphConfigurations) ? "null" : chartData?.json_graphConfigurations), '@Html.Raw(string.IsNullOrEmpty(chartData?.jsonchartTitle) ? "null" : chartData?.jsonchartTitle)', @chartData?.ChartID)
-            @:setRefreshInterval('@chartData.RefershTime', '@chartData.ChartType', '@Html.Raw(string.IsNullOrEmpty(chartData?.JsonXaxis_labels) ? "null" : chartData?.JsonXaxis_labels)', @Html.Raw(string.IsNullOrEmpty(chartData?.json_graphConfigurations) ? "null" : chartData?.json_graphConfigurations), '@Html.Raw(string.IsNullOrEmpty(chartData?.jsonchartTitle) ? "null" : chartData?.jsonchartTitle)', @chartData?.ChartID)
-        }
-        else
-        {
-            @:setRefreshInterval('@chartData.RefershTime', '@chartData.ChartType', '@Html.Raw(string.IsNullOrEmpty(chartData?.JsonXaxis_labels) ? "null" : chartData?.JsonXaxis_labels)', @Html.Raw(string.IsNullOrEmpty(chartData?.json_graphConfigurations) ? "null" : chartData?.json_graphConfigurations), '@Html.Raw(string.IsNullOrEmpty(chartData?.jsonchartTitle) ? "null" : chartData?.jsonchartTitle)', @chartData?.ChartID)
-            @:canvasDiv.style.display = "block";
-            @:loader.style.display = "none";
-        }
-    }
-        
-            }
+		setTimeout(function () {
+			var height = document.getElementsByTagName("html")[0].scrollHeight;
+			window.parent.postMessage(["setHeight", height], "*");
+		}, 500);
 
 
-             function setRefreshInterval(refreshTime,chartType,JsonXaxis,jsonGraphConfigurations, jsonChartTitle,chartID) {
-                 if(refreshTime=='' || refreshTime=='0'){
-                loader = document.getElementById("loader_" + chartID);
-                canvasDiv = document.getElementById("div_" + chartID);
-                canvasDiv.style.display = "none";
-                loader.style.display = "block";
-                refreshChart(chartID, document.getElementById("dashboardid").value, refreshTime, chartType, JsonXaxis, jsonGraphConfigurations, jsonChartTitle, document.getElementById("language").value, document.getElementById("parameters").value);
+	});
 
-                 }
-                 else
-                 {
-            setInterval(function () {
-                loader = document.getElementById("loader_" + chartID);
-                canvasDiv = document.getElementById("div_" + chartID);
-                canvasDiv.style.display = "none";
-                loader.style.display = "block";
-                refreshChart(chartID, document.getElementById("dashboardid").value, refreshTime, chartType, JsonXaxis, jsonGraphConfigurations, jsonChartTitle, document.getElementById("language").value, document.getElementById("parameters").value);
-            }, refreshTime * 1000);
-                 }
+	window.onresize = function (event) {
+		setTimeout(function () {
+			var height = document.getElementsByTagName("html")[0].scrollHeight;
+			window.parent.postMessage(["setHeight", height], "*");
+		}, 500);
+	};
 
-     
-        }
+	function initializeCharts() {
 
-        function setLanguage(language) {
-            if (language === '1') {
-                document.documentElement.setAttribute('lang', 'ar');
-                document.documentElement.setAttribute('dir', 'rtl');
-            } else {
-                document.documentElement.setAttribute('lang', 'en');
-                document.documentElement.setAttribute('dir', 'ltr');
-            }
-        }
+	@foreach (var chartData in Model.RenderCharts)
+	{
+		@:loader = document.getElementById("loader_@chartData.ChartID");
+		@:canvasDiv= document.getElementById("div_@chartData.ChartID");
+		@if (chartData.ChartType != "Label")
+		{
+			@:LoadChart('@chartData.RefershTime', '@chartData.ChartType', @Html.Raw(string.IsNullOrEmpty(chartData?.JsonXaxis_labels) ? "null" : chartData?.JsonXaxis_labels), @Html.Raw(string.IsNullOrEmpty(chartData?.json_graphConfigurations) ? "null" : chartData?.json_graphConfigurations), '@Html.Raw(string.IsNullOrEmpty(chartData?.jsonchartTitle) ? "null" : chartData?.jsonchartTitle)', @chartData?.ChartID)
+			@:setRefreshInterval('@chartData.RefershTime', '@chartData.ChartType', '@Html.Raw(string.IsNullOrEmpty(chartData?.JsonXaxis_labels) ? "null" : chartData?.JsonXaxis_labels)', @Html.Raw(string.IsNullOrEmpty(chartData?.json_graphConfigurations) ? "null" : chartData?.json_graphConfigurations), '@Html.Raw(string.IsNullOrEmpty(chartData?.jsonchartTitle) ? "null" : chartData?.jsonchartTitle)', @chartData?.ChartID)
+		}
+		else
+		{
+			@:setRefreshInterval('@chartData.RefershTime', '@chartData.ChartType', '@Html.Raw(string.IsNullOrEmpty(chartData?.JsonXaxis_labels) ? "null" : chartData?.JsonXaxis_labels)', @Html.Raw(string.IsNullOrEmpty(chartData?.json_graphConfigurations) ? "null" : chartData?.json_graphConfigurations), '@Html.Raw(string.IsNullOrEmpty(chartData?.jsonchartTitle) ? "null" : chartData?.jsonchartTitle)', @chartData?.ChartID)
+			@:canvasDiv.style.display = "block";
+			@:loader.style.display = "none";
+		}
+	}
 
-     function refreshButton(elm){
-             var chartID =$(elm).data('chart-id');
-           var dashboardID=document.getElementById("dashboardid").value; //$(elm).data('dashboard-id');
-           var language=document.getElementById("language").value;
-           var refreshTime=$(elm).data('refresh-time');
-           var chartType=$(elm).data('chart-type');
-           var JsonXaxis= JSON.parse($(elm).data('json-axis-labels'));
-           var jsonGraphConfigurations= JSON.parse($(elm).data('json-graph-configurations'));
-        var parameters = document.getElementById("parameters").value == '' ? "" : document.getElementById("parameters").value;
-        loader = document.getElementById("loader_"+chartID);
-              canvasDiv= document.getElementById("div_"+chartID);
-
-            canvasDiv.style.display = "none";
-            loader.style.display = "block";
-
-           var jsonChartTitle=$(elm).data('json-chart-title');
-        refreshChart(chartID, dashboardID, refreshTime, chartType, JsonXaxis, JSON.parse(jsonGraphConfigurations), jsonChartTitle, language, parameters);
-     }
+			}
 
 
+			 function setRefreshInterval(refreshTime,chartType,JsonXaxis,jsonGraphConfigurations, jsonChartTitle,chartID) {
+				 if(refreshTime=='' || refreshTime=='0'){
+				loader = document.getElementById("loader_" + chartID);
+				canvasDiv = document.getElementById("div_" + chartID);
+				canvasDiv.style.display = "none";
+				loader.style.display = "block";
+				refreshChart(chartID, document.getElementById("dashboardid").value, refreshTime, chartType, JsonXaxis, jsonGraphConfigurations, jsonChartTitle, document.getElementById("language").value, document.getElementById("parameters").value);
 
-    function refreshChart(chartID, dashboardID, refreshTime, chartType, JsonXaxis, jsonGraphConfigurations, jsonChartTitle, language, parameters) {
-        var hideChartButtons = document.getElementById("hideChartButtons").value;
-        var chartHeight = document.getElementById("chartHeight").value;
-        if (chartType == 'Label') {
-            $.ajax({
-                url: '@Url.Action("GetChartPartialView", "Dashboard")',
-                type: 'GET',
-                data: { chartID: chartID, dashboardID: dashboardID, language: language, parameters: parameters, hideChartButtons: hideChartButtons, chartHeight: chartHeight },
-                success: function (result) {
-                    $('#partialViewContainer_' + chartID).html(result);
-                    //console.log(result);
-                    loader = document.getElementById("loader_" + chartID);
-                    canvasDiv = document.getElementById("div_" + chartID);
-                    canvasDiv.style.display = "block";
-                    loader.style.display = "none";
-                },
-                error: function (xhr, status, error) {
-                    alert('Error: ' + error);
-                }
-            });
-        }
-        else {
-            $.ajax({
-                url: '@Url.Action("GetChartPartialView", "Dashboard")',
-                type: 'GET',
-                data: { chartID: chartID, dashboardID: dashboardID, language: language, parameters: parameters, hideChartButtons: hideChartButtons, chartHeight: chartHeight },
-                success: function (result) {
-                    $('#partialViewContainer_' + chartID).html(result);
-                    //console.log(result);
-                    loader = document.getElementById("loader_" + chartID);
-                    canvasDiv = document.getElementById("div_" + chartID);
-                    LoadChart(refreshTime, chartType, JSON.parse(JsonXaxis), jsonGraphConfigurations, jsonChartTitle, chartID);
-                },
-                error: function (xhr, status, error) {
-                    alert('Error: ' + error);
-                }
-            });
-        }
-        }
-
-        
-        
-    function LoadChart(refreshTime,chartType,canvasXaxis_labels,configuration,canvasjsonchartTitle,chartID) {
-
-        
-        var RefershTime = refreshTime;
-        var canvasChartType = chartType;
-        var canvasXaxis_labels = canvasXaxis_labels;
-        var configuration = configuration;
-        var canvasjsonchartTitle = canvasjsonchartTitle;
-        var Yaxis_Data =configuration;
-        var Yaxis_Data_Dataset = Yaxis_Data;
+				 }
+				 else
+				 {
+			setInterval(function () {
+				loader = document.getElementById("loader_" + chartID);
+				canvasDiv = document.getElementById("div_" + chartID);
+				canvasDiv.style.display = "none";
+				loader.style.display = "block";
+				refreshChart(chartID, document.getElementById("dashboardid").value, refreshTime, chartType, JsonXaxis, jsonGraphConfigurations, jsonChartTitle, document.getElementById("language").value, document.getElementById("parameters").value);
+			}, refreshTime * 1000);
+				 }
 
 
-        var Isstacked = false;
-        var _height = 0;
-        var gridDisplay = true;
-        var indexAxis='';
-        if (canvasChartType == "Bar" || canvasChartType == "Column") {
-            canvasChartType = "bar";
-        }
-         if (canvasChartType == "Horizontal Bar Chart") {
-            canvasChartType = "bar";
-            indexAxis='y';
-        }
-        if (canvasChartType == "Stacked Bar") {
-            canvasChartType = "bar";
-            Isstacked = true;
-        }
-        if (canvasChartType == "doughnut") {
+		}
 
-            canvasChartType = "doughnut";
-            gridDisplay = false;
-        }
-        if (canvasChartType == "Pie") {
+		function setLanguage(language) {
+			if (language === '1') {
+				document.documentElement.setAttribute('lang', 'ar');
+				document.documentElement.setAttribute('dir', 'rtl');
+			} else {
+				document.documentElement.setAttribute('lang', 'en');
+				document.documentElement.setAttribute('dir', 'ltr');
+			}
+		}
 
-            canvasChartType = "pie";
-            gridDisplay = false;
-        }
-        if (canvasChartType == "Line") {
-            canvasChartType = "line";
-        }
-        if (canvasChartType == "polarArea") {
-            canvasChartType = "polarArea";
+	 function refreshButton(elm){
+			 var chartID =$(elm).data('chart-id');
+		   var dashboardID=document.getElementById("dashboardid").value; //$(elm).data('dashboard-id');
+		   var language=document.getElementById("language").value;
+		   var refreshTime=$(elm).data('refresh-time');
+		   var chartType=$(elm).data('chart-type');
+		   var JsonXaxis= JSON.parse($(elm).data('json-axis-labels'));
+		   var jsonGraphConfigurations= JSON.parse($(elm).data('json-graph-configurations'));
+		var parameters = document.getElementById("parameters").value == '' ? "" : document.getElementById("parameters").value;
+		loader = document.getElementById("loader_"+chartID);
+			  canvasDiv= document.getElementById("div_"+chartID);
 
-        }
-        if (canvasChartType == "RadarChart") {
-            canvasChartType = "radar";
-        }
+			canvasDiv.style.display = "none";
+			loader.style.display = "block";
 
-        var canvas = 'canvas_'+chartID;
-
-        var ctx = document.getElementById(canvas).getContext('2d');
+		   var jsonChartTitle=$(elm).data('json-chart-title');
+		refreshChart(chartID, dashboardID, refreshTime, chartType, JsonXaxis, JSON.parse(jsonGraphConfigurations), jsonChartTitle, language, parameters);
+	 }
 
 
-        var myChart = new Chart(ctx, {
-            type: canvasChartType,
-            data: {
-                labels: canvasXaxis_labels,//x axis labels
-                datasets: Yaxis_Data_Dataset,
-                hoverOffset: 10,
-                borderWidth: 0,
 
-            },
-            options: {
-                 responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                        display:false
-                    },
-                    title: {
-                        display: true,
-                        text: canvasjsonchartTitle
-                    },
-                }, 
-
-                scales: {
-                    x: {
-                         stacked: Isstacked,
-                        grid: {
-                            display: gridDisplay
-                        }
-                    },
-                    y: {
-                          stacked: Isstacked,
-                        grid: {
-                            display: gridDisplay 
-                        }
-                    }
-                },
-                 indexAxis: indexAxis
-               
-            }
-        });
-            canvasDiv.style.display = "block";
-            loader.style.display = "none";
+	function refreshChart(chartID, dashboardID, refreshTime, chartType, JsonXaxis, jsonGraphConfigurations, jsonChartTitle, language, parameters) {
+		var hideChartButtons = document.getElementById("hideChartButtons").value;
+		var chartHeight = document.getElementById("chartHeight").value;
+		if (chartType == 'Label') {
+			debugger;
+			$.ajax({
+				url: '@Url.Action("GetChartPartialView", "Dashboard")',
+				type: 'GET',
+				data: { chartID: chartID, dashboardID: dashboardID, language: language, parameters: parameters, hideChartButtons: hideChartButtons, chartHeight: chartHeight },
+				success: function (result) {
+					$('#partialViewContainer_' + chartID).html(result);
+					//console.log(result);
+					loader = document.getElementById("loader_" + chartID);
+					canvasDiv = document.getElementById("div_" + chartID);
+					canvasDiv.style.display = "block";
+					loader.style.display = "none";
+				},
+				error: function (xhr, status, error) {
+					alert('Error: ' + error);
+				}
+			});
+		}
+		else {
+			$.ajax({
+				url: '@Url.Action("GetChartPartialView", "Dashboard")',
+				type: 'GET',
+				data: { chartID: chartID, dashboardID: dashboardID, language: language, parameters: parameters, hideChartButtons: hideChartButtons, chartHeight: chartHeight },
+				success: function (result) {
+					$('#partialViewContainer_' + chartID).html(result);
+					//console.log(result);
+					loader = document.getElementById("loader_" + chartID);
+					canvasDiv = document.getElementById("div_" + chartID);
+					LoadChart(refreshTime, chartType, JSON.parse(JsonXaxis), jsonGraphConfigurations, jsonChartTitle, chartID);
+				},
+				error: function (xhr, status, error) {
+					alert('Error: ' + error);
+				}
+			});
+		}
+		}
 
 
-        setTimeout(function () {
-            if ($('#hideChartButtons').val() == 'True') {
-                $('.refreshbutton').hide();
-                $('.printbutton').hide();
-                //if (myChart) myChart.destroy();
 
-            }
-        }, 500);
+	function LoadChart(refreshTime,chartType,canvasXaxis_labels,configuration,canvasjsonchartTitle,chartID) {
 
 
-          
-    }
-        
+		var RefershTime = refreshTime;
+		var canvasChartType = chartType;
+		var canvasXaxis_labels = canvasXaxis_labels;
+		var configuration = configuration;
+		var canvasjsonchartTitle = canvasjsonchartTitle;
+		var Yaxis_Data =configuration;
+		var Yaxis_Data_Dataset = Yaxis_Data;
+
+
+		var Isstacked = false;
+		var _height = 0;
+		var gridDisplay = true;
+		var indexAxis='';
+		if (canvasChartType == "Bar" || canvasChartType == "Column") {
+			canvasChartType = "bar";
+		}
+		 if (canvasChartType == "Horizontal Bar Chart") {
+			canvasChartType = "bar";
+			indexAxis='y';
+		}
+		if (canvasChartType == "Stacked Bar") {
+			canvasChartType = "bar";
+			Isstacked = true;
+		}
+		if (canvasChartType == "doughnut") {
+
+			canvasChartType = "doughnut";
+			gridDisplay = false;
+		}
+		if (canvasChartType == "Pie") {
+
+			canvasChartType = "pie";
+			gridDisplay = false;
+		}
+		if (canvasChartType == "Line") {
+			canvasChartType = "line";
+		}
+		if (canvasChartType == "polarArea") {
+			canvasChartType = "polarArea";
+
+		}
+		if (canvasChartType == "RadarChart") {
+			canvasChartType = "radar";
+		}
+
+		var canvas = 'canvas_'+chartID;
+
+		var ctx = document.getElementById(canvas).getContext('2d');
+
+
+		var myChart = new Chart(ctx, {
+			type: canvasChartType,
+			data: {
+				labels: canvasXaxis_labels,//x axis labels
+				datasets: Yaxis_Data_Dataset,
+				hoverOffset: 10,
+				borderWidth: 0,
+
+			},
+			options: {
+				 responsive: true,
+				maintainAspectRatio: false,
+				plugins: {
+					legend: {
+						position: 'top',
+						display:false
+					},
+					title: {
+						display: true,
+						text: canvasjsonchartTitle
+					},
+				},
+
+				scales: {
+					x: {
+						 stacked: Isstacked,
+						grid: {
+							display: gridDisplay
+						}
+					},
+					y: {
+						  stacked: Isstacked,
+						grid: {
+							display: gridDisplay
+						}
+					}
+				},
+				 indexAxis: indexAxis
+
+			}
+		});
+			canvasDiv.style.display = "block";
+			loader.style.display = "none";
+
+
+		setTimeout(function () {
+			if ($('#hideChartButtons').val() == 'True') {
+				$('.refreshbutton').hide();
+				$('.printbutton').hide();
+				//if (myChart) myChart.destroy();
+
+			}
+		}, 500);
+
+
+
+	}
+
 </script>
