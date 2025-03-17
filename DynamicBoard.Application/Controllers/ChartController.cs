@@ -76,7 +76,7 @@ namespace DynamicBoard.Application.Controllers
                 var result = EnumExtensions.ParseEnumValue<ChartType>(chartScriptTemplates.ID);
                 //if (!result.EnumValue.ToString().Equals("DataGrid"))
                 //{
-                    chartDatasets = await dynamicBoardCommonServices.GetChartDatasets(chartID, chartScriptTemplates.SQLScriptTemplate);
+                chartDatasets = await dynamicBoardCommonServices.GetChartDatasets(chartID, chartScriptTemplates.SQLScriptTemplate);
                 //}
                 //else
                 //{
@@ -530,6 +530,11 @@ namespace DynamicBoard.Application.Controllers
                     renderChart = await ChartCommon.ChartManipulation(extendDashboard, extendCharts[0].ChartTypes.TitleEn, title, extendCharts[0].ID, "", chartThemes, extendCharts[0], modifiedQueryScript);
                     renderChart.IsAllowRefresh = IsAllowRefresh;
                     renderChart.IsAllowPrint = IsAllowPrint;
+                    if (renderChart.dataGrid != null && renderChart.dataGrid.Count > 0)
+                    {
+                        renderChart.IsAllowRefresh = false;
+                        renderChart.IsAllowPrint = false;
+                    }
                     return View("ChartView", renderChart);
 
                 }
