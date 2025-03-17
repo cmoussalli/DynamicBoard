@@ -1,8 +1,10 @@
-﻿using DynamicBoard.Application.DomainServices;
+﻿using ClosedXML.Excel;
+using DynamicBoard.Application.DomainServices;
 using DynamicBoard.Application.Model;
 using DynamicBoard.DataServices;
 using DynamicBoard.DataServices.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Data;
 using System.Text.RegularExpressions;
 
 namespace DynamicBoard.Application.Controllers
@@ -366,6 +368,66 @@ namespace DynamicBoard.Application.Controllers
 
         }
 
+        //public FileResult ExportToExcel(string requestedId, string civilNumber, string CRNo, string crTitle, string sectorID, string exhibitionDefinitionID, string status, bool isClosedRequests)
+        //{
+
+        //    using (XLWorkbook wb = new XLWorkbook()) //Install ClosedXml from Nuget for XLWorkbook  
+        //    {
+        //        DataTable dt = new DataTable("Grid");
+
+        //        wb.Worksheets.Add(dt);
+        //        using (MemoryStream stream = new MemoryStream()) //using System.IO;  
+        //        {
+        //            wb.SaveAs(stream);
+        //            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Exhibition.xlsx");
+        //        }
+        //    }
+        //}
+        [HttpPost]
+        public ActionResult ExportToExcel(List<string>? Headers, List<Dictionary<string, string>>? Rows)
+        {
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("ExportedData");
+
+                //// Add Headers
+                //for (int i = 0; i < tableData.Headers.Count; i++)
+                //{
+                //    worksheet.Cell(1, i + 1).Value = tableData.Headers[i];
+                //    worksheet.Cell(1, i + 1).Style.Font.Bold = true;
+                //    worksheet.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+                //}
+
+                //// Add Rows
+                //for (int rowIndex = 0; rowIndex < tableData.Rows.Count; rowIndex++)
+                //{
+                //    var row = tableData.Rows[rowIndex];
+                //    for (int colIndex = 0; colIndex < tableData.Headers.Count; colIndex++)
+                //    {
+                //        string columnName = tableData.Headers[colIndex];
+                //        worksheet.Cell(rowIndex + 2, colIndex + 1).Value = row[columnName];
+                //    }
+                //}
+
+                // Auto-fit columns for better readability
+                worksheet.Columns().AdjustToContents();
+
+                // Save to MemoryStream
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    stream.Position = 0;
+                    return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ExportedData.xlsx");
+                }
+            }
+        }
+
+
+        public class TableDataModel
+        {
+            public List<string>? Headers { get; set; }
+            public List<Dictionary<string, string>>? Rows { get; set; }
+        }
 
 
 

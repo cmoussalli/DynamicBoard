@@ -8,6 +8,7 @@
 
   <ItemGroup>
 	<PackageReference Include="bootstrap" Version="5.3.3" />
+	<PackageReference Include="ClosedXML" Version="0.105.0-rc" />
 	<PackageReference Include="CMouss.IdentityFramework" Version="1.0.21" />
 	<PackageReference Include="CMouss.IdentityFramework.API.Serving" Version="1.0.21" />
 	<PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter" Version="8.0.1" />
