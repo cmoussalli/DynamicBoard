@@ -182,7 +182,6 @@
 		var hideChartButtons = document.getElementById("hideChartButtons").value;
 		var chartHeight = document.getElementById("chartHeight").value;
 		if (chartType == 'Label') {
-			debugger;
 			$.ajax({
 				url: '@Url.Action("GetChartPartialView", "Dashboard")',
 				type: 'GET',
