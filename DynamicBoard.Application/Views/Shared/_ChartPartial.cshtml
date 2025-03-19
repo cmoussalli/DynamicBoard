@@ -50,9 +50,87 @@
 	else if (Model.ChartType == "Data Grid")
 	{
 		<div id="Grid-@Model.ChartID"></div>
+		@if (Model.dataGrid is not null)
+		{
+			<button id="exportBtn" class="btn btn-primary" style="float:right; background-color:#a58d63; border-color:#a58d63;">
+				Export to Excel
+			</button>
+			<br />
+			<div>
+				<p style="visibility: hidden;">Hidden</p>
+			</div>
+			<table id="tbl" class="table table-hover align-middle mb-0">
+				<thead class="table-dark" style="color: #fff; background-color: #343a40; border-color: #484e53;">
+					<tr>
+						@foreach (var key in Model.dataGrid[0].Keys)
+						{
+							<th>@key</th>
+
+						}
+					</tr>
+				<tbody>
+						@foreach (var row in Model.dataGrid)
+						{
+						<tr style="background-color:#fcf0db;">
+								@foreach (var value in row.Values)
+								{
+								<td>@value</td>
+								}
+						</tr>
+						}
+				</tbody>
+			</table>
+		}
 	}
 	else
 	{
 		<canvas id="canvas_@Model.ChartID" width="405px" height="450px"></canvas>
 	}
 </div>
+<script type="text/javascript" charset="utf-8">
+			document.getElementById("exportBtn").addEventListener("click", function () {
+			var table = document.getElementById("tbl");
+			var headers = [];
+			var rows = [];
+			// Extract headers
+			var headerCells = table.querySelectorAll("thead th");
+			headerCells.forEach(function (th) {
+				headers.push(th.textContent.trim());
+			});
+
+			var rowElements = table.querySelectorAll("tbody tr");
+			rowElements.forEach(function (tr) {
+				var rowData = {};
+				var cells = tr.querySelectorAll("td");
+				cells.forEach(function (td, index) {
+					rowData[headers[index]] = td.textContent.trim();
+				});
+				rows.push(rowData);
+			});
+
+				var tableData = {
+				Headers: headers,
+				Rows: rows
+			};
+
+
+
+		fetch("/Chart/ExportToExcel", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body:JSON.stringify ({Headers:headers,Rows:rows})
+		})
+		.then(response => response.blob())
+		.then(blob => {
+			var url = window.URL.createObjectURL(blob);
+			var a = document.createElement("a");
+			a.href = url;
+			a.download = "ExportedData.xlsx";
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+		})
+		.catch(error => console.error("Export failed", error));
+
+	});
+</script>

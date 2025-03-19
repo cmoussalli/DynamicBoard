@@ -108,7 +108,7 @@
 	{
 		@:loader = document.getElementById("loader_@chartData.ChartID");
 		@:canvasDiv= document.getElementById("div_@chartData.ChartID");
-		@if (chartData.ChartType != "Label")
+		@if (chartData.ChartType != "Label" && chartData.ChartType != "Data Grid")
 		{
 			@:LoadChart('@chartData.RefershTime', '@chartData.ChartType', @Html.Raw(string.IsNullOrEmpty(chartData?.JsonXaxis_labels) ? "null" : chartData?.JsonXaxis_labels), @Html.Raw(string.IsNullOrEmpty(chartData?.json_graphConfigurations) ? "null" : chartData?.json_graphConfigurations), '@Html.Raw(string.IsNullOrEmpty(chartData?.jsonchartTitle) ? "null" : chartData?.jsonchartTitle)', @chartData?.ChartID)
 			@:setRefreshInterval('@chartData.RefershTime', '@chartData.ChartType', '@Html.Raw(string.IsNullOrEmpty(chartData?.JsonXaxis_labels) ? "null" : chartData?.JsonXaxis_labels)', @Html.Raw(string.IsNullOrEmpty(chartData?.json_graphConfigurations) ? "null" : chartData?.json_graphConfigurations), '@Html.Raw(string.IsNullOrEmpty(chartData?.jsonchartTitle) ? "null" : chartData?.jsonchartTitle)', @chartData?.ChartID)
@@ -179,9 +179,10 @@
 
 
 	function refreshChart(chartID, dashboardID, refreshTime, chartType, JsonXaxis, jsonGraphConfigurations, jsonChartTitle, language, parameters) {
+		debugger;
 		var hideChartButtons = document.getElementById("hideChartButtons").value;
 		var chartHeight = document.getElementById("chartHeight").value;
-		if (chartType == 'Label') {
+		if (chartType == 'Label' || chartType=='Data Grid') {
 			$.ajax({
 				url: '@Url.Action("GetChartPartialView", "Dashboard")',
 				type: 'GET',
@@ -222,7 +223,7 @@
 
 	function LoadChart(refreshTime,chartType,canvasXaxis_labels,configuration,canvasjsonchartTitle,chartID) {
 
-
+		debugger;
 		var RefershTime = refreshTime;
 		var canvasChartType = chartType;
 		var canvasXaxis_labels = canvasXaxis_labels;
@@ -267,7 +268,9 @@
 		if (canvasChartType == "RadarChart") {
 			canvasChartType = "radar";
 		}
-
+		if (canvasChartType == "Data Grid") {
+			canvasChartType = "Data Grid";
+		}
 		var canvas = 'canvas_'+chartID;
 
 		var ctx = document.getElementById(canvas).getContext('2d');
