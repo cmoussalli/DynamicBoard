@@ -3,6 +3,7 @@ using DynamicBoard.DataServices;
 using DynamicBoard.DataServices.Models;
 using DynamicBoard.DataServices.Services;
 using DynamicBoard.Models;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using System.Data;
 
 namespace DynamicBoard.Application.DomainServices
@@ -10,7 +11,7 @@ namespace DynamicBoard.Application.DomainServices
     public class ChartCommon
     {
 
-        public   static async Task<RenderChart> ChartManipulation(ExtendDashboard extendDashboard, string chartType, string chartTitle, long chartID, string chartCSS, List<ChartThemeExtends> chartThemes, ExtendChart extendChart = null, string modifiedQuery = "")
+        public static async Task<RenderChart> ChartManipulation(ExtendDashboard extendDashboard, string chartType, string chartTitle, long chartID, string chartCSS, List<ChartThemeExtends> chartThemes, ExtendChart extendChart = null, string modifiedQuery = "")
         {
             string dataScript = "";
             DynamicBoardDataServices db = new DynamicBoardDataServices(Storage.DBConnectionString);
@@ -22,11 +23,11 @@ namespace DynamicBoard.Application.DomainServices
             List<string> borderColor = new();
             List<GraphConfiguration> graphConfigurationList = new List<GraphConfiguration>();
             GraphConfiguration graphConfiguration = new GraphConfiguration();
-            DynamicBoard.Application.Model.Dataset dataset = new();
-            List<DynamicBoard.Application.Model.Dataset> datasets = new();
+            Model.Dataset dataset = new();
+            List<Model.Dataset> datasets = new();
             List<GraphDatasetDetails> graphList = new List<GraphDatasetDetails>();
-            List<DynamicBoard.DataServices.ChartDataset> datasetResult = null;
-
+            List<ChartDataset> datasetResult = null;
+            List<Dictionary<string, object>> gridDatasetResult = null;
             try
             {
                 if (!string.IsNullOrEmpty(modifiedQuery))
@@ -41,27 +42,47 @@ namespace DynamicBoard.Application.DomainServices
                     }
 
                 }
-                if (extendDashboard != null)
+                if (chartType != "Data Grid")
                 {
-                    //var connesctionString = "Server=" + "10.38.38.199" + ";Database=" + extendDashboard.DBConnections.Database + ";Trusted_Connection=True;MultipleActiveResultSets=true;User Id=" + extendDashboard.DBConnections.User + ";Password=" + "SMedi@33333" + ";Integrated Security=False;";
-                    var connesctionString = "Server=" + extendDashboard.DBConnections.Server + ";Database=" + extendDashboard.DBConnections.Database + ";Trusted_Connection=True;MultipleActiveResultSets=true;User Id=" + extendDashboard.DBConnections.User + ";Password=" + extendDashboard.DBConnections.Password + ";Integrated Security=False;";
-                    datasetResult =await db.DatasetExecute(dataScript, connesctionString);
-                    //renderChart.RefershTime = extendDashboard.Charts.RefershTime;
+
+
+                    if (extendDashboard != null)
+                    {
+                        //var connesctionString = "Server=" + "10.38.38.199" + ";Database=" + extendDashboard.DBConnections.Database + ";Trusted_Connection=True;MultipleActiveResultSets=true;User Id=" + extendDashboard.DBConnections.User + ";Password=" + "SMedi@33333" + ";Integrated Security=False;";
+                        var connesctionString = "Server=" + extendDashboard.DBConnections.Server + ";Database=" + extendDashboard.DBConnections.Database + ";Trusted_Connection=True;MultipleActiveResultSets=true;User Id=" + extendDashboard.DBConnections.User + ";Password=" + extendDashboard.DBConnections.Password + ";Integrated Security=False;";
+                        datasetResult = await db.DatasetExecute(dataScript, connesctionString);
+                        //renderChart.RefershTime = extendDashboard.Charts.RefershTime;
+                    }
+                    if (extendChart != null)
+                    {
+                        //var connesctionString = "Server=" + "10.38.38.199" + ";Database=" + extendChart.DBConnections.Database + ";Trusted_Connection=True;MultipleActiveResultSets=true;User Id=" + extendChart.DBConnections.User + ";Password=" + "SMedi@33333" + ";Integrated Security=False;";
+                        var connesctionString = "Server=" + extendDashboard.DBConnections.Server + ";Database=" + extendDashboard.DBConnections.Database + ";Trusted_Connection=True;MultipleActiveResultSets=true;User Id=" + extendDashboard.DBConnections.User + ";Password=" + extendDashboard.DBConnections.Password + ";Integrated Security=False;";
+
+                        datasetResult = await db.DatasetExecute(dataScript, connesctionString);
+                        // renderChart.RefershTime = extendChart.RefershTime;
+                    }
                 }
-                if (extendChart != null)
+                else
                 {
-                    //var connesctionString = "Server=" + "10.38.38.199" + ";Database=" + extendChart.DBConnections.Database + ";Trusted_Connection=True;MultipleActiveResultSets=true;User Id=" + extendChart.DBConnections.User + ";Password=" + "SMedi@33333" + ";Integrated Security=False;";
                     var connesctionString = "Server=" + extendDashboard.DBConnections.Server + ";Database=" + extendDashboard.DBConnections.Database + ";Trusted_Connection=True;MultipleActiveResultSets=true;User Id=" + extendDashboard.DBConnections.User + ";Password=" + extendDashboard.DBConnections.Password + ";Integrated Security=False;";
 
-                    datasetResult = await db.DatasetExecute(dataScript, connesctionString);
-                    // renderChart.RefershTime = extendChart.RefershTime;
-                }
+                    gridDatasetResult = await db.GridDatasetExecute(dataScript, connesctionString);
 
-                if (datasetResult != null && datasetResult.Count > 0)
+                }
+                if ((gridDatasetResult != null && gridDatasetResult.Count > 0) || (datasetResult != null && datasetResult.Count > 0))
                 {
+                    if (datasetResult?.Count > 0)
+                    {
                         if (datasetResult[0].Dataset_Label is null) { datasetResult[0].Dataset_Label = ""; }
                         if (datasetResult[0].x_axis_labels is null) { datasetResult[0].x_axis_labels = ""; }
-
+                    }
+                    if (gridDatasetResult?.Count > 0 && datasetResult is null)
+                    {
+                        datasetResult = new List<ChartDataset>();
+                        ChartDataset ds = new();
+                        ds.dataGrid = gridDatasetResult;
+                        renderChart.dataGrid = ds.dataGrid;
+                    }
                     if (chartType == "Label")
                     {
                         renderChart.ChartType = chartType;
@@ -73,7 +94,7 @@ namespace DynamicBoard.Application.DomainServices
                         renderChart.LabelValue = datasetResult.Select(a => a.Data).FirstOrDefault();
                         return renderChart;
                     }
-                    else if(chartType == "Progress Pie Chart")
+                    else if (chartType == "Progress Pie Chart")
                     {
                         renderChart.ChartType = chartType;
                         renderChart.ChartID = chartID;
@@ -83,6 +104,17 @@ namespace DynamicBoard.Application.DomainServices
                         renderChart.jsonchartTitle = Newtonsoft.Json.JsonConvert.SerializeObject(chartTitle.Replace("\r\n", ""));
                         renderChart.LabelValue = datasetResult.Select(a => a.Data).FirstOrDefault();
                         return renderChart;
+                    }
+                    else if (chartType == "Data Grid")
+                    {
+                        renderChart.ChartType = chartType;
+                        renderChart.ChartID = chartID;
+                        renderChart.json_graphConfigurations = "";
+                        renderChart.JsonXaxis_labels = "";
+                        renderChart.ChartCSS = chartCSS;
+                        renderChart.jsonchartTitle = Newtonsoft.Json.JsonConvert.SerializeObject(chartTitle.Replace("\r\n", ""));
+                        return renderChart;
+
                     }
 
                     var DataArary = datasetResult.Select(a => a.Data).ToArray();
