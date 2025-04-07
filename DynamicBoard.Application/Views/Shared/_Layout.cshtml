@@ -3,23 +3,23 @@
 <html>
 <head>
 
-    <!-- TITLE -->
-    <title>@ViewData["Title"] - Dashboard Application</title>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <style>
+	<!-- TITLE -->
+	<title>@ViewData["Title"] - Dashboard Application</title>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<style>
 
-        .loader {
-            position: center;
-            z-index: 999999999999999999999999999999999999999;
-            opacity: .7;
-        }
-    </style>
+		.loader {
+			position: center;
+			z-index: 999999999999999999999999999999999999999;
+			opacity: .7;
+		}
+	</style>
 </head>
 <body>
-    @RenderBody()
+	@RenderBody()
 
 </body>
 <script src="~/js/dist/chart.umd.min.js"></script>
@@ -28,430 +28,441 @@
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script type="text/javascript" charset="utf-8">
 
-    var isloading = true
-    var loader = document.getElementById("loader_@Model.ChartID");
-    var canvasDiv = document.getElementById("div_@Model.ChartID");
-    document.addEventListener("DOMContentLoaded", function () {
-
-        loader = document.getElementById("loader_@Model.ChartID");
-
-        // Show loader initially
-        loader.style.display = "block";
-
-        $(document).ready(function () {
-            // Show loader initially
-
-            var canvasChartType = '@Model.ChartType';
-            if (canvasChartType == "Label") {
-                LoadLabel();
-            }
-            else {
-                LoadChart();
-            }
-
-
-        });
-    });
-
-    function LoadLabel() {
-        document.getElementById("Label_@Model.ChartID").innerHTML = @Model.LabelValue;
-        var div = document.getElementById("div_@Model.ChartID");
-        div.style.display = 'block';
-        loader.style.display = "none";
-
-    }
-    function LoadChart() {
-        var RefershTime = '@Model.RefershTime';
-        var canvasChartType = '@Model.ChartType';
-        var canvasXaxis_labels = @Html.Raw(string.IsNullOrEmpty(Model?.JsonXaxis_labels) ? "null" : Model?.JsonXaxis_labels);
-        var configuration = @Html.Raw(string.IsNullOrEmpty(Model?.json_graphConfigurations) ? "null" : Model?.json_graphConfigurations);
-        var canvasjsonchartTitle = '@Html.Raw(string.IsNullOrEmpty(Model?.jsonchartTitle) ? "null" : Model?.jsonchartTitle)';
-        var Yaxis_Data = @Html.Raw(string.IsNullOrEmpty(Model?.json_graphConfigurations) ? "null" : Model?.json_graphConfigurations);
-        var Yaxis_Data_Dataset = Yaxis_Data;//Yaxis_Data[0].datasets;
-
-        //debugger
-        var Isstacked = false;
-        var _height = 0;
-        var gridDisplay = true;
-        var indexAxis='';
-        if (canvasChartType == "Bar" || canvasChartType == "Column") {
-            canvasChartType = "bar";
-        }
-        if (canvasChartType == "Stacked Bar") {
-            canvasChartType = "bar";
-            Isstacked = true;
-        }
-        if (canvasChartType == "Horizontal Bar Chart") {
-            canvasChartType = "bar";
-            indexAxis='y';
-        }
-        if (canvasChartType == "doughnut") {
-
-            canvasChartType = "doughnut";
-            gridDisplay = false;
-        }
-        if (canvasChartType == "Pie") {
-
-            canvasChartType = "pie";
-            gridDisplay = false;
-        }
-        if (canvasChartType == "Line") {
-            canvasChartType = "line";
-        }
-        if (canvasChartType == "polarArea") {
-            canvasChartType = "polarArea";
-        }
-        if (canvasChartType == "RadarChart") {
-            canvasChartType = "radar";
-        }
-        if (canvasChartType == "Progress Pie Chart") {
-            var chartDiv = document.getElementById('div_' + @Model.ChartID);
-            var progressDiv = document.getElementById('Progress-' + @Model.ChartID);
-            var percent = @Model.LabelValue / 100;
-            var text = (percent * 100) + "%";
-
-            var width = chartDiv.offsetWidth || 200; 
-            var height = chartDiv.offsetHeight || 200;
-            var thickness = width / 10;
-            var duration = 50;
-            var foregroundColor = "#0a8";
-            var backgroundColor = "#ccc";
-
-            var radius = Math.min(width, height) / 2;
-            var color = d3.scaleOrdinal([foregroundColor, backgroundColor]);
-
-            var svg = d3.select("#Progress-" + @Model.ChartID)
-                .append('svg')
-                .attr('class', 'pie')
-                .attr('width', width)
-                .attr('height', height);
-
-            var g = svg.append('g')
-                .attr('transform', 'translate(' + (width / 2) + ',' + (height / 2) + ')');
-
-            var arc = d3.arc()
-                .innerRadius(radius - thickness)
-                .outerRadius(radius);
-
-            var pie = d3.pie()
-                .sort(null);
-
-            var path = g.selectAll('path')
-                .data(pie([0, 1]))
-                .enter()
-                .append('path')
-                .attr('d', arc)
-                .attr('fill', function (d, i) {
-                    return color(i);
-                })
-                .each(function (d) { this._current = d; });
-
-            path.data(pie([percent, 1 - percent])).transition()
-                .duration(duration)
-                .attrTween('d', function (d) {
-                    var interpolate = d3.interpolate(this._current, d);
-                    this._current = interpolate(0);
-                    return function (t) {
-                        return arc(interpolate(t));
-                    }
-                });
-
-            g.append('text')
-                .attr('text-anchor', 'middle')
-                .attr('dy', '.35em')
-                .text(text);
-
-            setTimeout(function () {
-                chartDiv.style.display = "block";
-                progressDiv.style.display = "block";
-                loader.style.display = "none";
-            }, 2000);
-            return;
-        }
-
-        var canvas = 'canvas_' + @Model.ChartID;
-
-        //loadCanvas(@Model.ChartID);
-        var ctx = document.getElementById(canvas).getContext('2d');
-        //debugger
-
-
-        var myChart = new Chart(ctx, {
-            type: canvasChartType,
-            data: {
-                labels: canvasXaxis_labels,//x axis labels
-                datasets: Yaxis_Data_Dataset,
-                hoverOffset: 10,
-                borderWidth: 0,
-
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                        display:false
-                    },
-                    title: {
-                        display: true,
-                        text: canvasjsonchartTitle
-                    },
-                },
-
-                scales: {
-                    x: {
-                        stacked: Isstacked,
-                        // grid: {
-                        //     display: gridDisplay
-                        // }
-                    },
-                    y: {
-                        stacked: Isstacked,
-                        // grid: {
-                        //     display: gridDisplay
-                        // }
-                    }
-                },
-                indexAxis: indexAxis
-
-            }
-        });
-
-        // Simulate a delay of 2 seconds before showing the canvas
-        setTimeout(function () {
-            // Show the canvas
-
-            canvasDiv.style.display = "block";
-            // Hide the loader
-            loader.style.display = "none";
-        }, 2000);
-
-    }
-    function LoadChartV2() {
-        var RefershTime = '@Model.RefershTime';
-        var canvasChartType = '@Model.ChartType';
-        var canvasXaxis_labels = @Html.Raw(string.IsNullOrEmpty(Model?.JsonXaxis_labels) ? "null" : Model?.JsonXaxis_labels);
-        var configuration = @Html.Raw(string.IsNullOrEmpty(Model?.json_graphConfigurations) ? "null" : Model?.json_graphConfigurations);
-        var canvasjsonchartTitle = '@Html.Raw(string.IsNullOrEmpty(Model?.jsonchartTitle) ? "null" : Model?.jsonchartTitle)';
-        var Yaxis_Data = @Html.Raw(string.IsNullOrEmpty(Model?.json_graphConfigurations) ? "null" : Model?.json_graphConfigurations);
-        var Yaxis_Data_Dataset = Yaxis_Data;//Yaxis_Data[0].datasets;
-
-        //debugger
-        var Isstacked = false;
-        var _height = 0;
-        var gridDisplay = true;
-        if (canvasChartType == "Bar") {
-            canvasChartType = "bar";
-        }
-        if (canvasChartType == "Stacked Bar") {
-            canvasChartType = "bar";
-            Isstacked = true;
-        }
-        if (canvasChartType == "doughnut") {
-
-            canvasChartType = "doughnut";
-            gridDisplay = false;
-        }
-        if (canvasChartType == "Pie") {
-
-            canvasChartType = "pie";
-            gridDisplay = false;
-        }
-        if (canvasChartType == "Line") {
-            canvasChartType = "line";
-        }
-        if (canvasChartType == "polarArea") {
-            canvasChartType = "polarArea";
-
-        }
-        if (canvasChartType == "RadarChart") {
-            canvasChartType = "radar";
-        }
-
-        var canvas = 'canvas_' + @Model.ChartID;
-
-        //loadCanvas(@Model.ChartID);
-        var ctx = document.getElementById(canvas).getContext('2d');
-        //debugger
-
-
-        var myChart = new Chart(ctx, {
-            type: canvasChartType,
-            data: {
-                labels: canvasXaxis_labels,//x axis labels
-                datasets: Yaxis_Data_Dataset,
-                hoverOffset: 10,
-                borderWidth: 0,
-
-            },
-            options: {
-                legend: { display: true },
-                responsive: true,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: canvasjsonchartTitle
-                    },
-                },
-                responsive: true,
-
-                scales: {
-                    x: {
-                        // stacked: Isstacked,
-                        grid: {
-                            display: gridDisplay
-                        }
-                    },
-                    y: {
-                        // stacked: Isstacked,
-                        grid: {
-                            display: gridDisplay
-                        }
-                    }
-                },
-                title: {
-                    display: true,
-                    text: canvasjsonchartTitle
-                },
-            }
-        });
-
-        // Simulate a delay of 2 seconds before showing the canvas
-        setTimeout(function () {
-            // Show the canvas
-
-            canvasDiv.style.display = "block";
-            // Hide the loader
-            loader.style.display = "none";
-        }, 2000);
-
-    }
-
-
-    function LoadChartOLD() {
-        var RefershTime = '@Model.RefershTime';
-        var canvasChartType = '@Model.ChartType';
-        var canvasXaxis_labels = @Html.Raw(string.IsNullOrEmpty(Model?.JsonXaxis_labels) ? "null" : Model?.JsonXaxis_labels);
-        var configuration = @Html.Raw(string.IsNullOrEmpty(Model?.json_graphConfigurations) ? "null" : Model?.json_graphConfigurations);
-        var canvasjsonchartTitle = '@Html.Raw(string.IsNullOrEmpty(Model?.jsonchartTitle) ? "null" : Model?.jsonchartTitle)';
-        var Yaxis_Data = @Html.Raw(string.IsNullOrEmpty(Model?.json_graphConfigurations) ? "null" : Model?.json_graphConfigurations);
-        var Yaxis_Data_Dataset = Yaxis_Data;//Yaxis_Data[0].datasets;
-
-
-        //debugger
-        var Isstacked = false;
-        var _height = 0;
-
-        if (canvasChartType == "Bar") {
-            canvasChartType = "bar";
-        }
-        if (canvasChartType == "Stacked Bar") {
-            canvasChartType = "bar";
-            Isstacked = true;
-        }
-        if (canvasChartType == "Pie") {
-
-            canvasChartType = "doughnut";
-        }
-        if (canvasChartType == "Line") {
-            canvasChartType = "line";
-        }
-
-        var canvas = 'canvas_' + @Model.ChartID;
-
-        //loadCanvas(@Model.ChartID);
-        var ctx = document.getElementById(canvas).getContext('2d');
-        //debugger
-
-
-        var myChart = new Chart(ctx, {
-            type: canvasChartType,
-            data: {
-                labels: canvasXaxis_labels,//x axis labels
-                datasets: Yaxis_Data_Dataset,
-            },
-            options: {
-                legend: { display: false },
-
-                responsive: true,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: canvasjsonchartTitle
-                    },
-                },
-                responsive: true,
-                interaction: {
-                    intersect: false,
-                },
-                scales: {
-                    x: {
-                        stacked: Isstacked,
-                    },
-                    y: {
-                        stacked: Isstacked
-                    }
-                },
-                title: {
-                    display: true,
-                    text: canvasjsonchartTitle
-                },
-            }
-        });
-
-        // Simulate a delay of 2 seconds before showing the canvas
-        setTimeout(function () {
-            // Show the canvas
-
-            canvasDiv.style.display = "block";
-            // Hide the loader
-            loader.style.display = "none";
-        }, 2000);
-
-    }
-    function refreshPage() {
-
-        location.reload();
-    }
-    function loadChart(chartId) {
-
-        var canvas = 'canvas_' + @Model.ChartID;
-
-        var canvasTag = document.getElementById(canvas);
-        var context = canvasTag.getContext("2d");
-
-        // Clear the canvas
-        context.clearRect(0, 0, canvasTag.width, canvasTag.height);
-
-
-    }
-    function printElement(elementId) {
-        var element = document.getElementById(elementId);
-        var canvas = element.querySelector('canvas');
-        var printContents = element.innerHTML;
-        var originalContents = document.body.innerHTML;
-
-        // Create an image from the canvas content
-        var img = new Image();
-        img.onload = function () {
-            // Replace the canvas with the image in the printed content
-            printContents = printContents.replace('<canvas', '<img src="' + img.src + '"');
-
-            document.body.innerHTML = printContents;
-
-            // Print the page
-            window.print();
-
-            // Restore the original contents
-            document.body.innerHTML = originalContents;
-
-            // Reload the chart after printing
-            setTimeout(function () {
-                location.reload();
-            }, 1000); // Reload after 1 second
-        };
-        img.src = canvas.toDataURL();
-    }
+	var isloading = true
+	var loader = document.getElementById("loader_@Model.ChartID");
+	var canvasDiv = document.getElementById("div_@Model.ChartID");
+	document.addEventListener("DOMContentLoaded", function () {
+
+		loader = document.getElementById("loader_@Model.ChartID");
+
+		// Show loader initially
+		loader.style.display = "block";
+
+		$(document).ready(function () {
+			// Show loader initially
+
+			var canvasChartType = '@Model.ChartType';
+			if (canvasChartType == "Label") {
+				LoadLabel();
+			}
+			else if (canvasChartType=="Data Grid"){
+				LoadGrid();
+			}
+			else {
+				LoadChart();
+			}
+
+
+		});
+	});
+
+	function LoadLabel() {
+		document.getElementById("Label_@Model.ChartID").innerHTML = @Model.LabelValue;
+		var div = document.getElementById("div_@Model.ChartID");
+		div.style.display = 'block';
+		loader.style.display = "none";
+
+	}
+
+		function LoadGrid() {
+		// document.getElementById("Grid_@Model.ChartID").innerHTML = "N/A";
+		var div = document.getElementById("div_@Model.ChartID");
+		div.style.display = 'block';
+		loader.style.display = "none";
+
+	}
+	function LoadChart() {
+		var RefershTime = '@Model.RefershTime';
+		var canvasChartType = '@Model.ChartType';
+		var canvasXaxis_labels = @Html.Raw(string.IsNullOrEmpty(Model?.JsonXaxis_labels) ? "null" : Model?.JsonXaxis_labels);
+		var configuration = @Html.Raw(string.IsNullOrEmpty(Model?.json_graphConfigurations) ? "null" : Model?.json_graphConfigurations);
+		var canvasjsonchartTitle = '@Html.Raw(string.IsNullOrEmpty(Model?.jsonchartTitle) ? "null" : Model?.jsonchartTitle)';
+		var Yaxis_Data = @Html.Raw(string.IsNullOrEmpty(Model?.json_graphConfigurations) ? "null" : Model?.json_graphConfigurations);
+		var Yaxis_Data_Dataset = Yaxis_Data;//Yaxis_Data[0].datasets;
+
+		//debugger
+		var Isstacked = false;
+		var _height = 0;
+		var gridDisplay = true;
+		var indexAxis='';
+		if (canvasChartType == "Bar" || canvasChartType == "Column") {
+			canvasChartType = "bar";
+		}
+		if (canvasChartType == "Stacked Bar") {
+			canvasChartType = "bar";
+			Isstacked = true;
+		}
+		if (canvasChartType == "Horizontal Bar Chart") {
+			canvasChartType = "bar";
+			indexAxis='y';
+		}
+		if (canvasChartType == "doughnut") {
+
+			canvasChartType = "doughnut";
+			gridDisplay = false;
+		}
+		if (canvasChartType == "Pie") {
+
+			canvasChartType = "pie";
+			gridDisplay = false;
+		}
+		if (canvasChartType == "Line") {
+			canvasChartType = "line";
+		}
+		if (canvasChartType == "polarArea") {
+			canvasChartType = "polarArea";
+		}
+		if (canvasChartType == "RadarChart") {
+			canvasChartType = "radar";
+		}
+		if (canvasChartType == "Progress Pie Chart") {
+			var chartDiv = document.getElementById('div_' + @Model.ChartID);
+			var progressDiv = document.getElementById('Progress-' + @Model.ChartID);
+			var percent = @Model.LabelValue / 100;
+			var text = (percent * 100) + "%";
+
+			var width = chartDiv.offsetWidth || 200;
+			var height = chartDiv.offsetHeight || 200;
+			var thickness = width / 10;
+			var duration = 50;
+			var foregroundColor = "#0a8";
+			var backgroundColor = "#ccc";
+
+			var radius = Math.min(width, height) / 2;
+			var color = d3.scaleOrdinal([foregroundColor, backgroundColor]);
+
+			var svg = d3.select("#Progress-" + @Model.ChartID)
+				.append('svg')
+				.attr('class', 'pie')
+				.attr('width', width)
+				.attr('height', height);
+
+			var g = svg.append('g')
+				.attr('transform', 'translate(' + (width / 2) + ',' + (height / 2) + ')');
+
+			var arc = d3.arc()
+				.innerRadius(radius - thickness)
+				.outerRadius(radius);
+
+			var pie = d3.pie()
+				.sort(null);
+
+			var path = g.selectAll('path')
+				.data(pie([0, 1]))
+				.enter()
+				.append('path')
+				.attr('d', arc)
+				.attr('fill', function (d, i) {
+					return color(i);
+				})
+				.each(function (d) { this._current = d; });
+
+			path.data(pie([percent, 1 - percent])).transition()
+				.duration(duration)
+				.attrTween('d', function (d) {
+					var interpolate = d3.interpolate(this._current, d);
+					this._current = interpolate(0);
+					return function (t) {
+						return arc(interpolate(t));
+					}
+				});
+
+			g.append('text')
+				.attr('text-anchor', 'middle')
+				.attr('dy', '.35em')
+				.text(text);
+
+			setTimeout(function () {
+				chartDiv.style.display = "block";
+				progressDiv.style.display = "block";
+				loader.style.display = "none";
+			}, 2000);
+			return;
+		}
+
+		var canvas = 'canvas_' + @Model.ChartID;
+		debugger;
+		//loadCanvas(@Model.ChartID);
+		var ctx = document.getElementById(canvas).getContext('2d');
+		//debugger
+
+
+		var myChart = new Chart(ctx, {
+			type: canvasChartType,
+			data: {
+				labels: canvasXaxis_labels,//x axis labels
+				datasets: Yaxis_Data_Dataset,
+				hoverOffset: 10,
+				borderWidth: 0,
+
+			},
+			options: {
+				responsive: true,
+				plugins: {
+					legend: {
+						position: 'top',
+						display:false
+					},
+					title: {
+						display: true,
+						text: canvasjsonchartTitle
+					},
+				},
+
+				scales: {
+					x: {
+						stacked: Isstacked,
+						// grid: {
+						//     display: gridDisplay
+						// }
+					},
+					y: {
+						stacked: Isstacked,
+						// grid: {
+						//     display: gridDisplay
+						// }
+					}
+				},
+				indexAxis: indexAxis
+
+			}
+		});
+
+		// Simulate a delay of 2 seconds before showing the canvas
+		setTimeout(function () {
+			// Show the canvas
+
+			canvasDiv.style.display = "block";
+			// Hide the loader
+			loader.style.display = "none";
+		}, 2000);
+
+	}
+	function LoadChartV2() {
+		var RefershTime = '@Model.RefershTime';
+		var canvasChartType = '@Model.ChartType';
+		var canvasXaxis_labels = @Html.Raw(string.IsNullOrEmpty(Model?.JsonXaxis_labels) ? "null" : Model?.JsonXaxis_labels);
+		var configuration = @Html.Raw(string.IsNullOrEmpty(Model?.json_graphConfigurations) ? "null" : Model?.json_graphConfigurations);
+		var canvasjsonchartTitle = '@Html.Raw(string.IsNullOrEmpty(Model?.jsonchartTitle) ? "null" : Model?.jsonchartTitle)';
+		var Yaxis_Data = @Html.Raw(string.IsNullOrEmpty(Model?.json_graphConfigurations) ? "null" : Model?.json_graphConfigurations);
+		var Yaxis_Data_Dataset = Yaxis_Data;//Yaxis_Data[0].datasets;
+
+		//debugger
+		var Isstacked = false;
+		var _height = 0;
+		var gridDisplay = true;
+		if (canvasChartType == "Bar") {
+			canvasChartType = "bar";
+		}
+		if (canvasChartType == "Stacked Bar") {
+			canvasChartType = "bar";
+			Isstacked = true;
+		}
+		if (canvasChartType == "doughnut") {
+
+			canvasChartType = "doughnut";
+			gridDisplay = false;
+		}
+		if (canvasChartType == "Pie") {
+
+			canvasChartType = "pie";
+			gridDisplay = false;
+		}
+		if (canvasChartType == "Line") {
+			canvasChartType = "line";
+		}
+		if (canvasChartType == "polarArea") {
+			canvasChartType = "polarArea";
+
+		}
+		if (canvasChartType == "RadarChart") {
+			canvasChartType = "radar";
+		}
+
+		var canvas = 'canvas_' + @Model.ChartID;
+		debugger;
+		//loadCanvas(@Model.ChartID);
+		var ctx = document.getElementById(canvas).getContext('2d');
+		//debugger
+
+
+		var myChart = new Chart(ctx, {
+			type: canvasChartType,
+			data: {
+				labels: canvasXaxis_labels,//x axis labels
+				datasets: Yaxis_Data_Dataset,
+				hoverOffset: 10,
+				borderWidth: 0,
+
+			},
+			options: {
+				legend: { display: true },
+				responsive: true,
+				plugins: {
+					title: {
+						display: true,
+						text: canvasjsonchartTitle
+					},
+				},
+				responsive: true,
+
+				scales: {
+					x: {
+						// stacked: Isstacked,
+						grid: {
+							display: gridDisplay
+						}
+					},
+					y: {
+						// stacked: Isstacked,
+						grid: {
+							display: gridDisplay
+						}
+					}
+				},
+				title: {
+					display: true,
+					text: canvasjsonchartTitle
+				},
+			}
+		});
+
+		// Simulate a delay of 2 seconds before showing the canvas
+		setTimeout(function () {
+			// Show the canvas
+
+			canvasDiv.style.display = "block";
+			// Hide the loader
+			loader.style.display = "none";
+		}, 2000);
+
+	}
+
+
+	function LoadChartOLD() {
+		var RefershTime = '@Model.RefershTime';
+		var canvasChartType = '@Model.ChartType';
+		var canvasXaxis_labels = @Html.Raw(string.IsNullOrEmpty(Model?.JsonXaxis_labels) ? "null" : Model?.JsonXaxis_labels);
+		var configuration = @Html.Raw(string.IsNullOrEmpty(Model?.json_graphConfigurations) ? "null" : Model?.json_graphConfigurations);
+		var canvasjsonchartTitle = '@Html.Raw(string.IsNullOrEmpty(Model?.jsonchartTitle) ? "null" : Model?.jsonchartTitle)';
+		var Yaxis_Data = @Html.Raw(string.IsNullOrEmpty(Model?.json_graphConfigurations) ? "null" : Model?.json_graphConfigurations);
+		var Yaxis_Data_Dataset = Yaxis_Data;//Yaxis_Data[0].datasets;
+
+
+		//debugger
+		var Isstacked = false;
+		var _height = 0;
+
+		if (canvasChartType == "Bar") {
+			canvasChartType = "bar";
+		}
+		if (canvasChartType == "Stacked Bar") {
+			canvasChartType = "bar";
+			Isstacked = true;
+		}
+		if (canvasChartType == "Pie") {
+
+			canvasChartType = "doughnut";
+		}
+		if (canvasChartType == "Line") {
+			canvasChartType = "line";
+		}
+
+		var canvas = 'canvas_' + @Model.ChartID;
+		debugger;
+		//loadCanvas(@Model.ChartID);
+		var ctx = document.getElementById(canvas).getContext('2d');
+		//debugger
+
+
+		var myChart = new Chart(ctx, {
+			type: canvasChartType,
+			data: {
+				labels: canvasXaxis_labels,//x axis labels
+				datasets: Yaxis_Data_Dataset,
+			},
+			options: {
+				legend: { display: false },
+
+				responsive: true,
+				plugins: {
+					title: {
+						display: true,
+						text: canvasjsonchartTitle
+					},
+				},
+				responsive: true,
+				interaction: {
+					intersect: false,
+				},
+				scales: {
+					x: {
+						stacked: Isstacked,
+					},
+					y: {
+						stacked: Isstacked
+					}
+				},
+				title: {
+					display: true,
+					text: canvasjsonchartTitle
+				},
+			}
+		});
+
+		// Simulate a delay of 2 seconds before showing the canvas
+		setTimeout(function () {
+			// Show the canvas
+
+			canvasDiv.style.display = "block";
+			// Hide the loader
+			loader.style.display = "none";
+		}, 2000);
+
+	}
+	function refreshPage() {
+
+		location.reload();
+	}
+	function loadChart(chartId) {
+
+		var canvas = 'canvas_' + @Model.ChartID;
+
+		var canvasTag = document.getElementById(canvas);
+		var context = canvasTag.getContext("2d");
+
+		// Clear the canvas
+		context.clearRect(0, 0, canvasTag.width, canvasTag.height);
+
+
+	}
+	function printElement(elementId) {
+		var element = document.getElementById(elementId);
+		var canvas = element.querySelector('canvas');
+		var printContents = element.innerHTML;
+		var originalContents = document.body.innerHTML;
+
+		// Create an image from the canvas content
+		var img = new Image();
+		img.onload = function () {
+			// Replace the canvas with the image in the printed content
+			printContents = printContents.replace('<canvas', '<img src="' + img.src + '"');
+
+			document.body.innerHTML = printContents;
+
+			// Print the page
+			window.print();
+
+			// Restore the original contents
+			document.body.innerHTML = originalContents;
+
+			// Reload the chart after printing
+			setTimeout(function () {
+				location.reload();
+			}, 1000); // Reload after 1 second
+		};
+		img.src = canvas.toDataURL();
+	}
 </script>
 
 </html>

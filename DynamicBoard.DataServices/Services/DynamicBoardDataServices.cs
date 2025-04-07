@@ -39,7 +39,7 @@ namespace DynamicBoard.DataServices.Services
                 {
                     UserId = userID
                 };
-                dashboards =(await conn.QueryAsync<Dashboards>("DashboardsGetALL @UserId", p)).ToList();
+                dashboards = (await conn.QueryAsync<Dashboards>("DashboardsGetALL @UserId", p)).ToList();
             }
             catch (Exception ex)
             {
@@ -96,7 +96,7 @@ namespace DynamicBoard.DataServices.Services
                 return isDeleted;
             }
         }
-        public async Task<long> DashboardAddEditAsync(long id, string titleEn, string titleAr, string userId, bool isActive, bool isDeleted,bool hideChartButtons, int chartHeight)
+        public async Task<long> DashboardAddEditAsync(long id, string titleEn, string titleAr, string userId, bool isActive, bool isDeleted, bool hideChartButtons, int chartHeight)
         {
             SqlConnection conn = new SqlConnection(connStr);
             try
@@ -361,12 +361,12 @@ namespace DynamicBoard.DataServices.Services
 
 
 
-            #endregion
+        #endregion
 
 
-            #region Chart
-            public async Task<long> ChartAddEditAsync(long id, long chartTypeID, long dBConnectionID, string dataScript, string titleEn, string titleAr, long refershTime, bool isActive, bool isDeleted, long chartTheme = 1, string createdBy = " ",bool display=false)
-            {
+        #region Chart
+        public async Task<long> ChartAddEditAsync(long id, long chartTypeID, long dBConnectionID, string dataScript, string titleEn, string titleAr, long refershTime, bool isActive, bool isDeleted, long chartTheme = 1, string createdBy = " ", bool display = false)
+        {
             SqlConnection conn = new SqlConnection(connStr);
             try
             {
@@ -756,6 +756,8 @@ namespace DynamicBoard.DataServices.Services
             }
         }
 
+
+
         public async Task<List<ChartParameter>> GetChartParametersGetAll()
         {
             SqlConnection conn = new SqlConnection(connStr);
@@ -808,6 +810,38 @@ namespace DynamicBoard.DataServices.Services
                 new { ChartTypeID = chartTypeID })).FirstOrDefault();
             return result;
         }
+
+        public async Task<List<Dictionary<string, object>>> GridDatasetExecute(string script, string connectionString)
+        {
+            try
+            {
+                using var conn = new SqlConnection(connectionString);
+                var result = await conn.QueryAsync<dynamic>(script, commandType: CommandType.Text); // Execute query asynchronously
+
+
+                // Convert dynamic objects into Dictionary<string, object>
+                List<Dictionary<string, object>> resultList = new();
+
+                foreach (var row in result)
+                {
+                    var dict = new Dictionary<string, object>();
+
+                    foreach (var property in (IDictionary<string, object>)row)
+                    {
+                        dict[property.Key] = property.Value;
+                    }
+
+                    resultList.Add(dict);
+                }
+
+                return resultList; // Returns a list of dynamic rows as dictionaries
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }      
 
         #endregion
     }

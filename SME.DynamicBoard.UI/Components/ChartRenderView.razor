@@ -1,136 +1,143 @@
 ﻿@if (isError)
 {
-    <p style="color:red">errorMessage</p>
+	<p style="color:red">errorMessage</p>
 }
 else
 {
-    @if (!string.IsNullOrEmpty(url))
-    {
-        @*         <iframe src="@url" style="width: 100%;height: 100%;"></iframe>
- *@
+	@if (!string.IsNullOrEmpty(url))
+	{
 
-        <iframe src="@url" allowfullscreen style=" position: center;    width: @(Width)px;    height:@(Height)px;    border: 0;    overflow: hidden;"></iframe>
-    }
+		@if (WidthPercentage == 0)
+		{
+			<iframe src="@url" allowfullscreen style=" position: center;    width: @(Width)px;    height:@(Height)px;    border: 0;    overflow: hidden;"></iframe>
+		}
+		else
+		{
+			<iframe src="@url" allowfullscreen style=" position: center;    width: @(WidthPercentage)%;    height:@(Height)px;    border: 0;    overflow: hidden;"></iframe>
+		}
+
+	}
 
 }
 
 
 @code {
-    [Parameter] public ChartData ChartData { get; set; } = new();
-    [Parameter] public string ChartId { get; set; } = string.Empty;
-    [Parameter] public bool IsAllowRefresh { get; set; }
-    [Parameter] public bool IsAllowPrint { get; set; }
-    [Parameter] public bool AutoLoad { get; set; } = true;
-    [Parameter] public int Language { get; set; } = 0;
-    [Parameter] public int Height { get; set; } = 450;
-    [Parameter] public int Width { get; set; } = 405;
-    string url = "";
-    bool isError = false;
-    string errorMessage;
-    string queryStringParameters = "";
-    string parameters = "";
-    string values = "";
-    private string ChartHTML { get; set; } = string.Empty;
-    private bool isLoading = false;
-    HttpClient httpClient = new HttpClient();
-    private bool isIframeLoaded;
+	[Parameter] public ChartData ChartData { get; set; } = new();
+	[Parameter] public string ChartId { get; set; } = string.Empty;
+	[Parameter] public bool IsAllowRefresh { get; set; }
+	[Parameter] public bool IsAllowPrint { get; set; }
+	[Parameter] public bool AutoLoad { get; set; } = true;
+	[Parameter] public int Language { get; set; } = 0;
+	[Parameter] public int Height { get; set; } = 450;
+	[Parameter] public int Width { get; set; } = 405;
+	[Parameter] public int WidthPercentage { get; set; } = 0;
+	string url = "";
+	bool isError = false;
+	string errorMessage;
+	string queryStringParameters = "";
+	string parameters = "";
+	string values = "";
+	private string ChartHTML { get; set; } = string.Empty;
+	private bool isLoading = false;
+	HttpClient httpClient = new HttpClient();
+	private bool isIframeLoaded;
 
-    protected override async Task OnInitializedAsync()
-    {
-        // await LoadIframe();
-        if (AutoLoad)
-        {
-            await Refersh();
-        }
-    }
+	protected override async Task OnInitializedAsync()
+	{
+		// await LoadIframe();
+		if (AutoLoad)
+		{
+			await Refersh();
+		}
+	}
 
-    protected override async Task OnParametersSetAsync()
-    {
+	protected override async Task OnParametersSetAsync()
+	{
 
-        if (AutoLoad)
-        {
-            await LoadIframe();
-        }
+		if (AutoLoad)
+		{
+			await LoadIframe();
+		}
 
-    }
+	}
 
-    public async Task Refersh()
-    {
+	public async Task Refersh()
+	{
 
-        await LoadIframe();
+		await LoadIframe();
 
-    }
+	}
 
-    public async Task LoadIframe()
-    {
-        parameters = "";
-        try
-        {
-            if (string.IsNullOrEmpty(ChartId))
-            {
-                errorMessage = "chart id required";
+	public async Task LoadIframe()
+	{
+		parameters = "";
+		try
+		{
+			if (string.IsNullOrEmpty(ChartId))
+			{
+				errorMessage = "chart id required";
 
-            }
-            else if (ChartData is not null && ChartData.ChartParams is null)
-            {
+			}
+			else if (ChartData is not null && ChartData.ChartParams is null)
+			{
 
-                errorMessage = "parameters for chart required";
-            }
-            else if (ChartData is not null &&  ChartData.ChartParams.Count == 0)
-            {
-                errorMessage = "parameters for chart required";
-            }
-            else if (string.IsNullOrEmpty(Storage.EncryptionKey))
-            {
-                errorMessage = "EncryptedKey required";
-            }
-            else if (string.IsNullOrEmpty(Storage.RootAddress))
-            {
-                errorMessage = "root address of dynamic board required";
-            }
-            else
-            {
-                if (ChartData is not null &&  ChartData.ChartParams is not null)
-                {
-                    if (ChartData.ChartParams.Count > 0)
-                    {
-                        foreach (var item in ChartData.ChartParams)
-                        {
-                            foreach (var val in item.Values)
-                            {
-                                values += val + "|";
-                            }
-                            parameters += "[" + item.Name + ":" + values + "]";
-                            values = "";
-                        }
-                        // queryStringParameters = "";
-                        // queryStringParameters =  "&parameters=[" + parameters + "]";
-
-
-                    }
-
-                }
-            }
-            queryStringParameters = "chartID=" + ChartId + "&parameters=[" + parameters + "]&token=" + "UserToken" + "&IsAllowRefresh=" + IsAllowRefresh + "&IsAllowPrint=" + IsAllowPrint + "&Language=" + Language;
-
-            EncryptionHelper.encryptionKey = Storage.EncryptionKey;
-            var encryptedData = EncryptionHelper.Encrypt(queryStringParameters);
-
-            url = Storage.RootAddress + "Chart/GetChartEncrypted?Data=" + encryptedData;
-
-            ChartHTML = await httpClient.GetStringAsync(url);
-            isError = false;
-            StateHasChanged();
-        }
-        catch (Exception ex)
-        {
-            isError = true;
-            errorMessage = ex.ToString();
-            StateHasChanged();
-        }
+				errorMessage = "parameters for chart required";
+			}
+			else if (ChartData is not null && ChartData.ChartParams.Count == 0)
+			{
+				errorMessage = "parameters for chart required";
+			}
+			else if (string.IsNullOrEmpty(Storage.EncryptionKey))
+			{
+				errorMessage = "EncryptedKey required";
+			}
+			else if (string.IsNullOrEmpty(Storage.RootAddress))
+			{
+				errorMessage = "root address of dynamic board required";
+			}
+			else
+			{
+				if (ChartData is not null && ChartData.ChartParams is not null)
+				{
+					if (ChartData.ChartParams.Count > 0)
+					{
+						foreach (var item in ChartData.ChartParams)
+						{
+							foreach (var val in item.Values)
+							{
+								values += val + "|";
+							}
+							parameters += "[" + item.Name + ":" + values + "]";
+							values = "";
+						}
+						// queryStringParameters = "";
+						// queryStringParameters =  "&parameters=[" + parameters + "]";
 
 
-    }
+					}
+
+				}
+			}
+			queryStringParameters = "chartID=" + ChartId + "&parameters=[" + parameters + "]&token=" + "UserToken" + "&IsAllowRefresh=" + IsAllowRefresh + "&IsAllowPrint=" + IsAllowPrint + "&Language=" + Language;
+
+			EncryptionHelper.encryptionKey = Storage.EncryptionKey;
+			var encryptedData = EncryptionHelper.Encrypt(queryStringParameters);
+
+			url = Storage.RootAddress + "Chart/GetChartEncrypted?Data=" + encryptedData;
+
+			ChartHTML = await httpClient.GetStringAsync(url);
+			isError = false;
+			StateHasChanged();
+		}
+		catch (Exception ex)
+		{
+			isError = true;
+			errorMessage = ex.ToString();
+			StateHasChanged();
+		}
+
+
+	}
 
 }
 
