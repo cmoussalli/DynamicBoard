@@ -27,6 +27,8 @@ namespace DynamicBoard.Application.DomainServices
             List<Model.Dataset> datasets = new();
             List<GraphDatasetDetails> graphList = new List<GraphDatasetDetails>();
             List<ChartDataset> datasetResult = null;
+            List<Dictionary<string, object>>? gridDatasetResult = null;
+
             try
             {
                 if (!string.IsNullOrEmpty(modifiedQuery))
@@ -41,9 +43,9 @@ namespace DynamicBoard.Application.DomainServices
                     }
 
                 }
-               
 
-
+                if (!chartType.Equals("Data Grid"))
+                {
                     if (extendDashboard != null)
                     {
                         //var connesctionString = "Server=" + "10.38.38.199" + ";Database=" + extendDashboard.DBConnections.Database + ";Trusted_Connection=True;MultipleActiveResultSets=true;User Id=" + extendDashboard.DBConnections.User + ";Password=" + "SMedi@33333" + ";Integrated Security=False;";
@@ -59,15 +61,22 @@ namespace DynamicBoard.Application.DomainServices
                         datasetResult = await db.DatasetExecute(dataScript, connesctionString);
                         // renderChart.RefershTime = extendChart.RefershTime;
                     }
-               
-                if (datasetResult != null && datasetResult.Count > 0)
+                }
+                else
+                {
+                    var connesctionString = "Server=" + extendDashboard.DBConnections.Server + ";Database=" + extendDashboard.DBConnections.Database + ";Trusted_Connection=True;MultipleActiveResultSets=true;User Id=" + extendDashboard.DBConnections.User + ";Password=" + extendDashboard.DBConnections.Password + ";Integrated Security=False;";
+
+                    gridDatasetResult = await db.GridDatasetExecute(dataScript, connesctionString);
+
+                }
+                if ((datasetResult != null && datasetResult.Count > 0) || (gridDatasetResult is not null && gridDatasetResult.Count > 0))
                 {
                     if (datasetResult?.Count > 0)
                     {
                         if (datasetResult[0].Dataset_Label is null) { datasetResult[0].Dataset_Label = ""; }
                         if (datasetResult[0].x_axis_labels is null) { datasetResult[0].x_axis_labels = ""; }
                     }
-                
+
                     if (chartType == "Label")
                     {
                         renderChart.ChartType = chartType;
@@ -90,7 +99,17 @@ namespace DynamicBoard.Application.DomainServices
                         renderChart.LabelValue = datasetResult.Select(a => a.Data).FirstOrDefault();
                         return renderChart;
                     }
-                    
+                    else if (chartType == "Data Grid")
+                    {
+                        renderChart.ChartType = chartType;
+                        renderChart.ChartID = chartID;
+                        renderChart.json_graphConfigurations = "";
+                        renderChart.JsonXaxis_labels = "";
+                        renderChart.ChartCSS = chartCSS;
+                        renderChart.jsonchartTitle = Newtonsoft.Json.JsonConvert.SerializeObject(chartTitle.Replace("\r\n", ""));
+                        return renderChart;
+
+                    }
                     var DataArary = datasetResult.Select(a => a.Data).ToArray();
                     var DatasetLabels = datasetResult.Select(a => a.Dataset_Label.Replace("\r\n", "")).ToArray();
                     var TitleLabel = datasetResult.Select(a => a.x_axis_labels).FirstOrDefault();
