@@ -811,37 +811,7 @@ namespace DynamicBoard.DataServices.Services
             return result;
         }
 
-        public async Task<List<Dictionary<string, object>>> GridDatasetExecute(string script, string connectionString)
-        {
-            try
-            {
-                using var conn = new SqlConnection(connectionString);
-                var result = await conn.QueryAsync<dynamic>(script, commandType: CommandType.Text); // Execute query asynchronously
-
-
-                // Convert dynamic objects into Dictionary<string, object>
-                List<Dictionary<string, object>> resultList = new();
-
-                foreach (var row in result)
-                {
-                    var dict = new Dictionary<string, object>();
-
-                    foreach (var property in (IDictionary<string, object>)row)
-                    {
-                        dict[property.Key] = property.Value;
-                    }
-
-                    resultList.Add(dict);
-                }
-
-                return resultList; // Returns a list of dynamic rows as dictionaries
-            }
-            catch (Exception ex)
-            {
-
-                throw;
-            }
-        }      
+       
 
         #endregion
     }

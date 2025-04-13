@@ -35,15 +35,7 @@
         {
             <div id="Progress-@Model.ChartID"></div>
         }
-        else if (Model.ChartType == "Data Grid")
-        {
-            <div style="display: flex;justify-content:center;">
-                <h3 style="color:#1C459D">@Model.jsonchartTitle.Replace("\"", "")</h3>
-            </div>
-            <div style="display: flex;justify-content:center;">
-                <h3 style="margin: auto;font-size: 35px;font-style: inherit;text-align: center;color:#C1A968" id="Grid_@Model.ChartID"></h3>
-            </div>
-        }
+      
         else
         {
             <canvas id="canvas_@Model.ChartID" width="405px" height="450px"> </canvas>

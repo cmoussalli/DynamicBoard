@@ -21,7 +21,6 @@
         public bool HideChartButtons { get; set; }
         public string ChartCSSTitle { get; set; }
         public int ChartHeight { get; set; }
-        public List<Dictionary<string, object>>? dataGrid { get; set; }
 
     }
 
