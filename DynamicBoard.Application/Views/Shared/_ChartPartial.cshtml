@@ -46,7 +46,42 @@
 	{
 		<div id="Progress-@Model.ChartID"></div>
 
-	}	
+	}
+	else if (Model.ChartType == "Data Grid")
+	{
+		<div id="Grid-@Model.ChartID"></div>
+		@if (Model.dataGrid is not null)
+		{
+			<button id="exportBtn" class="btn btn-primary" style="float:right; background-color:#a58d63; border-color:#a58d63;">
+				Export to Excel
+			</button>
+			<br />
+			<div>
+				<p style="visibility: hidden;">Hidden</p>
+			</div>
+			<table id="tbl" class="table table-hover align-middle mb-0">
+				<thead class="table-dark" style="color: #fff; background-color: #343a40; border-color: #484e53;">
+					<tr>
+						@foreach (var key in Model.dataGrid[0].Keys)
+						{
+							<th>@key</th>
+
+						}
+					</tr>
+				<tbody>
+						@foreach (var row in Model.dataGrid)
+						{
+						<tr style="background-color:#fcf0db;">
+								@foreach (var value in row.Values)
+								{
+								<td>@value</td>
+								}
+						</tr>
+						}
+				</tbody>
+			</table>
+		}
+	}
 	else
 	{
 		<canvas id="canvas_@Model.ChartID" width="405px" height="450px"></canvas>

@@ -45,6 +45,9 @@
 			if (canvasChartType == "Label") {
 				LoadLabel();
 			}
+			else if (canvasChartType=="Data Grid"){
+				LoadGrid();
+			}
 			else {
 				LoadChart();
 			}
@@ -61,7 +64,7 @@
 
 	}
 
-	
+
 	function LoadChart() {
 		var RefershTime = '@Model.RefershTime';
 		var canvasChartType = '@Model.ChartType';
@@ -410,6 +413,11 @@
 			loader.style.display = "none";
 		}, 2000);
 
+	}
+	function LoadGrid() {
+		var div = document.getElementById("div_@Model.ChartID");
+		div.style.display = 'block';
+		loader.style.display = "none";
 	}
 	function refreshPage() {
 
