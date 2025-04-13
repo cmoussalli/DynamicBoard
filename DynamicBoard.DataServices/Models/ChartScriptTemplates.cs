@@ -33,9 +33,7 @@ namespace DynamicBoard.DataServices.Models
         HorizontalBarChart = 10,
         [Display(Name = "Progress Pie Chart")]
         PieProgress = 11,
-
-
+        [Display(Name = "Data Grid")]
+        DataGrid = 12
     }
-
-
 }

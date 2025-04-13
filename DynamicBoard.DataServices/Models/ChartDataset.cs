@@ -1,6 +1,4 @@
-﻿using DynamicBoard.DataServices.Models;
-
-namespace DynamicBoard.DataServices
+﻿namespace DynamicBoard.DataServices
 {
     public class ChartDataset
     {
