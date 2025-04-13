@@ -86,8 +86,15 @@ namespace DynamicBoard.Application.Controllers
                 //    chartDatasets = await db.GridDatasetExecute(chartID, chartScriptTemplates.SQLScriptTemplate);
 
                 //}
+                if (result.EnumValue.ToString().Equals("DataGrid"))
+                {
+                    renderChart.ChartType = result.DisplayName;
+                    renderChart.ChartID = chartID;
+                    renderChart.jsonchartTitle = Newtonsoft.Json.JsonConvert.SerializeObject(chartScriptTemplates.ChartTitle.Replace("\r\n", ""));
+                    return View("ChartTemplateView", renderChart);
+                }
 
-                if (result.EnumValue.ToString() == "Label" || result.EnumValue.ToString() == "PieProgress")
+                else if (result.EnumValue.ToString() == "Label" || result.EnumValue.ToString() == "PieProgress")
                 {
                     renderChart.ChartType = result.DisplayName;
                     renderChart.ChartID = chartID;
@@ -96,7 +103,7 @@ namespace DynamicBoard.Application.Controllers
                     renderChart.jsonchartTitle = Newtonsoft.Json.JsonConvert.SerializeObject(chartScriptTemplates.ChartTitle.Replace("\r\n", ""));
                     renderChart.LabelValue = chartDatasets.Select(a => a.Data).FirstOrDefault();
                     return View("ChartTemplateView", renderChart);
-                }               
+                }
                 else
                 {
                     var DataArary = chartDatasets.Select(a => a.Data).ToArray();
@@ -571,7 +578,11 @@ namespace DynamicBoard.Application.Controllers
                     renderChart = await ChartCommon.ChartManipulation(extendDashboard, extendCharts[0].ChartTypes.TitleEn, title, extendCharts[0].ID, "", chartThemes, extendCharts[0], modifiedQueryScript);
                     renderChart.IsAllowRefresh = IsAllowRefresh;
                     renderChart.IsAllowPrint = IsAllowPrint;
-                   
+                    if (renderChart.dataGrid is not null && renderChart.dataGrid.Count > 0)
+                    {
+                        renderChart.IsAllowRefresh = false;
+                        renderChart.IsAllowPrint = false;
+                    }
                     return View("ChartView", renderChart);
 
                 }
