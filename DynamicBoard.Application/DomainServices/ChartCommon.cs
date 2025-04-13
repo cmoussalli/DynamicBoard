@@ -76,7 +76,13 @@ namespace DynamicBoard.Application.DomainServices
                         if (datasetResult[0].Dataset_Label is null) { datasetResult[0].Dataset_Label = ""; }
                         if (datasetResult[0].x_axis_labels is null) { datasetResult[0].x_axis_labels = ""; }
                     }
-
+                    if (gridDatasetResult?.Count > 0 && datasetResult is null)
+                    {
+                        datasetResult = new List<ChartDataset>();
+                        ChartDataset ds = new();
+                        ds.dataGrid = gridDatasetResult;
+                        renderChart.dataGrid = ds.dataGrid;
+                    }
                     if (chartType == "Label")
                     {
                         renderChart.ChartType = chartType;
