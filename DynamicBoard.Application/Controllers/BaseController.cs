@@ -1,6 +1,5 @@
 ﻿using CMouss.IdentityFramework;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.NetworkInformation;
 
 namespace DynamicBoard.Application.Controllers
 {
