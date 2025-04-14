@@ -1,5 +1,4 @@
 ﻿using DynamicBoard.DataServices.Models;
-using DynamicBoard.DataServices;
 using DynamicBoard.DataServices.Services;
 
 namespace DynamicBoard.Application.DomainServices

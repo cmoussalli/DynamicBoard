@@ -1,9 +1,5 @@
 using CMouss.IdentityFramework;
 using DynamicBoard.Application;
-using DynamicBoard.Application.Components;
-using DynamicBoard.Application.DomainServices;
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.FluentUI.AspNetCore.Components;
 
 var builder = WebApplication.CreateBuilder(args);
